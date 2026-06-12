@@ -4,15 +4,8 @@
 
 .industries {
   min-height: 100vh;
-
-  padding: 100px 0;
-
-background:   #000000;
-
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-
+  padding: 120px 6%;
+  background: #000;
   overflow: hidden;
 }
 

@@ -10,51 +10,58 @@
   text-align: center;
   margin-bottom: 70px;
 }
-.stats-eyebrow{
-    display:inline-block;
-    padding:8px 20px;
-    margin-bottom:18px;
-    font-size:15px;          /* Bigger */
-    font-weight:800;
-    letter-spacing:4px;
-    text-transform:uppercase;
-    color:#3b82f6;
-    border:2px solid #3b82f6; /* Border added */
-    border-radius:50px;
-    background:transparent;
+
+.stats-eyebrow {
+  display: inline-block;
+  padding: 8px 20px;
+  margin-bottom: 18px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #3b82f6;
+  border: 2px solid #3b82f6;
+  border-radius: 50px;
+  background: transparent;
 }
 
-.stats-title{
-    font-size:72px;          /* Much bigger */
-    font-weight:900;
-    color:#fff;
-    line-height:1.05;
-    margin:0 0 14px;
-    letter-spacing:-2px;
+.stats-title {
+  font-size: 72px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.05;
+  margin: 0 0 14px;
+  letter-spacing: -2px;
 }
 
-
-.stats-subtitle{
-    font-size:20px;
-    color:rgba(255,255,255,0.75);
-    line-height:1.7;
-    max-width:700px;
-    margin:0 auto;
+.stats-subtitle {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.7;
+  max-width: 700px;
+  margin: 0 auto;
 }
 
 /* ─── Layout ────────────────────────────────────────────────── */
+/*
+ * Pills column: fixed at 420px, no shrink.
+ * Gap: 120px — a hard visual gutter between the two columns.
+ * Carousel column: takes all remaining space via flex: 1.
+ * The carousel's overflow:hidden becomes the hard boundary that
+ * prevents any card from ever visually entering the pills column.
+ */
 .stats-layout {
-  max-width: 1800px;          /* was 1500px */
+  max-width: 1600px;
   width: 100%;
   margin: 0 auto;
   display: flex;
-  gap: 90px;                  /* was 70px */
+  gap: 120px;
   align-items: center;
 }
 
 /* ─── Pills ─────────────────────────────────────────────────── */
 .stats-pills {
-  width: 500px;               /* was 500px */
+  width: 420px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -70,7 +77,8 @@
   border: 2px solid #e2e8f0;
   background: #ffffff;
   cursor: pointer;
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  transition: transform 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease, background 0.3s ease;
   text-align: left;
   outline: none;
 }
@@ -113,57 +121,87 @@
 }
 
 /* ─── Carousel Wrapper ──────────────────────────────────────── */
+/*
+ * flex: 1 means this column gets all space left after the 420px pills
+ * column and 120px gap. On a 1600px max-width layout that is roughly
+ * 1600 - 420 - 120 - (2 * 6% padding) ≈ 860px of usable width.
+ * The wrapper clips overflow so side-card bleed is impossible.
+ */
 .stats-carousel-wrap {
   flex: 1;
+  min-width: 0;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 28px;
+  /* Clip side cards hard at the column boundary */
+  overflow: hidden;
+  /* Vertical padding so box-shadow on center card isn't clipped */
+  padding: 24px 0 28px;
 }
 
 /* ─── Carousel ──────────────────────────────────────────────── */
+/*
+ * Width 100% of the wrapper column.
+ * Height: card height (420px) + vertical breathing room for shadow.
+ * overflow: visible here is fine — the wrapper above clips the column.
+ */
 .stats-carousel {
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 500px;
+  margin: 0 auto;
+  overflow: visible;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 /* ─── Cards ─────────────────────────────────────────────────── */
+/*
+ * Center card = 58% of the carousel wrapper width, capped at 460px.
+ * This ensures it never feels too large relative to the pills column.
+ *
+ * Side card offset strategy:
+ *   We want only ~18% of a side card visible at the wrapper edge.
+ *   Side card rendered width at scale(0.80) = 460 * 0.80 = 368px.
+ *   Visible slice desired = 18% of 460 = ~83px.
+ *   Hidden portion = 368 - 83 = 285px.
+ *   Center card half = 230px.
+ *   translateX = 230 + 285 = 515px → the side card's near edge sits
+ *   230px from center (just past the center card edge) and 285px of
+ *   its own width is hidden beyond the wrapper clip.
+ *   The visible 83px "peek" provides depth cue without collision.
+ */
 .stats-card {
   position: absolute;
-  width: 500px;
-  height: 500px;
+  width: min(58%, 460px);
+  height: 420px;
   border-radius: 32px;
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-    scale 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.6s ease;
-  cursor: pointer;
-  will-change: transform, opacity, scale;
+    opacity 0.6s ease, box-shadow 0.6s ease;
+  will-change: transform, opacity;
 }
 
 .stats-card--center {
   transform: translateX(0) scale(1);
   opacity: 1;
   z-index: 10;
-  box-shadow: 0 32px 80px rgba(15, 23, 42, 0.28),
-    0 8px 24px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.30),
+    0 8px 24px rgba(37, 99, 235, 0.22);
 }
 
 .stats-card--left {
-  transform: translateX(-62%) scale(0.78);
-  opacity: 0.45;
+  transform: translateX(-515px) scale(0.80);
+  opacity: 0.50;
   z-index: 5;
   pointer-events: none;
 }
 
 .stats-card--right {
-  transform: translateX(62%) scale(0.78);
-  opacity: 0.45;
+  transform: translateX(515px) scale(0.80);
+  opacity: 0.50;
   z-index: 5;
   pointer-events: none;
 }
@@ -183,17 +221,12 @@
   padding: 40px;
   display: flex;
   flex-direction: column;
-  align-items: center;      /* Center horizontally */
-  justify-content: center;  /* Center vertically */
-  text-align: center;       /* Center text */
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(
-    145deg,
-    #0f172a 0%,
-    #1e3a8a 55%,
-    #1d4ed8 100%
-  );
+  background: linear-gradient(145deg, #0f172a 0%, #1e3a8a 55%, #1d4ed8 100%);
 }
 
 .card-inner::before {
@@ -215,64 +248,73 @@
   width: 220px;
   height: 220px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.35) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.35) 0%,
+    transparent 70%
+  );
   pointer-events: none;
 }
 
 /* ─── Card Content ──────────────────────────────────────────── */
-.card-badge{
-    position:absolute;
-    top:30px;
-    left:50%;
-    transform:translateX(-50%);
-
-    padding:8px 18px;
-    border-radius:50px;
-    background:#fff;
-    color:#2563eb;
-
-    font-size:12px;
-    font-weight:800;
-    letter-spacing:2px;
-    text-transform:uppercase;
-}
-.card-number{
-    font-size:110px;
-    font-weight:900;
-    color:#fff;
-    line-height:1;
-    margin-bottom:12px;
-    text-align:center;
-}
-.card-title{
-    font-size:34px;
-    font-weight:700;
-    color:#fff;
-    text-align:center;
-    margin-bottom:18px;
+.card-badge {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 7px 16px;
+  border-radius: 50px;
+  background: #fff;
+  color: #2563eb;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.card-desc{
-    max-width:380px;
-    margin:0 auto;
-    text-align:center;
+.card-number {
+  font-size: 96px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 10px;
+  text-align: center;
+}
 
-    font-size:17px;
-    line-height:1.8;
-    color:rgba(255,255,255,0.82);
+.card-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.card-desc {
+  max-width: 340px;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.82);
 }
 
 /* ─── Nav Buttons ───────────────────────────────────────────── */
+/*
+ * Positioned relative to .stats-carousel-wrap (position:relative).
+ * Placed at the vertical midpoint of the carousel area, accounting
+ * for the 24px top padding on the wrapper.
+ */
 .carousel-nav {
   position: absolute;
-  top: 50%;
+  top: calc(24px + 250px); /* wrapper top-pad + half carousel height */
   transform: translateY(-50%);
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 2px solid #e2e8f0;
-  background: #ffffff;
-  color: #334155;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -281,21 +323,26 @@
   transition: background 0.25s ease, border-color 0.25s ease,
     box-shadow 0.25s ease, color 0.25s ease;
   outline: none;
+  backdrop-filter: blur(8px);
 }
 
 .carousel-nav:hover {
   background: #2563eb;
   border-color: #2563eb;
   color: #ffffff;
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
 }
 
+/*
+ * Nav buttons sit at the wrapper edge so they're visible but don't
+ * compete with the card. 8px inset keeps them inside the clip boundary.
+ */
 .carousel-nav--prev {
-  left: -22px;
+  left: 8px;
 }
 
 .carousel-nav--next {
-  right: -22px;
+  right: 8px;
 }
 
 /* ─── Dots ──────────────────────────────────────────────────── */
@@ -310,7 +357,7 @@
   height: 8px;
   border-radius: 50%;
   border: none;
-  background: #cbd5e1;
+  background: rgba(255, 255, 255, 0.25);
   cursor: pointer;
   padding: 0;
   transition: background 0.3s ease, width 0.3s ease, border-radius 0.3s ease;
@@ -323,16 +370,16 @@
   background: #2563eb;
 }
 
-/* ─── Responsive: Tablet ────────────────────────────────────── */
+/* ─── Responsive: Tablet (≤1024px) ─────────────────────────── */
 @media (max-width: 1024px) {
   .stats-layout {
     flex-direction: column;
-    gap: 40px;
+    gap: 48px;
   }
 
   .stats-pills {
     width: 100%;
-    max-width: 560px;
+    max-width: 580px;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
@@ -348,36 +395,78 @@
     transform: translateY(-4px) translateX(0);
   }
 
+  /*
+   * In stacked layout the carousel wrapper is full section width.
+   * Restore overflow:hidden so side cards clip at section edges.
+   */
   .stats-carousel-wrap {
     width: 100%;
-    max-width: 640px;
+    max-width: 100%;
+    overflow: hidden;
+    padding: 20px 0 24px;
   }
 
   .stats-carousel {
+    height: 420px;
+  }
+
+  /* Card = 60% of viewport-ish, capped at 360px */
+  .stats-card {
+    width: min(60%, 360px);
     height: 360px;
   }
 
-  .stats-card {
-    width: 320px;
-    height: 340px;
-  }
-
+  /*
+   * Tablet side-card offset:
+   *   center half = 180px, side rendered half = 180*0.78 = 140px
+   *   visible slice = 18% of 360 = 65px → hidden = 140-65 = 75px
+   *   translateX = 180 + 75 = 255px
+   */
   .stats-card--left {
-    transform: translateX(-58%) scale(0.76);
+    transform: translateX(-255px) scale(0.78);
+    opacity: 0.45;
   }
 
   .stats-card--right {
-    transform: translateX(58%) scale(0.76);
+    transform: translateX(255px) scale(0.78);
+    opacity: 0.45;
+  }
+
+  .card-number {
+    font-size: 76px;
+  }
+
+  .card-title {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .card-desc {
+    font-size: 14px;
+  }
+
+  .carousel-nav {
+    top: calc(20px + 210px);
+  }
+
+  .carousel-nav--prev {
+    left: 8px;
+  }
+
+  .carousel-nav--next {
+    right: 8px;
   }
 }
 
-/* ─── Responsive: Mobile ────────────────────────────────────── */
+/* ─── Responsive: Mobile (≤640px) ──────────────────────────── */
 @media (max-width: 640px) {
- .stats-section {
-  padding: 100px 2% 110px;   /* was 6% */
-  background: #131212;
-  overflow: hidden;
-}
+  .stats-section {
+    padding: 60px 5% 70px;
+  }
+
+  .stats-heading {
+    margin-bottom: 40px;
+  }
 
   .stats-title {
     font-size: 36px;
@@ -407,51 +496,100 @@
     font-size: 14px;
   }
 
+  .stats-carousel-wrap {
+    padding: 16px 0 20px;
+  }
+
   .stats-carousel {
-    height: 300px;
+    height: 360px;
   }
 
   .stats-card {
-    width: 260px;
-    height: 280px;
+    width: min(70%, 280px);
+    height: 300px;
   }
 
+  /*
+   * Mobile side-card offset:
+   *   center half = 140px, side rendered = 140*0.72 = 101px
+   *   visible slice = 18% of 280 = ~50px → hidden = 101-50 = 51px
+   *   translateX = 140 + 51 = 191px
+   */
   .stats-card--left {
-    transform: translateX(-56%) scale(0.72);
+    transform: translateX(-191px) scale(0.72);
+    opacity: 0.38;
   }
 
   .stats-card--right {
-    transform: translateX(56%) scale(0.72);
+    transform: translateX(191px) scale(0.72);
+    opacity: 0.38;
   }
 
   .card-inner {
-    padding: 28px 24px;
+    padding: 28px 22px;
+  }
+
+  .card-badge {
+    font-size: 10px;
+    padding: 6px 12px;
+    top: 18px;
   }
 
   .card-number {
-    font-size: 110px;
-    letter-spacing: -2px;
+    font-size: 60px;
+    margin-bottom: 8px;
   }
 
   .card-title {
-    font-size: 34px;
-    margin-bottom: 10px;
+    font-size: 20px;
+    margin-bottom: 8px;
   }
 
   .card-desc {
-    font-size: 17px;
-    
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .carousel-nav {
+    top: calc(16px + 180px);
+    width: 38px;
+    height: 38px;
   }
 
   .carousel-nav--prev {
-    left: -12px;
+    left: 6px;
   }
 
   .carousel-nav--next {
-    right: -12px;
+    right: 6px;
   }
 }
 
+/* ─── Very small phones (≤380px) ───────────────────────────── */
+@media (max-width: 380px) {
+  .stats-card {
+    width: min(75%, 250px);
+    height: 275px;
+  }
+
+  .stats-card--left {
+    transform: translateX(-170px) scale(0.72);
+  }
+
+  .stats-card--right {
+    transform: translateX(170px) scale(0.72);
+  }
+
+  .card-number {
+    font-size: 52px;
+  }
+
+  .card-title {
+    font-size: 18px;
+  }
+}
+
+/* ─── Reduced Motion ────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .stats-card,
   .stats-pill,
