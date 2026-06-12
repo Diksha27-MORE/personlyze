@@ -1,0 +1,409 @@
+/* ============================================================
+   DYNAMIC FRAME LAYOUT  ·  Premium Editorial Grid
+   Reference: Luma-style — pure black, serif italic, centered titles
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400;1,600&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap");
+
+/* ── Grid ──────────────────────────────────────────────────── */
+
+.dfl-grid {
+  width: 100%;
+  height: 100vh;
+  min-height: 580px;
+
+  display: grid;
+  gap: 1px;
+  padding: 0;
+
+  background: #111;          /* gap colour — thin grey dividers like reference */
+
+  transition:
+    grid-template-columns 0.62s cubic-bezier(.22,1,.36,1),
+    grid-template-rows    0.62s cubic-bezier(.22,1,.36,1);
+}
+
+/* ── Card ──────────────────────────────────────────────────── */
+
+.dfl-card {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+
+  background: #080808;
+
+  transition:
+    opacity   0.4s ease,
+    filter    0.4s ease,
+    box-shadow 0.5s ease;
+
+  transform: translateZ(0);
+}
+
+/* Non-hovered: slightly dim but still readable */
+.dfl-card.is-dimmed {
+  opacity: 0.72;
+  filter: brightness(0.75);
+}
+
+/* Active card — luxury golden glow */
+.dfl-card.is-hovered {
+  opacity: 1;
+  filter: none;
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 95, 0.22),
+    0 0 25px rgba(212, 175, 95, 0.18),
+    0 0 70px rgba(212, 175, 95, 0.10),
+    inset 0 0 60px rgba(212, 175, 95, 0.04);
+  z-index: 10;
+}
+
+/* Subtle corner shimmer on hover */
+.dfl-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.045) 0%,
+    transparent 40%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.dfl-card.is-hovered::after { opacity: 1; }
+
+/* ── Video ─────────────────────────────────────────────────── */
+
+.dfl-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  opacity: 0;
+  transform: scale(1.04);
+
+  z-index: 1;
+  will-change: opacity, transform;
+
+  transition:
+    opacity   0.7s ease 0.25s,     /* delayed so letters erase first */
+    transform 1.4s cubic-bezier(.22,1,.36,1);
+}
+
+.dfl-video--visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ── Gradient overlay ──────────────────────────────────────── */
+
+.dfl-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,0.38) 0%,
+    rgba(0,0,0,0.12) 45%,
+    rgba(0,0,0,0.55) 100%
+  );
+  transition: opacity 0.5s ease;
+}
+
+.dfl-card.is-hovered .dfl-overlay {
+  opacity: 0.45;
+}
+
+/* ── Floating Controls ─────────────────────────────────────── */
+
+.dfl-controls {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+
+  display: flex;
+  gap: 7px;
+
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+
+  transition:
+    opacity   0.3s ease,
+    transform 0.4s cubic-bezier(.22,1,.36,1);
+}
+
+.dfl-controls--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+}
+
+.dfl-ctrl-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: rgba(255,255,255,0.75);
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition:
+    background 0.2s ease,
+    color      0.2s ease,
+    transform  0.25s ease;
+}
+
+.dfl-ctrl-btn:hover {
+  background: rgba(212,175,95,0.18);
+  border-color: rgba(212,175,95,0.45);
+  color: #e8c96a;
+  transform: scale(1.12);
+}
+
+/* ── Title Block — always centered ────────────────────────── */
+
+.dfl-title-block {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  pointer-events: none;
+
+  transition: opacity 0.2s ease;
+}
+
+/* ── Title text ────────────────────────────────────────────── */
+
+.dfl-name {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.05rem, 1.6vw + 0.3rem, 2.1rem);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  color: rgba(255,255,255,0.88);
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  white-space: nowrap;
+
+  transition: color 0.3s ease;
+  position: relative;
+}
+
+.dfl-card.is-hovered .dfl-name {
+  color: rgba(255,255,255,1);
+}
+
+/* Ghost layer keeps layout width stable while letters erase */
+.dfl-name-ghost {
+  visibility: hidden;
+  display: block;
+  height: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.dfl-name-visible {
+  display: block;
+  /* letters drop out from the left, so text right-aligns naturally */
+  text-align: right;
+  transition: none;
+}
+
+/* ── Separator line ────────────────────────────────────────── */
+
+.dfl-sep {
+  display: block;
+  height: 1px;
+  width: 36px;
+  background: rgba(255,255,255,0.55);
+  border-radius: 1px;
+
+  transition:
+    width      0.55s cubic-bezier(.22,1,.36,1),
+    background 0.4s ease,
+    opacity    0.4s ease;
+}
+
+/* Expand on ALL cards when any card is hovered (subtle pulse) */
+.dfl-grid:hover .dfl-sep {
+  width: 28px;
+}
+
+/* Hovered card's separator grows wider with gold tint */
+.dfl-card.is-hovered .dfl-sep {
+  width: 52px;
+  background: rgba(212,175,95,0.75);
+}
+
+/* Shrink to invisible as letters erase */
+.dfl-sep--shrink {
+  width: 0 !important;
+  opacity: 0;
+  transition:
+    width   0.38s cubic-bezier(.22,1,.36,1) 0.05s,
+    opacity 0.3s ease 0.05s;
+}
+
+/* ── Non-hovered: title stays readable ─────────────────────── */
+
+.dfl-card.is-dimmed .dfl-name {
+  color: rgba(255,255,255,0.72);
+}
+
+.dfl-card.is-dimmed .dfl-sep {
+  background: rgba(255,255,255,0.35);
+}
+
+/* ── Per-card deep backgrounds ─────────────────────────────── */
+/* ── Chessboard Layout ───────────────────────────── */
+.real-estate {
+  background: linear-gradient(
+    180deg,
+    #1f8de0 0%,
+    #176db3 50%,
+    #0f4e80 100%
+  );
+}
+
+.bfsi {
+  background: linear-gradient(
+    180deg,
+    #8b3fd9 0%,
+    #6f2eb3 50%,
+    #521d85 100%
+  );
+}
+
+.travel {
+  background: linear-gradient(
+    180deg,
+    #f2c14e 0%,
+    #d9a733 50%,
+    #b88716 100%
+  );
+}
+
+.health {
+  background: linear-gradient(
+    180deg,
+    #ff5b6e 0%,
+    #e63c51 50%,
+    #b91d35 100%
+  );
+}
+
+.retail {
+  background: linear-gradient(
+    180deg,
+    #ff4fa0 0%,
+    #e63789 50%,
+    #b81f65 100%
+  );
+}
+
+.automotive {
+  background: linear-gradient(
+    180deg,
+    #ff944d 0%,
+    #e66d1f 50%,
+    #b85000 100%
+  );
+}
+
+.saas {
+  background: linear-gradient(
+    180deg,
+    #3ecf8e 0%,
+    #28b874 50%,
+    #158856 100%
+  );
+}
+
+.tech {
+  background: linear-gradient(
+    180deg,
+    #00c2ff 0%,
+    #009fd9 50%,
+    #0077a3 100%
+  );
+}
+
+.fashion {
+  background: linear-gradient(
+    180deg,
+    #d56eff 0%,
+    #b94be6 50%,
+    #8b28b8 100%
+  );
+}
+
+/* Black text on white cards */
+
+.bfsi .dfl-name,
+.health .dfl-name,
+.automotive .dfl-name,
+.tech .dfl-name {
+  color: #ffffff !important;
+}
+
+.bfsi .dfl-sep,
+.health .dfl-sep,
+.automotive .dfl-sep,
+.tech .dfl-sep {
+  background: rgb(222, 220, 220) !important;
+}
+
+.bfsi.is-hovered .dfl-name,
+.health.is-hovered .dfl-name,
+.automotive.is-hovered .dfl-name,
+.tech.is-hovered .dfl-name {
+  color: #000000 !important;
+}
+/* ── Mobile ────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .dfl-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+    height: auto;
+    gap: 1px;
+  }
+
+  .dfl-card {
+    min-height: 190px;
+  }
+
+  .dfl-card.is-dimmed {
+    opacity: 0.85;
+    filter: none;
+  }
+
+  .dfl-name {
+    font-size: 1.6rem;
+  }
+
+  .dfl-sep {
+    width: 28px;
+  }
+}
