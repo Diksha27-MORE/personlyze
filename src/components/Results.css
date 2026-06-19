@@ -86,26 +86,26 @@
 }
 
 /* ── Cards pin wrapper ─────────────────────────────────────────────────────
-   FIX: Replace `height: 100vh` with a fixed pixel height set by JS via
-   ResizeObserver on the container element. This avoids the Chrome vs Firefox
-   scrollbar-inclusive/exclusive viewport height discrepancy.
+   100vh height fills the viewport when ScrollTrigger pins it.
+   Flex + align-items keeps the strip vertically centered.
 
-   The JS reads the sticky container's actual clientHeight (which excludes
-   scrollbars and is the same in every browser) and writes it as a CSS var.
+   padding-top: 8vh shifts the flex center point slightly below true middle
+   (true center = 50vh, with 8vh top offset the visual center moves to ~54vh)
+   — gives the "balanced but slightly lower" feel.
+   padding-bottom mirrors partially so the wrapper doesn't feel top-heavy.
 
-   `overflow: hidden` on the wrapper prevents content from ever growing
-   the container — cards are sized by JS, not by the wrapper's height.
+   No GSAP animation touches vertical position, so there is zero jump on
+   pin start. The cards simply stay wherever CSS places them.
    ────────────────────────────────────────────────────────────────────────── */
 .results-cards-pin {
   width: 100%;
-  /* Height is set by JS as a CSS custom property for browser consistency.
-     Fallback keeps it working if JS hasn't run yet. */
-  height: var(--cards-pin-h, 600px);
+  height: 100vh;
   display: flex;
   align-items: center;
+  padding-top: 0;
+  padding-bottom: 0;
   box-sizing: border-box;
   background: #edeae2;
-  overflow: hidden;
 }
 
 /* ── Cards viewport — clips the sliding strip ── */
@@ -125,23 +125,11 @@
   will-change: transform;
 }
 
-/* ── Individual metric card ──────────────────────────────────────────────────
-   FIX: Remove `min-height: 700px` — it caused Chrome to stretch cards
-   vertically when the viewport was taller than expected.
-
-   Card height is now derived purely from the JS-calculated card width via
-   a fixed aspect ratio (460/700 ≈ 0.657). The JS writes `--card-w` and
-   `--card-h` as CSS custom properties onto each card element, so the card
-   is always exactly the right size regardless of viewport or scrollbar
-   behaviour.
-
-   We keep `flex-shrink: 0` and remove the fixed `width: 460px` fallback
-   so CSS doesn't fight the JS-set inline style.
-   ────────────────────────────────────────────────────────────────────────── */
+/* ── Individual metric card ── */
 .metric-card {
-  /* width and height are set by JS via inline style */
+  width: 460px;           /* SSR / no-JS fallback; JS overrides at runtime */
   flex-shrink: 0;
-  /* NO min-height — that was the vertical-stretch root cause */
+  min-height: 700px;
   border-radius: 20px;
   padding: 36px 40px 36px;
   display: flex;
@@ -149,8 +137,6 @@
   justify-content: space-between;
   position: relative;
   overflow: hidden;
-  /* Prevent the card from ever growing beyond the JS-set size */
-  box-sizing: border-box;
 }
 
 /* Card themes */
@@ -213,7 +199,16 @@
     font-size: clamp(40px, 12vw, 68px);
   }
 
+  .metric-card {
+    width: 85vw;
+    min-height: 520px;
+  }
+
   .metric-card-number {
     font-size: 56px;
+  }
+
+  .results-cards-pin {
+    padding-top: 6vh;
   }
 }

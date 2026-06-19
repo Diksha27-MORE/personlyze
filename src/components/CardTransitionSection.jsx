@@ -5,22 +5,50 @@ import "./CardTransitionSection.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ── Fixed card geometry ─────────────────────────────────────────────────────
-// These are FIXED pixel values for the cards themselves.
-// They do NOT depend on the viewport — they are the reference design dimensions.
-const HERO_W  = 780;
-const HERO_H  = 830;
-const HERO_BR = 20;
+// ── Layout constants ────────────────────────────────────────────────────────
 
-const SMALL_W  = 158;
-const SMALL_H  = Math.round(SMALL_W / (HERO_W / HERO_H)); // ≈ 168px
+// HERO card: exactly 800 × 950px (aspect ratio 0.842:1)
+const HERO_W = 780;
+const HERO_H = 830;
+const HERO_BR = 20; // border-radius at hero size
+
+// SMALL card: same aspect ratio as hero (0.842:1)
+// Reference thumbnail size: ~158px wide
+const SMALL_W = 158;
+const SMALL_H = Math.round(SMALL_W / (HERO_W / HERO_H)); // ≈ 188px
 const SMALL_BR = 20;
 
-const THUMB_W  = 58;
-const THUMB_H  = Math.round(THUMB_W / (HERO_W / HERO_H)); // ≈ 62px
+// THUMBNAIL — tiny teaser card (State 1, before hero grow)
+const THUMB_W = 58;
+const THUMB_H = Math.round(THUMB_W / (HERO_W / HERO_H)); // ≈ 69px
 const THUMB_BR = 12;
 
+
+// At 1512px: hero right edge ≈ 1040, leaving ~472px for desc column
+const heroX = () => Math.round((window.innerWidth - HERO_W) / 2) - Math.round(window.innerWidth * 0.00);
+const heroY = () => Math.round((window.innerHeight - HERO_H) / 2);
+
+// Thumbnail: bottom-center, slightly below middle
+const thumbX = () => Math.round((window.innerWidth - THUMB_W) / 2);
+const thumbY = () => Math.round(window.innerHeight * 0.72);
+
+// Small card TL: top-left corner, matching hero's left edge
+const TL_X = () => 250;
+const TL_Y = () => 40;
+
+// Description block: right of hero card
+// Gap between hero right edge and desc left = 48px
+const DESC_GAP = 18;
+const DESC_X = () => heroX() + HERO_W + DESC_GAP;
+// Description top: vertically centered relative to hero card
+const DESC_Y = () => heroY() + Math.round(HERO_H * 0.30);
+
+// Small card BR (teaser): positioned to the right, below description
+const BR_X = () => DESC_X() +35;
+const BR_Y = () => DESC_Y() + 450;
+
 // ── Section scroll height ───────────────────────────────────────────────────
+// 520vh total — same phases as before
 const SECTION_HEIGHT = "300vh";
 
 const CARDS = [
@@ -54,83 +82,20 @@ export default function CardTransitionSection() {
 
   useEffect(() => {
     const section = sectionRef.current;
-    const sticky  = stickyRef.current;
 
     const E_OUT   = "power3.out";
     const E_IN    = "power2.in";
     const E_INOUT = "power3.inOut";
 
-    // ── Browser-safe position calculation ──────────────────────────────────
-    //
-    // ROOT CAUSE OF THE CHROME BUG:
-    //   The original code used window.innerWidth and window.innerHeight inside
-    //   arrow functions (heroX, heroY, etc.) that were called during GSAP set().
-    //
-    //   In Chrome:
-    //     window.innerWidth  = layout viewport width INCLUDING scrollbar (~17px wide)
-    //     window.innerHeight = layout viewport height INCLUDING browser chrome
-    //
-    //   In Firefox / Edge / Brave:
-    //     These values may differ by 0–20px depending on OS, zoom level, and
-    //     whether a scrollbar is currently visible.
-    //
-    //   This means heroX() and heroY() returned DIFFERENT numbers in different
-    //   browsers, causing the card to appear in different absolute positions.
-    //
-    // THE FIX:
-    //   We measure the sticky container using getBoundingClientRect().
-    //   getBoundingClientRect() returns the element's rendered CSS size,
-    //   which is the same in every browser. It does not include scrollbar gutter.
-    //   The sticky element fills 100% width and 100vh height (set by CSS),
-    //   but its clientWidth/clientHeight reflect the actual layout box.
-    //
-    //   By deriving all positions from the sticky container's measured size,
-    //   every browser calculates identical coordinates.
-    // ────────────────────────────────────────────────────────────────────────
-    function getContainerSize() {
-      // clientWidth / clientHeight — always excludes scrollbar, same in all browsers
-      return {
-        W: sticky.clientWidth,
-        H: sticky.clientHeight,
-      };
-    }
-
-    function calcPositions() {
-      const { W, H } = getContainerSize();
-
-      // Hero card: centered in container
-      const heroX = Math.round((W - HERO_W) / 2);
-      const heroY = Math.round((H - HERO_H) / 2);
-
-      // Thumbnail: horizontally centered, at 72% down the container
-      const thumbX = Math.round((W - THUMB_W) / 2);
-      const thumbY = Math.round(H * 0.72);
-
-      // Small card TL (top-left): fixed offset from container top-left
-      const TL_X = 250;
-      const TL_Y = 40;
-
-      // Description block: right of hero card, with a gap
-      const DESC_GAP = 18;
-      const DESC_X = heroX + HERO_W + DESC_GAP;
-      // Vertically: aligned to 30% down from hero card top
-      const DESC_Y = heroY + Math.round(HERO_H * 0.30);
-
-      // BR teaser card: below description column
-      const BR_X = DESC_X + 35;
-      const BR_Y = DESC_Y + 450;
-
-      return { heroX, heroY, thumbX, thumbY, TL_X, TL_Y, DESC_X, DESC_Y, BR_X, BR_Y };
-    }
-
     // ── INITIAL STATES ──────────────────────────────────────────────────────
-    const pos = calcPositions();
 
+    // Headline: dominant, fully visible, positioned at top-left
     gsap.set(headlineRef.current, { opacity: 1, y: 0 });
 
+    // Card 01 — tiny thumbnail, vertically centered-ish
     gsap.set(cardRefs[0].current, {
-      x: pos.thumbX,
-      y: pos.thumbY,
+      x: thumbX(),
+      y: thumbY(),
       width:  THUMB_W,
       height: THUMB_H,
       opacity: 1,
@@ -138,9 +103,10 @@ export default function CardTransitionSection() {
       borderRadius: THUMB_BR,
     });
 
+    // Card 02 — small, starts off-screen below BR rest position
     gsap.set(cardRefs[1].current, {
-      x: pos.BR_X,
-      y: pos.BR_Y + 80,
+      x: BR_X(),
+      y: BR_Y() + 80,
       width:  SMALL_W,
       height: SMALL_H,
       opacity: 0,
@@ -148,9 +114,10 @@ export default function CardTransitionSection() {
       borderRadius: SMALL_BR,
     });
 
+    // Card 03 — small, starts off-screen below BR rest position
     gsap.set(cardRefs[2].current, {
-      x: pos.BR_X,
-      y: pos.BR_Y + 80,
+      x: BR_X(),
+      y: BR_Y() + 80,
       width:  SMALL_W,
       height: SMALL_H,
       opacity: 0,
@@ -158,15 +125,25 @@ export default function CardTransitionSection() {
       borderRadius: SMALL_BR,
     });
 
+    // All descriptions hidden
     descRefs.forEach((r) => {
       gsap.set(r.current, {
-        x: pos.DESC_X,
-        y: pos.DESC_Y,
+        x: DESC_X(),
+        y: DESC_Y(),
         opacity: 0,
       });
     });
 
     // ── TIMELINE ────────────────────────────────────────────────────────────
+    //
+    // t= 0.0 – 1.5  [PHASE 0] Hold — headline dominates, card-01 thumb visible
+    // t= 1.5 – 3.0  [PHASE 1] Headline slides UP off viewport; card-01 grows to hero
+    // t= 3.0 – 4.5  [PHASE 2] Hero-01 hold; desc-01 fades in; card-02 teaser slides in
+    // t= 4.5 – 6.0  [PHASE 3] Card-01 hero → small TL; Card-02 BR → hero
+    // t= 6.0 – 7.5  [PHASE 4] Hero-02 hold; desc-02 active; card-03 teaser slides in
+    // t= 7.5 – 9.0  [PHASE 5] Card-02 hero → small TL; Card-03 → hero
+    // t= 9.0 – 10.0 [PHASE 6] Hero-03 hold; desc-03 active; end
+
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: section,
@@ -176,10 +153,6 @@ export default function CardTransitionSection() {
         pin:   stickyRef.current,
         pinSpacing: true,
         anticipatePin: 1,
-        // invalidateOnRefresh: true tells GSAP to re-read all "from" values
-        // when the page is resized or ScrollTrigger.refresh() is called.
-        // Combined with our ResizeObserver below, this keeps the layout
-        // correct after any window resize.
         invalidateOnRefresh: true,
       },
     });
@@ -191,16 +164,18 @@ export default function CardTransitionSection() {
     // ── PHASE 1 (t=1.5 → 3.0): Headline exits UP; card-01 grows to hero ────
     tl.addLabel("growCard1", 1.5);
 
+    // Headline physically moves UP and exits the viewport — does NOT fade
     tl.to(headlineRef.current, {
-      y: "-120%",
-      opacity: 1,
+      y: "-120%",      // slide completely off the top
+      opacity: 1,      // stays fully opaque while moving
       ease: E_INOUT,
       duration: 1.2,
     }, "growCard1");
 
+    // Card-01 grows from thumbnail to hero
     tl.to(cardRefs[0].current, {
-      x: pos.heroX,
-      y: pos.heroY,
+      x: heroX(),
+      y: heroY(),
       width:  HERO_W,
       height: HERO_H,
       borderRadius: HERO_BR,
@@ -211,27 +186,31 @@ export default function CardTransitionSection() {
     // ── PHASE 2 (t=3.0 → 4.5): Hero-01 hold + desc + card-02 teaser ────────
     tl.addLabel("heroHold1", 3.0);
 
+    // Desc-01 fades in
     tl.to(descRefs[0].current, {
       opacity: 1,
       ease: E_OUT,
       duration: 0.5,
     }, "heroHold1");
 
+    // Card-02 slides up into BR teaser position
     tl.to(cardRefs[1].current, {
-      y: pos.BR_Y,
+      y: BR_Y(),
       opacity: 1,
       ease: E_OUT,
       duration: 0.65,
     }, "heroHold1+=0.25");
 
+    // Hold
     tl.to({}, { duration: 0.6 }, "heroHold1+=0.9");
 
     // ── PHASE 3 (t=4.5 → 6.0): 01 → 02 transition ──────────────────────────
     tl.addLabel("transition12", 4.5);
 
+    // Card-01: hero → small top-left (same aspect ratio)
     tl.to(cardRefs[0].current, {
-      x: pos.TL_X,
-      y: pos.TL_Y,
+      x: TL_X(),
+      y: TL_Y(),
       width:  SMALL_W,
       height: SMALL_H,
       borderRadius: SMALL_BR,
@@ -239,9 +218,10 @@ export default function CardTransitionSection() {
       duration: 1.5,
     }, "transition12");
 
+    // Card-02: BR small → hero center
     tl.to(cardRefs[1].current, {
-      x: pos.heroX,
-      y: pos.heroY,
+      x: heroX(),
+      y: heroY(),
       width:  HERO_W,
       height: HERO_H,
       borderRadius: HERO_BR,
@@ -250,20 +230,23 @@ export default function CardTransitionSection() {
       duration: 1.5,
     }, "transition12");
 
+    // Desc-01 fades out
     tl.to(descRefs[0].current, {
       opacity: 0,
       ease: E_IN,
       duration: 0.4,
     }, "transition12");
 
+    // Desc-02 fades in
     tl.to(descRefs[1].current, {
       opacity: 1,
       ease: E_OUT,
       duration: 0.5,
     }, "transition12+=0.55");
 
+    // Card-03 slides up into BR teaser
     tl.to(cardRefs[2].current, {
-      y: pos.BR_Y,
+      y: BR_Y(),
       opacity: 1,
       ease: E_OUT,
       duration: 0.65,
@@ -276,16 +259,18 @@ export default function CardTransitionSection() {
     // ── PHASE 5 (t=7.5 → 9.0): 02 → 03 transition ──────────────────────────
     tl.addLabel("transition23", 7.5);
 
+    // Card-01 (small TL) fades out
     tl.to(cardRefs[0].current, {
-      x: pos.TL_X - 24,
+      x: TL_X() - 24,
       opacity: 0,
       ease: E_IN,
       duration: 0.4,
     }, "transition23");
 
+    // Card-02: hero → small top-left
     tl.to(cardRefs[1].current, {
-      x: pos.TL_X,
-      y: pos.TL_Y,
+      x: TL_X(),
+      y: TL_Y(),
       width:  SMALL_W,
       height: SMALL_H,
       borderRadius: SMALL_BR,
@@ -294,9 +279,10 @@ export default function CardTransitionSection() {
       duration: 1.5,
     }, "transition23");
 
+    // Card-03: BR small → hero center
     tl.to(cardRefs[2].current, {
-      x: pos.heroX,
-      y: pos.heroY,
+      x: heroX(),
+      y: heroY(),
       width:  HERO_W,
       height: HERO_H,
       borderRadius: HERO_BR,
@@ -305,12 +291,14 @@ export default function CardTransitionSection() {
       duration: 1.5,
     }, "transition23");
 
+    // Desc-02 fades out
     tl.to(descRefs[1].current, {
       opacity: 0,
       ease: E_IN,
       duration: 0.4,
     }, "transition23");
 
+    // Desc-03 fades in
     tl.to(descRefs[2].current, {
       opacity: 1,
       ease: E_OUT,
@@ -321,50 +309,14 @@ export default function CardTransitionSection() {
     tl.addLabel("heroHold3", 9.0);
     tl.to({}, { duration: 1.0 }, "heroHold3");
 
-    // ── ResizeObserver — recalculate positions on container resize ──────────
-    //
-    // WHY ResizeObserver instead of ScrollTrigger's refreshInit event:
-    //   ScrollTrigger's refreshInit fires at an imprecise moment and can
-    //   read intermediate layout states. ResizeObserver fires after the
-    //   browser has completed a full layout pass on the observed element,
-    //   so clientWidth/clientHeight are final and correct.
-    //
-    // We observe the sticky container. When it resizes, we:
-    //   1. Recalculate all positions from the container's new measured size
-    //   2. Re-apply GSAP initial states (gsap.set) with new coordinates
-    //   3. Call ScrollTrigger.refresh() to rebuild the scroll timeline
-    //
-    // requestAnimationFrame defers the update to the next paint cycle,
-    // ensuring the browser has finished its layout before we measure.
-    let rafId = null;
-
-    const ro = new ResizeObserver(() => {
-      if (rafId) cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        const newPos = calcPositions();
-
-        // Update all desc starting positions
-        descRefs.forEach((r) => {
-          gsap.set(r.current, { x: newPos.DESC_X, y: newPos.DESC_Y });
-        });
-
-        // Update thumbnail starting position
-        gsap.set(cardRefs[0].current, {
-          x: newPos.thumbX,
-          y: newPos.thumbY,
-        });
-
-        // Refresh ScrollTrigger so it recalculates pin heights / start-end
-        ScrollTrigger.refresh();
-        rafId = null;
+    // ── Keep layouts correct on resize ──────────────────────────────────────
+    ScrollTrigger.addEventListener("refreshInit", () => {
+      descRefs.forEach((r) => {
+        gsap.set(r.current, { x: DESC_X(), y: DESC_Y() });
       });
     });
 
-    ro.observe(sticky);
-
     return () => {
-      ro.disconnect();
-      if (rafId) cancelAnimationFrame(rafId);
       ScrollTrigger.getAll().forEach((st) => st.kill());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
