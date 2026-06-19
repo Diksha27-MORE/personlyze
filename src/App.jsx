@@ -15,26 +15,24 @@ gsap.registerPlugin(ScrollTrigger);
 function App() {
   const containerRef = useRef(null);
 
-  useEffect(() => {
-    const sections = gsap.utils.toArray(".panel");
+useEffect(() => {
+  const sections = gsap.utils.toArray(".panel");
 
-    sections.forEach((section) => {
-      ScrollTrigger.create({
-        trigger: section,
-        start: "top 80%",
-        end: "bottom 20%",
-        toggleClass: "active",
-        // markers: true, // enable for debugging
-      });
-    });
+  const triggers = sections.map((section) =>
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top 80%",
+      end: "bottom 20%",
+      toggleClass: "active",
+    })
+  );
 
-    ScrollTrigger.refresh();
+  ScrollTrigger.refresh();
 
-    return () => {
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-    };
-  }, []);
-
+  return () => {
+    triggers.forEach((trigger) => trigger.kill());
+  };
+}, []);
   return (
     <div ref={containerRef} className="app">
       <section className="panel hero">
