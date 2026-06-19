@@ -1,29 +1,72 @@
-/* ====================================
-   INDUSTRIES SECTION
-==================================== */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 .industries {
+  width: 100%;
   min-height: 100vh;
-  padding: 120px 6%;
-  background: #000;
-  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background: #edeae2;
+  font-family: "Gilroy", sans-serif;
+
+  text-align: center;
+  padding: 120px 24px;
 }
 
-.industries h2 {
-  text-align: center;
+/* =========================
+   HEADER BLOCK
+========================= */
 
-  font-size: 3.5rem;
+.industries-header {
+  max-width: 1100px;
+  margin-bottom: 80px;
+}
+
+/* BIG HERO HEADING */
+.industries-header h2 {
+  font-size: clamp(56px, 6vw, 120px);  /* VERY BIG */
   font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: #000;
+}
 
-  margin-bottom: 60px;
+/* SUB TEXT */
+.industries-header p {
+  margin-top: 24px;
+  font-size: clamp(16px, 1.5vw, 22px);
+  font-weight: 400;
+  color: #111;
+  opacity: 0.85;
+  line-height: 1.6;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
 
-  background:
-    linear-gradient(
-      90deg,
-      #60a5fa,
-      #8b5cf6
-    );
+/* =========================
+   PREMIUM TOUCH (optional)
+========================= */
 
+.industries-header h2 {
+  background: linear-gradient(90deg, #000, #444);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+  .industries-header h2 {
+    font-size: 48px;
+  }
+
+  .industries-header p {
+    font-size: 16px;
+  }
 }

@@ -1,0 +1,211 @@
+/* ================================
+   RESULTS SECTION
+================================ */
+
+.results-section {
+  background: #edeae2;
+  font-family: "Gilroy", sans-serif;
+}
+
+/* ── Section eyebrow ── */
+.results-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 60px 60px 0;
+}
+
+.results-eyebrow-rule {
+  width: 48px;
+  height: 1.5px;
+  background: #111;
+  flex-shrink: 0;
+}
+
+.results-eyebrow-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  color: #111;
+  text-transform: uppercase;
+}
+
+/* ── Heading block — normal page flow, no GSAP ── */
+.results-heading-block {
+  padding: 32px 60px 0;
+}
+
+.results-heading {
+  font-size: clamp(52px, 7.5vw, 100px);
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: #111;
+}
+
+.results-heading em {
+  font-style: italic;
+  font-weight: 800;
+}
+
+.results-subtitle {
+  margin-top: 28px;
+  font-size: clamp(14px, 1.5vw, 17px);
+  line-height: 1.65;
+  color: #555;
+  max-width: 500px;
+  font-weight: 400;
+
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Meta row ── */
+.results-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 48px 60px 32px;
+}
+
+.results-scroll-hint {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: #555;
+  text-transform: uppercase;
+}
+
+.results-meta-tag {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: #888;
+  text-transform: uppercase;
+}
+
+/* ── Cards pin wrapper ─────────────────────────────────────────────────────
+   100vh height fills the viewport when ScrollTrigger pins it.
+   Flex + align-items keeps the strip vertically centered.
+
+   padding-top: 8vh shifts the flex center point slightly below true middle
+   (true center = 50vh, with 8vh top offset the visual center moves to ~54vh)
+   — gives the "balanced but slightly lower" feel.
+   padding-bottom mirrors partially so the wrapper doesn't feel top-heavy.
+
+   No GSAP animation touches vertical position, so there is zero jump on
+   pin start. The cards simply stay wherever CSS places them.
+   ────────────────────────────────────────────────────────────────────────── */
+.results-cards-pin {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  padding-top: 8vh;
+  padding-bottom: 8vh;
+  box-sizing: border-box;
+  background: #edeae2;
+}
+
+/* ── Cards viewport — clips the sliding strip ── */
+.results-cards-viewport {
+  width: 100%;
+  overflow: hidden;
+  padding: 0 0 0 60px;
+  box-sizing: border-box;
+}
+
+/* ── The moving strip ── */
+.results-cards-strip {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;              /* keep in sync with GAP constant in JSX */
+  width: max-content;
+  will-change: transform;
+}
+
+/* ── Individual metric card ── */
+.metric-card {
+  width: 460px;           /* SSR / no-JS fallback; JS overrides at runtime */
+  flex-shrink: 0;
+  min-height: 700px;
+  border-radius: 20px;
+  padding: 36px 40px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Card themes */
+.metric-card--dark   { background: #111;    color: #fff; }
+.metric-card--orange { background: #ff5c00; color: #111; }
+.metric-card--light  { background: transparent; border: 1.5px solid #ccc; color: #111; }
+.metric-card--purple { background: #3b1fa8; color: #fff; }
+
+/* Card inner layout */
+.metric-card-index {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+.metric-card-number {
+  font-size: clamp(80px, 10vw, 130px);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  margin-top: 40px;
+}
+
+.metric-card--dark   .metric-card-number { color: #fff; }
+.metric-card--orange .metric-card-number { color: #111; }
+.metric-card--light  .metric-card-number { color: #111; }
+.metric-card--purple .metric-card-number { color: #fff; }
+
+.metric-card-label {
+  font-size: clamp(18px, 2.2vw, 24px);
+  font-weight: 700;
+  margin-top: 20px;
+  line-height: 1.25;
+}
+
+.metric-card-footnote {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.45;
+  margin-top: 40px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .results-eyebrow,
+  .results-heading-block,
+  .results-meta-row {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .results-cards-viewport {
+    padding-left: 24px;
+  }
+
+  .results-heading {
+    font-size: clamp(40px, 12vw, 68px);
+  }
+
+  .metric-card {
+    width: 78vw;
+    min-height: 400px;
+  }
+
+  .results-cards-pin {
+    padding-top: 6vh;
+  }
+}

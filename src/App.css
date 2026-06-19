@@ -186,3 +186,13 @@
   width: 100%;
   overflow-x: hidden;
 }
+.app {
+  background: #edeae2;
+  overflow-x: hidden;
+}
+
+.section-spacing {
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
