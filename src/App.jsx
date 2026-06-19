@@ -27,7 +27,6 @@ useEffect(() => {
     })
   );
 
-  ScrollTrigger.refresh();
 
   return () => {
     triggers.forEach((trigger) => trigger.kill());

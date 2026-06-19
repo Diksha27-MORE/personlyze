@@ -25,7 +25,7 @@ const THUMB_BR = 12;
 
 
 // At 1512px: hero right edge ≈ 1040, leaving ~472px for desc column
-const heroX = () => Math.round((window.innerWidth - HERO_W) / 2) - Math.round(window.innerWidth * 0.00);
+const heroX = () => Math.round((window.innerWidth - HERO_W) / 2) + 40;
 const heroY = () => Math.round((window.innerHeight - HERO_H) / 2);
 
 // Thumbnail: bottom-center, slightly below middle
@@ -33,7 +33,7 @@ const thumbX = () => Math.round((window.innerWidth - THUMB_W) / 2);
 const thumbY = () => Math.round(window.innerHeight * 0.72);
 
 // Small card TL: top-left corner, matching hero's left edge
-const TL_X = () => 250;
+const TL_X = () => heroX() -200;
 const TL_Y = () => 40;
 
 // Description block: right of hero card
@@ -315,12 +315,13 @@ export default function CardTransitionSection() {
         gsap.set(r.current, { x: DESC_X(), y: DESC_Y() });
       });
     });
+return () => {
+  ScrollTrigger.removeEventListener("refreshInit", () => {});
+  ScrollTrigger.getAll().forEach((st) => st.kill());
+};
 
-    return () => {
-      ScrollTrigger.getAll().forEach((st) => st.kill());
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  return () => ctx.revert();
+}, []);
 
   return (
     <section
@@ -370,4 +371,4 @@ export default function CardTransitionSection() {
       </div>
     </section>
   );
-}
+  }

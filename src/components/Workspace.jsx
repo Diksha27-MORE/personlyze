@@ -184,7 +184,7 @@ export default function Workspace() {
               allow="autoplay; encrypted-media"
               allowFullScreen
             />
-          </div>f
+          </div>
         </div>
       )}
     </>
