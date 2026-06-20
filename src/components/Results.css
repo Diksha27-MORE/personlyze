@@ -184,9 +184,15 @@
 }
 
 @media (max-width: 400px) {
+  .results-section {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
   .results-eyebrow {
-    padding: 16px 20px 0;
+    padding: 12px 20px 0;
     gap: 8px;
+    margin: 0;
   }
 
   .results-eyebrow-rule {
@@ -195,12 +201,14 @@
 
   .results-heading-block {
     padding: 4px 20px 0;
+    margin: 0;
   }
 
   .results-heading {
     font-size: clamp(36px, 11vw, 56px);
     line-height: 1;
     letter-spacing: -1px;
+    margin: 0;
   }
 
   .results-subtitle {
@@ -211,27 +219,36 @@
 
   .results-meta-row {
     padding: 8px 20px 0;
+    margin-top: 8px;
     font-size: 11px;
     gap: 6px;
   }
 
+  /* KILL the big gap between meta row and cards */
   .results-cards-viewport {
     padding-left: 20px;
+    margin-top: 16px;
   }
 
   .results-cards-pin {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    min-height: auto;
+  }
+
+  .results-cards-track {
+    margin-top: 0;
     padding-top: 0;
-    margin-top: 16px;
   }
 
   .metric-card {
     width: 85vw;
-    min-height: 460px;
+    min-height: 420px;
   }
 
   .metric-card-number {
-    font-size: 56px;
-    margin-top: 16px;
+    font-size: 52px;
+    margin-top: 12px;
   }
 
   .metric-card-label {
@@ -239,6 +256,6 @@
   }
 
   .metric-card-footnote {
-    margin-top: 14px;
+    margin-top: 12px;
   }
 }
