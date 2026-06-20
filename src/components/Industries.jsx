@@ -1,6 +1,7 @@
 import DynamicFrameLayout from "./DynamicFrameLayout";
 import "./Industries.css";
 
+
 function Industries() {
   return (
     <section className="industries">

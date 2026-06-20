@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import "./DynamicFrameLayout.css";
 import { FaExpand, FaPlay, FaExternalLinkAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 import realEstateVideo from "../assets/real-estate.mp4";
 import bfsiVideo from "../assets/bfsi.mp4";
@@ -61,7 +62,7 @@ function useLetterErase(fullText, active) {
 }
 
 /* Individual card so each can own its own eraser hook */
-function IndustryCard({ industry, index, hovered, setHovered }) {
+function IndustryCard({ industry, index, hovered, setHovered, onSelect }){
   const isHovered = hovered === index;
   const isDimmed  = hovered !== null && !isHovered;
 
@@ -76,6 +77,7 @@ function IndustryCard({ industry, index, hovered, setHovered }) {
       className={`dfl-card ${industry.className}${isHovered ? " is-hovered" : ""}${isDimmed ? " is-dimmed" : ""}`}
       onMouseEnter={() => setHovered(index)}
       onMouseLeave={() => setHovered(null)}
+      onClick={() => onSelect("/industry", { state: industry })}
     >
       {/* Video — only renders on hover card */}
       <video
@@ -116,6 +118,7 @@ function IndustryCard({ industry, index, hovered, setHovered }) {
 }
 
 export default function DynamicFrameLayout() {
+  const navigate = useNavigate();
   const [hovered, setHovered] = useState(null);
 
   const getColTemplate = () => {
@@ -139,13 +142,14 @@ export default function DynamicFrameLayout() {
       }}
     >
       {industries.map((industry, index) => (
-        <IndustryCard
-          key={index}
-          industry={industry}
-          index={index}
-          hovered={hovered}
-          setHovered={setHovered}
-        />
+<IndustryCard
+  key={index}
+  industry={industry}
+  index={index}
+  hovered={hovered}
+  setHovered={setHovered}
+  onSelect={(path, options) => navigate(path, options)}
+/>
       ))}
     </div>
   );
