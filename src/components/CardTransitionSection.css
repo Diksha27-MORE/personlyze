@@ -308,10 +308,131 @@
   }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   MOBILE OVERRIDES — reference-exact vertical scroll
+   Replace your existing @media (max-width: 640px) and (max-width: 380px) blocks
+   with the rules below. Desktop CSS + GSAP logic untouched.
+   NOTE: On mobile the section is NOT pinned. The reference screenshots show a
+   normal vertical scroll: big headline → card 1 → caption → card 2 → caption
+   → card 3 → caption. So we neutralise sticky/absolute on mobile only.
+───────────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+
+  /* Shell — let content define height, no pinning on mobile */
+  .cts-section {
+    background: #EFEBDC;
+    padding: 0 0 48px;
+  }
+
+  /* Kill the sticky canvas on mobile so the section scrolls normally */
+  .cts-sticky {
+    position: static;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    background: #EFEBDC;
+    padding: 0 20px;
+  }
+
+  /* Hide ambient corner labels on mobile (not in reference) */
+  .cts-ambient { display: none; }
+
+  /* Headline — bold sans, top of page, very large "Let's fly" */
+  .cts-headline {
+    position: relative;
+    top: auto; left: auto; right: auto;
+    margin: 24px 0 0;
+    padding: 0 4px;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-style: normal;
+    font-weight: 800;
+    font-size: clamp(76px, 22vw, 120px);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    color: #0E1A2B;
+    text-align: left;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Cards — stacked vertically, full-width image tiles, no GSAP transforms */
+  .cts-card {
+    position: relative;
+    top: auto; left: auto;
+    width: 78% !important;
+    height: auto !important;
+    aspect-ratio: 3 / 4;
+    margin: 56px 0 0 18%;
+    padding: 0;
+    border-radius: 22px !important;
+    opacity: 1 !important;
+    transform: none !important;
+    box-shadow:
+      0 2px 10px rgba(0,0,0,0.08),
+      0 14px 30px rgba(0,0,0,0.12);
+  }
+
+  /* First card needs more breathing room after the giant headline */
+  .cts-card--1 { margin-top: 72px; }
+
+  /* Hide the dark card title text on mobile — caption sits BELOW the card */
+  .cts-card__title { display: none; }
+
+  /* Remove dark gradient/grain so card reads as a clean photo tile */
+  .cts-card::before,
+  .cts-card::after { display: none; }
+
+  /* Numbered indicator — small digit, left margin, aligned with caption */
+  .cts-card__num {
+    position: absolute;
+    top: auto;
+    bottom: -64px;
+    left: -18%;
+    width: 18%;
+    padding-left: 4px;
+    color: #0E1A2B;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0;
+    opacity: 0.85;
+  }
+
+  /* Description block — sits BELOW its card, indented to align with image */
+  .cts-desc {
+    position: relative;
+    top: auto; left: auto;
+    width: auto;
+    max-width: none;
+    margin: 16px 0 0 18%;
+    padding: 0;
+    gap: 12px;
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto;
+  }
+
+  .cts-desc__body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.32;
+    color: #0E1A2B;
+    letter-spacing: -0.005em;
+    text-align: left;
+  }
+
+  .cts-desc__cta {
+    font-size: 13px;
+    color: rgba(14, 26, 43, 0.65);
+    text-underline-offset: 4px;
+  }
+}
+
 @media (max-width: 380px) {
-  .cts-headline    { font-size: clamp(64px, 20vw, 92px); }
-  .cts-card        { padding: 16px; border-radius: 16px; }
-  .cts-card__title { font-size: 24px; }
-  .cts-desc        { width: min(82vw, 320px); padding-left: 36px; gap: 14px; }
-  .cts-desc__body  { font-size: 14px; line-height: 1.4; }
+  .cts-headline   { font-size: clamp(64px, 21vw, 96px); }
+  .cts-card       { border-radius: 18px !important; }
+  .cts-desc__body { font-size: 15px; }
+  .cts-card__num  { font-size: 12px; bottom: -58px; }
 }
