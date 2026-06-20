@@ -4,35 +4,51 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./CardTransitionSection.css";
 
 gsap.registerPlugin(ScrollTrigger);
+// ── Layout constants (responsive) ───────────────────────────────────────────
+const isMobile = () => window.innerWidth <= 640;
 
-// ── Layout constants ────────────────────────────────────────────────────────
-const HERO_W = 780;
-const HERO_H = 830;
-const HERO_BR = 20;
+const HERO_W  = () => isMobile() ? Math.round(window.innerWidth * 0.86) : 780;
+const HERO_H  = () => isMobile() ? Math.round(HERO_W() * (830 / 780))   : 830;
+const HERO_BR = () => isMobile() ? 22 : 20;
 
-const SMALL_W = 158;
-const SMALL_H = Math.round(SMALL_W / (HERO_W / HERO_H));
-const SMALL_BR = 20;
+const SMALL_W  = () => isMobile() ? 96 : 158;
+const SMALL_H  = () => Math.round(SMALL_W() / (780 / 830));
+const SMALL_BR = () => isMobile() ? 14 : 20;
 
-const THUMB_W = 58;
-const THUMB_H = Math.round(THUMB_W / (HERO_W / HERO_H));
-const THUMB_BR = 12;
+const THUMB_W  = () => isMobile() ? 46 : 58;
+const THUMB_H  = () => Math.round(THUMB_W() / (780 / 830));
+const THUMB_BR = () => isMobile() ? 10 : 12;
 
-const heroX = () => Math.round((window.innerWidth - HERO_W) / 2) + 40;
-const heroY = () => Math.round((window.innerHeight - HERO_H) / 2);
+// Hero centered horizontally; pushed down on mobile to clear the headline
+const heroX = () => Math.round((window.innerWidth - HERO_W()) / 2) + (isMobile() ? 0 : 40);
+const heroY = () => isMobile()
+  ? Math.round(window.innerHeight * 0.18)
+  : Math.round((window.innerHeight - HERO_H()) / 2);
 
-const thumbX = () => Math.round((window.innerWidth - THUMB_W) / 2);
-const thumbY = () => Math.round(window.innerHeight * 0.72);
+// Initial thumbnail (card-01 resting position)
+const thumbX = () => Math.round((window.innerWidth - THUMB_W()) / 2);
+const thumbY = () => Math.round(window.innerHeight * (isMobile() ? 0.82 : 0.72));
 
-const TL_X = () => heroX() - 200;
-const TL_Y = () => 40;
+// Top-left "timeline" slot for the shrunken card
+const TL_X = () => isMobile() ? 16 : heroX() - 200;
+const TL_Y = () => isMobile() ? 16 : 40;
 
+// Description: right of hero on desktop, BELOW hero on mobile
 const DESC_GAP = 18;
-const DESC_X = () => heroX() + HERO_W + DESC_GAP;
-const DESC_Y = () => heroY() + Math.round(HERO_H * 0.30);
+const DESC_X = () => isMobile()
+  ? heroX()
+  : heroX() + HERO_W() + DESC_GAP;
+const DESC_Y = () => isMobile()
+  ? heroY() + HERO_H() + 20
+  : heroY() + Math.round(HERO_H() * 0.30);
 
-const BR_X = () => DESC_X() + 35;
-const BR_Y = () => DESC_Y() + 450;
+// Bottom-right small preview card slot
+const BR_X = () => isMobile()
+  ? window.innerWidth - SMALL_W() - 16
+  : DESC_X() + 35;
+const BR_Y = () => isMobile()
+  ? window.innerHeight - SMALL_H() - 24
+  : DESC_Y() + 450;
 
 const SECTION_HEIGHT = "300vh";
 
@@ -80,31 +96,31 @@ export default function CardTransitionSection() {
         gsap.set(cardRefs[0].current, {
           x: thumbX(),
           y: thumbY(),
-          width:  THUMB_W,
-          height: THUMB_H,
+          width:  THUMB_W(),
+          height: THUMB_H(),
           opacity: 1,
           zIndex: 10,
-          borderRadius: THUMB_BR,
+          borderRadius: THUMB_BR(),
         });
 
         gsap.set(cardRefs[1].current, {
           x: BR_X(),
           y: BR_Y() + 80,
-          width:  SMALL_W,
-          height: SMALL_H,
+          width:  SMALL_W(),
+          height: SMALL_H(),
           opacity: 0,
           zIndex: 6,
-          borderRadius: SMALL_BR,
+          borderRadius: SMALL_BR(),
         });
 
         gsap.set(cardRefs[2].current, {
           x: BR_X(),
           y: BR_Y() + 80,
-          width:  SMALL_W,
-          height: SMALL_H,
+          width:  SMALL_W(),
+          height: SMALL_H(),
           opacity: 0,
           zIndex: 4,
-          borderRadius: SMALL_BR,
+          borderRadius: SMALL_BR(),
         });
 
         descRefs.forEach((r) => {
@@ -149,9 +165,9 @@ export default function CardTransitionSection() {
       tl.to(cardRefs[0].current, {
         x: () => heroX(),
         y: () => heroY(),
-        width:  HERO_W,
-        height: HERO_H,
-        borderRadius: HERO_BR,
+        width : () =>  HERO_W(),
+        height: () => HERO_H(),
+        borderRadius:() => HERO_BR(),
         ease: E_INOUT,
         duration: 1.5,
       }, "growCard1");
@@ -183,9 +199,9 @@ export default function CardTransitionSection() {
       tl.to(cardRefs[0].current, {
         x: () => TL_X(),
         y: () => TL_Y(),
-        width:  SMALL_W,
-        height: SMALL_H,
-        borderRadius: SMALL_BR,
+        width: () =>  SMALL_W(),
+        height: () => SMALL_H(),
+        borderRadius: () => SMALL_BR(),
         ease: E_INOUT,
         duration: 1.5,
       }, "transition12");
@@ -193,9 +209,9 @@ export default function CardTransitionSection() {
       tl.to(cardRefs[1].current, {
         x: () => heroX(),
         y: () => heroY(),
-        width:  HERO_W,
-        height: HERO_H,
-        borderRadius: HERO_BR,
+        width: () =>  HERO_W(),
+        height: () => HERO_H(),
+        borderRadius: () => HERO_BR(),
         zIndex: 10,
         ease: E_INOUT,
         duration: 1.5,
@@ -215,14 +231,16 @@ export default function CardTransitionSection() {
         duration: 0.5,
       }, "transition12+=0.55");
 
-      tl.to(cardRefs[2].current, {
-        x: () => BR_X(),
-        y: () => BR_Y(),
-        opacity: 1,
-        ease: E_OUT,
-        duration: 0.65,
-      }, "transition12+=0.85");
-
+  tl.to(cardRefs[2].current, {
+  x: () => BR_X(),
+  y: () => BR_Y(),
+  width: () => SMALL_W(),
+  height: () => SMALL_H(),
+  borderRadius: () => SMALL_BR(),
+  opacity: 1,
+  ease: E_OUT,
+  duration: 0.65,
+}, "transition12+=0.85");
       // ── PHASE 4: Hero-02 hold ───────────────────────────────────────────────
       tl.addLabel("heroHold2", 6.0);
       tl.to({}, { duration: 1.5 }, "heroHold2");
@@ -237,23 +255,23 @@ export default function CardTransitionSection() {
         duration: 0.4,
       }, "transition23");
 
-      tl.to(cardRefs[1].current, {
-        x: () => TL_X(),
-        y: () => TL_Y(),
-        width:  SMALL_W,
-        height: SMALL_H,
-        borderRadius: SMALL_BR,
-        zIndex: 6,
-        ease: E_INOUT,
-        duration: 1.5,
-      }, "transition23");
+tl.to(cardRefs[1].current, {
+  x: () => TL_X(),
+  y: () => TL_Y(),
+  width: () => SMALL_W(),
+  height: () => SMALL_H(),
+  borderRadius: () => SMALL_BR(),
+  zIndex: 6,
+  ease: E_INOUT,
+  duration: 1.5,
+}, "transition23");
 
       tl.to(cardRefs[2].current, {
         x: () => heroX(),
         y: () => heroY(),
-        width:  HERO_W,
-        height: HERO_H,
-        borderRadius: HERO_BR,
+        width : () =>  HERO_W(),
+        height: () => HERO_H(),
+        borderRadius:() => HERO_BR(),
         zIndex: 10,
         ease: E_INOUT,
         duration: 1.5,

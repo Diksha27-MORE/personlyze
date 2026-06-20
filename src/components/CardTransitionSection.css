@@ -318,121 +318,84 @@
 ───────────────────────────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
+  /* Keep the section pinned — GSAP drives the choreography */
+  .cts-section { background: #EDEAE2; }
 
-  /* Shell — let content define height, no pinning on mobile */
-  .cts-section {
-    background: #EFEBDC;
-    padding: 0 0 48px;
-  }
-
-  /* Kill the sticky canvas on mobile so the section scrolls normally */
   .cts-sticky {
-    position: static;
-    height: auto;
-    min-height: 0;
-    overflow: visible;
-    background: #EFEBDC;
-    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+    background: #EDEAE2;
+    padding: 0;
   }
 
-  /* Hide ambient corner labels on mobile (not in reference) */
-  .cts-ambient { display: none; }
+  /* Ambient corner labels */
+  .cts-ambient     { font-size: 10px; letter-spacing: 0.12em; opacity: 0.45; }
+  .cts-ambient--tl { top: 16px;    left: 18px;  }
+  .cts-ambient--br { bottom: 16px; right: 18px; }
 
-  /* Headline — bold sans, top of page, very large "Let's fly" */
+  /* Headline — same italic serif as desktop, scaled for phone */
   .cts-headline {
-    position: relative;
-    top: auto; left: auto; right: auto;
-    margin: 24px 0 0;
-    padding: 0 4px;
-    font-family: 'DM Sans', system-ui, sans-serif;
-    font-style: normal;
-    font-weight: 800;
-    font-size: clamp(76px, 22vw, 120px);
+    top: clamp(28px, 6vh, 56px);
+    left: 20px;
+    right: 20px;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(64px, 18vw, 96px);
     line-height: 0.92;
-    letter-spacing: -0.04em;
-    color: #0E1A2B;
-    text-align: left;
-    opacity: 1 !important;
-    transform: none !important;
+    letter-spacing: -0.03em;
+    color: #3A3530;
   }
 
-  /* Cards — stacked vertically, full-width image tiles, no GSAP transforms */
+  /* Card chrome — GSAP still owns x/y/width/height/opacity/zIndex/border-radius.
+     Only restyle inner padding, shadow and typography. */
   .cts-card {
-    position: relative;
-    top: auto; left: auto;
-    width: 78% !important;
-    height: auto !important;
-    aspect-ratio: 3 / 4;
-    margin: 56px 0 0 18%;
-    padding: 0;
-    border-radius: 22px !important;
-    opacity: 1 !important;
-    transform: none !important;
+    padding: 22px;
+    gap: 6px;
     box-shadow:
-      0 2px 10px rgba(0,0,0,0.08),
-      0 14px 30px rgba(0,0,0,0.12);
+      0 2px 10px rgba(0, 0, 0, 0.10),
+      0 10px 28px rgba(0, 0, 0, 0.18),
+      0 22px 56px rgba(0, 0, 0, 0.20);
   }
 
-  /* First card needs more breathing room after the giant headline */
-  .cts-card--1 { margin-top: 72px; }
-
-  /* Hide the dark card title text on mobile — caption sits BELOW the card */
-  .cts-card__title { display: none; }
-
-  /* Remove dark gradient/grain so card reads as a clean photo tile */
-  .cts-card::before,
-  .cts-card::after { display: none; }
-
-  /* Numbered indicator — small digit, left margin, aligned with caption */
   .cts-card__num {
-    position: absolute;
-    top: auto;
-    bottom: -64px;
-    left: -18%;
-    width: 18%;
-    padding-left: 4px;
-    color: #0E1A2B;
-    font-family: 'DM Sans', system-ui, sans-serif;
-    font-weight: 500;
-    font-size: 13px;
-    letter-spacing: 0;
-    opacity: 0.85;
+    top: 14px; left: 16px;
+    font-size: 10px;
+    letter-spacing: 0.20em;
   }
 
-  /* Description block — sits BELOW its card, indented to align with image */
+  .cts-card__title {
+    font-size: 44px;
+    line-height: 0.94;
+  }
+
+  /* Description — GSAP positions it BELOW the hero on mobile (DESC_Y change).
+     Just constrain width so it fits the viewport. */
   .cts-desc {
-    position: relative;
-    top: auto; left: auto;
-    width: auto;
-    max-width: none;
-    margin: 16px 0 0 18%;
-    padding: 0;
-    gap: 12px;
-    opacity: 1 !important;
-    transform: none !important;
-    pointer-events: auto;
+    width: min(86vw, 360px);
+    gap: 18px;
   }
 
   .cts-desc__body {
-    font-family: 'DM Sans', system-ui, sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    line-height: 1.32;
-    color: #0E1A2B;
-    letter-spacing: -0.005em;
-    text-align: left;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: rgba(36, 32, 26, 0.78);
   }
 
   .cts-desc__cta {
     font-size: 13px;
-    color: rgba(14, 26, 43, 0.65);
     text-underline-offset: 4px;
   }
 }
 
 @media (max-width: 380px) {
-  .cts-headline   { font-size: clamp(64px, 21vw, 96px); }
-  .cts-card       { border-radius: 18px !important; }
-  .cts-desc__body { font-size: 15px; }
-  .cts-card__num  { font-size: 12px; bottom: -58px; }
+  .cts-headline    { font-size: clamp(56px, 17vw, 84px); }
+  .cts-card        { padding: 18px; }
+  .cts-card__title { font-size: 38px; }
+  .cts-desc        { width: min(88vw, 320px); gap: 14px; }
+  .cts-desc__body  { font-size: 13px; line-height: 1.5; }
 }
