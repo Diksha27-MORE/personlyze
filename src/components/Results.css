@@ -184,19 +184,39 @@
 }
 
 @media (max-width: 400px) {
-  .results-eyebrow,
-  .results-heading-block,
+  .results-eyebrow {
+    padding: 24px 24px 0;
+    gap: 8px;
+  }
+
+  .results-eyebrow-rule {
+    width: 36px;
+  }
+
+  .results-heading-block {
+    padding: 8px 24px 0;
+  }
+
+  .results-heading {
+    font-size: clamp(40px, 12vw, 68px);
+  }
+
+  .results-subtitle {
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
   .results-meta-row {
-    padding-left: 24px;
-    padding-right: 24px;
+    padding: 12px 24px 8px;
   }
 
   .results-cards-viewport {
     padding-left: 24px;
   }
 
-  .results-heading {
-    font-size: clamp(40px, 12vw, 68px);
+  .results-cards-pin {
+    padding-top: 1vh;
   }
 
   .metric-card {
@@ -206,9 +226,14 @@
 
   .metric-card-number {
     font-size: 56px;
+    margin-top: 24px;
   }
 
-  .results-cards-pin {
-    padding-top: 6vh;
+  .metric-card-label {
+    margin-top: 12px;
+  }
+
+  .metric-card-footnote {
+    margin-top: 20px;
   }
 }

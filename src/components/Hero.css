@@ -531,7 +531,7 @@
 
   /* CENTER CONTENT */
   .hero-logo-video {
-    width: 80%;
+    width: 100%;
     max-width: 420px;
     height: auto;
   }
@@ -629,7 +629,7 @@
   }
 
   .hero-logo-video {
-    width: 85%;
+    width: 100%;
     max-width: 300px;
   }
 
