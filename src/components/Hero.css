@@ -592,9 +592,14 @@
 /* =========================
    MOBILE (≤480px)
 ========================= */
+/* =========================
+   HERO — MOBILE (≤480px)
+========================= */
 @media (max-width: 480px) {
   .hero {
-    padding: 0 16px;
+    padding: 0;
+    width: 100%;
+    overflow: hidden;
   }
 
   /* NAVBAR */
@@ -622,15 +627,18 @@
     box-shadow: 0 8px 20px rgba(109, 93, 252, 0.3);
   }
 
-  /* CENTER CONTENT */
+  /* CENTER CONTENT — full bleed */
   .hero-center {
-    width: 100%;
-    padding: 0 16px;
+    width: 100vw;
+    max-width: 100vw;
+    padding: 0;
   }
 
   .hero-logo-video {
-    width: 100%;
-    max-width: 300px;
+    width: 100vw;
+    max-width: 100vw;
+    height: auto;
+    object-fit: cover;
   }
 
   .hero-logo-img {
