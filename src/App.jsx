@@ -8,7 +8,9 @@ import Workspace from "./components/Workspace";
 import Results from "./components/Results";
 import Industries from "./components/Industries";
 import CardTransitionSection from "./components/CardTransitionSection";
-import IndustryVideoPage from "./components/IndustryVideoPage";
+
+// NEW IMPORT
+import IndustryLanding from "./pages/IndustryLanding";
 
 import "./App.css";
 
@@ -64,8 +66,11 @@ function App() {
         }
       />
 
-      {/* INDUSTRY PAGE */}
-      <Route path="/industry" element={<IndustryVideoPage />} />
+      {/* INDUSTRY LANDING PAGE */}
+      <Route
+        path="/industry/:slug"
+        element={<IndustryLanding />}
+      />
     </Routes>
   );
 }

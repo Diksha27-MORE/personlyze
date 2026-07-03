@@ -407,3 +407,135 @@
     width: 28px;
   }
 }
+
+/* ============================================================
+   FULLSCREEN TRANSITION LAYER  ·  Added — does not alter
+   any rule above. Apple-style expand / scroll-zoom / navigate.
+   ============================================================ */
+
+/* Scroll spacer that drives ScrollTrigger progress while the
+   fullscreen overlay is open. Visually invisible, sits behind
+   the fixed overlay, simply gives the page scrollable height. */
+.dfl-scroll-spacer {
+  position: relative;
+  width: 100%;
+  height: 250vh;
+  pointer-events: none;
+}
+
+/* Fixed fullscreen overlay container */
+.dfl-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: #000;
+  overflow: hidden;
+  will-change: opacity;
+}
+
+/* WRAPPER that animates from the card's rect to fullscreen and is the
+   element that gets the scroll-driven zoom (transform: scale).
+   The video lives INSIDE this and is never transformed itself. */
+.dfl-fullscreen-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  overflow: hidden;
+  background: #000;
+  /* Hint the compositor: this layer's geometry + transform change. */
+  will-change: transform, width, height, top, left;
+  /* Promote to its own GPU layer up front so scaling stays smooth. */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* The actual <video>. It simply fills the wrapper and is NEVER given a
+   scaling transform — only a flat translateZ(0) for a stable GPU layer —
+   so the browser keeps decoding/painting live frames during the zoom. */
+.dfl-fullscreen-video-inner {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #000;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: auto;
+}
+
+/* Dark gradient over the fullscreen video, echoes .dfl-overlay */
+.dfl-fullscreen-overlay-tint {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,0.25) 0%,
+    rgba(0,0,0,0.05) 40%,
+    rgba(0,0,0,0.65) 100%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.dfl-fullscreen-overlay-tint--visible {
+  opacity: 1;
+}
+
+/* "Scroll Down" prompt */
+.dfl-scroll-cue {
+  position: fixed;
+  left: 50%;
+  bottom: 56px;
+  z-index: 1002;
+  transform: translateX(-50%);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+  pointer-events: none;
+  color: #fff;
+
+  opacity: 0;
+  transition: opacity 0.5s ease 0.35s;
+}
+
+.dfl-scroll-cue--visible {
+  opacity: 1;
+  animation: dfl-float 2.1s ease-in-out infinite;
+}
+
+.dfl-scroll-cue-text {
+  font-family: "DM Sans", sans-serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.92);
+  text-shadow: 0 1px 12px rgba(0,0,0,0.5);
+}
+
+.dfl-scroll-cue-arrow {
+  font-size: 1.05rem;
+  line-height: 1;
+  color: rgba(255,255,255,0.92);
+  text-shadow: 0 1px 12px rgba(0,0,0,0.5);
+}
+
+@keyframes dfl-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(8px); }
+}
+
+@media (max-width: 768px) {
+  .dfl-scroll-cue {
+    bottom: 36px;
+  }
+}

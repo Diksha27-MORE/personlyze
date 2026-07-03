@@ -1,708 +1,251 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.hero{
-  position:relative;
-  width:100%;
-  height:100vh;
-  overflow:hidden;
-  background:#000;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-   font-family:"Gilroy",sans-serif;
+.hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Gilroy", "Inter", sans-serif;
 }
 
-/* =========================
-   BACKGROUND VIDEO
-========================= */
-
-.hero-video{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  z-index:0;
-
-  filter:
-    brightness(.5)
-    saturate(.15)
-    contrast(1.1)
-    grayscale(.85);
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  filter: brightness(1) contrast(1) saturate(1);
 }
 
-/* =========================
-   OVERLAY
-========================= */
-
-.overlay{
-  position:absolute;
-  inset:0;
-  z-index:1;
-
-  background:
-  linear-gradient(
-    to bottom,
-    rgba(0,0,0,.55) 0%,
-    rgba(0,0,0,.25) 40%,
-    rgba(0,0,0,.35) 70%,
-    rgba(0,0,0,.75) 100%
-  );
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.08);
 }
 
-.overlay::after{
-  content:"";
-  position:absolute;
-  inset:0;
-
-  background:
-  radial-gradient(
-    ellipse at center,
-    transparent 50%,
-    rgba(0,0,0,.55) 100%
-  );
+.overlay::after {
+  display: none;
 }
 
+/* Grid now holds the two logos side-by-side and the CTA is absolutely
+   centered inside the hero so it is truly centered on all screens. */
+.hero-center {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
 
-/* =========================
-   CENTER CONTENT
-========================= */
+  width: 100%;
+  max-width: 1500px;
+  margin: auto;
 
-.hero-center{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  z-index:20;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
 
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-
-  width:100%;
+  padding: 0 80px;
 }
 
-.hero-logo{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
+/* LEFT: animated logo - nudged slightly left for balance */
+.hero-left {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-right: 0;
 }
 
-.hero-logo-img{
-  width:420px;
-  height:420px;
-  object-fit:contain;
-}
 .hero-logo-video {
-  background: transparent !important;
-  width: 600px;
+  width: 720px;
   height: auto;
+  /* was translateX(100px); pulled back so it sits slightly left */
+  transform: translateX(40px);
 }
 
-.hero-title{
-  font-size:120px;
-  font-weight:600;
-  line-height:1;
-
-  margin-top:-40px;
-  letter-spacing:-4px;
-
-  text-align:center;
+/* RIGHT: PNG - pulled closer to center */
+.hero-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  /* was -80px; move further left so PNG starts closer to center */
+  transform: translateX(-140px);
 }
 
-.white-text{
-  color:white;
+.hero-right-image {
+  width: 750px;
+  max-width: none;
+  height: auto;
+  object-fit: contain;
 }
 
-.orange-text{
-  color:#ff6433;
-}
+/* ---------- Premium SaaS "Book a Demo" button ---------- */
+.hero-demo-btn {
+  position: absolute;
+  left: 50%;
+  /* Slightly lower than the logos, centered on the hero */
+  top: 68%;
+  transform: translate(-50%, -50%);
 
-.hero-tagline{
-  margin-top:18px;
-
-  text-align:center;
-
-  font-size:16px;
-  font-weight:400;
-
-  letter-spacing:.22em;
-  text-transform:uppercase;
-
-  color:rgba(255,255,255,.7);
-}
-
-/* =========================
-   EXPLORE BUTTON
-========================= */
-
-.explore-pill-wrapper{
-  position:absolute;
-  left:50%;
-  bottom:40px;
-  transform:translateX(-50%);
-  z-index:50;
-}
-
-.explore-pill{
-  width:320px;
-  height:92px;
-
-  border:none;
-  border-radius:999px;
+  padding: 16px 44px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  cursor: pointer;
 
   background:
-  linear-gradient(
-    135deg,
-    #4f46e5 0%,
-    #6d5dfc 100%
-  );
-
-  color:white;
-
-  font-size:24px;
-  font-weight:500;
-
-  cursor:pointer;
+    linear-gradient(
+      110deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.22) 20%,
+      rgba(255, 255, 255, 0.08) 40%,
+      rgba(255, 255, 255, 0.18) 60%,
+      rgba(255, 255, 255, 0.10) 100%
+    ),
+    linear-gradient(135deg, #ff4d4d 0%, #b02a8f 55%, #5b4bff 100%);
+  background-size: 200% 100%, 100% 100%;
+  background-position: 0% 0%, 0 0;
 
   box-shadow:
-  0 20px 60px rgba(109,93,252,.4);
+    0 10px 30px rgba(91, 75, 255, 0.28),
+    0 4px 14px rgba(255, 77, 77, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
 
-  transition:.4s;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease,
+    background-position 0.8s ease;
+
+  animation: heroBtnShimmer 6s linear infinite;
+  z-index: 6;
 }
 
-.explore-pill:hover{
-  transform:scale(1.04);
-}
-
-/* =========================
-   EMAIL
-========================= */
-
-.hero-email{
-  position:absolute;
-  left:32px;
-  bottom:28px;
-
-  z-index:20;
-
-  display:flex;
-  align-items:center;
-  gap:8px;
-
-  padding:10px 18px;
-
-  border-radius:999px;
-
-  text-decoration:none;
-
-  color:rgba(255,255,255,.8);
-
-  background:rgba(255,255,255,.04);
-
-  border:1px solid rgba(255,255,255,.2);
-
-  backdrop-filter:blur(14px);
-
-  transition:.3s;
-}
-
-.hero-email:hover{
-  color:#fff;
-  background:rgba(255,255,255,.1);
-}
-
-.hero-email svg{
-  width:14px;
-  height:14px;
-}
-
-/* =========================
-   SOCIAL
-========================= */
-
-.hero-social{
-  position:absolute;
-  right:32px;
-  bottom:24px;
-
-  z-index:20;
-
-  display:flex;
-  gap:10px;
-}
-
-.social-btn{
-  width:46px;
-  height:46px;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  border-radius:12px;
-
-  color:white;
-  text-decoration:none;
-
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.2);
-
-  backdrop-filter:blur(10px);
-
-  transition:.3s;
-}
-
-.social-btn:hover{
-  transform:translateY(-4px);
-  background:rgba(255,255,255,.15);
-}
-
-/* =========================
-   MOBILE
-========================= */
-
-@media(max-width:768px){
-
-
-  .hero-logo-img{
-    width:260px;
-    height:260px;
-  }
-
-  .hero-title{
-    font-size:58px;
-    margin-top:-20px;
-  }
-
-  .hero-tagline{
-    font-size:12px;
-  }
-
-  .explore-pill{
-    width:260px;
-    height:70px;
-    font-size:18px;
-  }
-
-  .hero-email{
-    display:none;
-  }
-}
-.nav-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: white;
-}
-
-.nav-left img {
-  width: 32px;
-  height: 32px;
-}
-
-.hero-logo-img {
-  width: 140px;
-  height: auto;
-  margin-bottom: 10px;
-}
-
-.product-line-wrapper {
-  position: fixed;   /* important: stays across scroll */
-  top: 50%;
-  left: 0;
-  width: 100vw;
-  height: 2px;
-  z-index: 5;
-  pointer-events: none;
-}
-
-.product-line {
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    #7c3aed,
-    #ff6433,
-    #7c3aed,
-    transparent
-  );
+.hero-demo-btn__label {
   position: relative;
-  overflow: hidden;
+  z-index: 1;
 }
 
-/* moving glow effect */
-.product-line::after {
-  content: "";
-  position: absolute;
-  width: 200px;
-  height: 100%;
-  background: rgba(255,255,255,0.8);
-  filter: blur(6px);
-  animation: moveLine 2.5s linear infinite;
+.hero-demo-btn:hover {
+  transform: translate(-50%, calc(-50% - 3px)) scale(1.03);
+  box-shadow:
+    0 18px 45px rgba(91, 75, 255, 0.38),
+    0 8px 22px rgba(255, 77, 77, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background-position: 100% 0%, 0 0;
 }
 
-@keyframes moveLine {
-  from { left: -200px; }
-  to { left: 100%; }
-}
-/* =========================
-   PREMIUM NAVBAR ALIGN FIX
-========================= */
-
-.hero-navbar {
-  width: 100%;
-  display: flex;
-  justify-content: center;
+.hero-demo-btn:active {
+  transform: translate(-50%, calc(-50% - 1px)) scale(1.00);
 }
 
-/* Make nav horizontal clean row */
-.nav-links {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 40px;
-
-  padding: 14px 30px;
-  border-radius: 999px;
-
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px);
-
-  border: 1px solid rgba(255, 255, 255, 0.12);
-
-  list-style: none;
+.hero-demo-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.35),
+    0 18px 45px rgba(91, 75, 255, 0.38);
 }
 
-/* Make links clean horizontal premium style */
-.nav-links li a {
-  text-decoration: none;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  transition: 0.3s ease;
+@keyframes heroBtnShimmer {
+  0%   { background-position:   0% 0%, 0 0; }
+  100% { background-position: 200% 0%, 0 0; }
 }
 
-/* Hover effect */
-.nav-links li a:hover {
-  color: #ffffff;
-  transform: translateY(-1px);
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .hero-center {
+    gap: 10px;
+    padding: 0 30px;
+  }
+  .hero-logo-video {
+    width: 520px;
+    transform: translateX(20px);
+  }
+  .hero-right {
+    transform: translateX(-80px);
+  }
+  .hero-right-image {
+    width: 500px;
+  }
+  .hero-demo-btn {
+    top: 72%;
+    font-size: 16px;
+    padding: 15px 40px;
+  }
 }
 
-/* Brand (personlyze.ai) stronger */
-.nav-links li:first-child a {
-  font-weight: 700;
-  color: #ffffff;
-}
-
-/* CTA button style for Book a Demo */
-.nav-links li:last-child a {
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #4f46e5, #6d5dfc);
-  color: #fff;
-  box-shadow: 0 10px 30px rgba(109, 93, 252, 0.35);
-}
-/* =========================
-   PREMIUM SPLIT NAVBAR (BIG)
-========================= */
-
-.hero-navbar {
-  width: 100%;
-  position: absolute;
-  top: 35px;
-  left: 0;
-  z-index: 100;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: 0 60px;
-}
-
-/* LEFT (LOGO + BRAND) */
-.nav-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.nav-left img {
-  width: 42px;
-  height: 42px;
-}
-
-.nav-left a {
-  font-size: 22px;
-  font-weight: 700;
-  color: white;
-  text-decoration: none;
-  letter-spacing: -0.02em;
-}
-
-/* CENTER MENU */
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 50px;
-
-  list-style: none;
-}
-
-.nav-links li a {
-  font-size: 20px;   /* BIG TEXT */
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  text-decoration: none;
-  transition: 0.3s ease;
-}
-
-.nav-links li a:hover {
-  color: #fff;
-  transform: translateY(-2px);
-}
-
-/* RIGHT CTA */
-.nav-right a {
-  font-size: 20px;
-  font-weight: 600;
-
-  padding: 12px 22px;
-  border-radius: 999px;
-
-  color: #fff;
-  text-decoration: none;
-
-  background: linear-gradient(135deg, #4f46e5, #6d5dfc);
-  box-shadow: 0 15px 40px rgba(109, 93, 252, 0.35);
-
-  transition: 0.3s ease;
-}
-
-.nav-right a:hover {
-  transform: scale(1.05);
-}
-
-/* =========================
-   TABLET (≤768px)
-========================= */
 @media (max-width: 768px) {
   .hero {
-    height: 100vh;
-    padding: 0 20px;
-  }
-
-  /* NAVBAR */
-  .hero-navbar {
-    top: 20px;
-    padding: 0 20px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .nav-left img {
-    width: 34px;
-    height: 34px;
-  }
-
-  .nav-left a {
-    font-size: 16px;
-  }
-
-  .nav-links {
-    display: none;
-  }
-
-  .nav-right a {
-    font-size: 14px;
-    padding: 8px 14px;
-  }
-
-  /* CENTER CONTENT */
-  .hero-logo-video {
-    width: 100%;
-    max-width: 420px;
     height: auto;
+    min-height: 100vh;
+    padding: 60px 0 120px;
   }
 
-  .hero-logo-img {
-    width: 260px;
-    height: 260px;
-    max-width: 70%;
+  .hero-center {
+    position: relative;
+    inset: auto;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px;
+    justify-items: center;
   }
 
-  .hero-title {
-    font-size: 64px;
-    letter-spacing: -2px;
-    margin-top: -20px;
+  .hero-left {
+    width: 100%;
+    justify-content: center;
   }
 
-  .hero-tagline {
-    font-size: 12px;
-    letter-spacing: 0.18em;
-    margin-top: 14px;
-    padding: 0 16px;
+  .hero-logo-video {
+    width: 340px;
+    transform: none;
   }
 
-  /* EXPLORE BUTTON */
-  .explore-pill-wrapper {
-    bottom: 90px;
+  .hero-right {
+    width: 100%;
+    align-items: center;
+    transform: none;
   }
 
-  .explore-pill {
-    width: 260px;
-    height: 70px;
-    font-size: 18px;
+  .hero-right-image {
+    width: 90%;
+    max-width: 520px;
   }
 
-  /* EMAIL */
-  .hero-email {
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 20px;
-    font-size: 12px;
-    padding: 8px 14px;
+  .hero-demo-btn {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    margin: 30px auto 0;
+    display: block;
   }
 
-  /* SOCIAL */
-  .hero-social {
-    right: 50%;
-    transform: translateX(50%);
-    bottom: 60px;
-    gap: 8px;
+  .hero-demo-btn:hover {
+    transform: translateY(-3px) scale(1.03);
   }
-
-  .social-btn {
-    width: 40px;
-    height: 40px;
+  .hero-demo-btn:active {
+    transform: translateY(-1px) scale(1);
   }
 }
 
-/* =========================
-   MOBILE (≤480px)
-========================= */
-/* =========================
-   HERO — MOBILE (≤480px)
-========================= */
 @media (max-width: 480px) {
-  .hero {
-    padding: 0;
-    width: 100%;
-    overflow: hidden;
-  }
-
-  /* NAVBAR */
-  .hero-navbar {
-    top: 16px;
-    padding: 0 16px;
-  }
-
-  .nav-left {
-    gap: 8px;
-  }
-
-  .nav-left img {
-    width: 28px;
-    height: 28px;
-  }
-
-  .nav-left a {
-    font-size: 14px;
-  }
-
-  .nav-right a {
-    font-size: 12px;
-    padding: 7px 12px;
-    box-shadow: 0 8px 20px rgba(109, 93, 252, 0.3);
-  }
-
-  /* CENTER CONTENT — full bleed */
-  .hero-center {
-    width: 100vw;
-    max-width: 100vw;
-    padding: 0;
-  }
-
-  .hero-logo-video {
-    width: 100vw;
-    max-width: 100vw;
-    height: auto;
-    object-fit: cover;
-  }
-
-  .hero-logo-img {
-    width: 180px;
-    height: 180px;
-    max-width: 60%;
-  }
-
-  .hero-title {
-    font-size: 40px;
-    letter-spacing: -1.5px;
-    margin-top: -12px;
-    line-height: 1.05;
-  }
-
-  .hero-tagline {
-    font-size: 10px;
-    letter-spacing: 0.16em;
-    margin-top: 12px;
-    padding: 0 12px;
-  }
-
-  /* EXPLORE BUTTON */
-  .explore-pill-wrapper {
-    bottom: 100px;
-    width: 100%;
-    padding: 0 24px;
-  }
-
-  .explore-pill {
-    width: 100%;
-    max-width: 280px;
-    height: 60px;
-    font-size: 16px;
-    box-shadow: 0 12px 36px rgba(109, 93, 252, 0.35);
-  }
-
-  /* EMAIL */
-  .hero-email {
-    bottom: 16px;
-    font-size: 11px;
-    padding: 7px 12px;
-    gap: 6px;
-  }
-
-  .hero-email svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  /* SOCIAL */
-  .hero-social {
-    bottom: 56px;
-    gap: 6px;
-  }
-
-  .social-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-  }
-
-  /* PRODUCT LINE */
-  .product-line::after {
-    width: 120px;
+  .hero-logo-video { width: 260px; }
+  .hero-right-image { width: 92%; max-width: 360px; }
+  .hero-demo-btn {
+    font-size: 15px;
+    padding: 13px 32px;
   }
 }

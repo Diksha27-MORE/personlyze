@@ -1,77 +1,59 @@
 import "./Hero.css";
 import backgroundVideo from "../assets/hero-video.mp4";
-import logo from "../assets/logo.png";
-import { FaInstagram, FaLinkedinIn, FaYoutube } from "react-icons/fa";
 import LogoAnimation from "../assets/Logo animation new.webm";
+import personlyzePng from "../assets/personlyzepng.png";
+
 function Hero() {
+  const handleBookDemo = () => {
+    const section = document.getElementById("demo");
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <section className="hero">
-
       {/* Background Video */}
       <video autoPlay muted loop playsInline className="hero-video">
         <source src={backgroundVideo} type="video/mp4" />
       </video>
 
-      <div className="overlay" />
+      {/* Overlay */}
+      <div className="overlay"></div>
 
-      {/* Navbar */}
-      <nav className="hero-navbar">
-
-        <div className="nav-left">
-          <img src={logo} alt="logo" />
-          <span>personlyze.ai</span>
+      {/* Hero Content */}
+      <div className="hero-center">
+        {/* Left Side - Animation */}
+        <div className="hero-left">
+          <video
+            className="hero-logo-video"
+            autoPlay
+            loop
+            muted
+            playsInline
+          >
+            <source src={LogoAnimation} type="video/webm" />
+            Your browser does not support the video tag.
+          </video>
         </div>
 
-        <ul className="nav-links">
-          <li><a href="#platform">Platform</a></li>
-          <li><a href="#results">Results</a></li>
-          <li><a href="#industries">Industries</a></li>
-        </ul>
+        {/* Right Side */}
+        <div className="hero-right">
+          <img
+            src={personlyzePng}
+            alt="Personlyze"
+            className="hero-right-image"
+          />
+        </div>
 
-        <a href="#demo" className="nav-demo-btn">
-          Book a Demo →
-        </a>
-
-      </nav>
-
-{/* Center Content */}
-{/* Center Content */}
-<div className="hero-center">
-  <video
-    className="hero-logo-video"
-    autoPlay
-    loop
-    muted
-    playsInline
-  >
-    <source src={LogoAnimation} type="video/webm" />
-    Your browser does not support the video tag.
-  </video>
-
-  <h1 className="hero-title">
-    <span className="white-text">personlyze</span>
-    <span className="orange-text">.ai</span>
-  </h1>
-
-  <p className="hero-tagline">
-    AI-Powered Personalization <br />
-    Built for the Future
-  </p>
-
-</div>
-
-      {/* Email */}
-      <a href="mailto:hello@personlyze.ai" className="hero-email">
-        hello@personlyze.ai
-      </a>
-
-      {/* Socials */}
-      <div className="hero-social">
-        <a href="#" className="social-btn"><FaInstagram /></a>
-        <a href="#" className="social-btn"><FaLinkedinIn /></a>
-        <a href="#" className="social-btn"><FaYoutube /></a>
+        {/* Centered CTA */}
+        <button
+          className="hero-demo-btn"
+          onClick={handleBookDemo}
+        >
+          <span className="hero-demo-btn__label">Book a Demo</span>
+        </button>
       </div>
-
     </section>
   );
 }

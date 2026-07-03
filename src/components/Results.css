@@ -43,59 +43,11 @@
   color: #111;
 }
 
-.results-heading em {
-  font-style: italic;
-  font-weight: 800;
-}
-
-.results-subtitle {
-  margin-top: 28px;
-  font-size: clamp(14px, 1.5vw, 17px);
-  line-height: 1.65;
-  color: #555;
-  max-width: 500px;
-  font-weight: 400;
-
-  text-align: center;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* ── Meta row ── */
-.results-meta-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 48px 60px 32px;
-}
-
-.results-scroll-hint {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  color: #555;
-  text-transform: uppercase;
-}
-
-.results-meta-tag {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  color: #888;
-  text-transform: uppercase;
-}
-
 /* ── Cards pin wrapper ─────────────────────────────────────────────────────
-   100vh height fills the viewport when ScrollTrigger pins it.
+   Desktop: 100vh height fills the viewport when ScrollTrigger pins it.
    Flex + align-items keeps the strip vertically centered.
-
-   padding-top: 8vh shifts the flex center point slightly below true middle
-   (true center = 50vh, with 8vh top offset the visual center moves to ~54vh)
-   — gives the "balanced but slightly lower" feel.
-   padding-bottom mirrors partially so the wrapper doesn't feel top-heavy.
-
-   No GSAP animation touches vertical position, so there is zero jump on
-   pin start. The cards simply stay wherever CSS places them.
+   Mobile: this becomes a normal auto-height block (see media query below) —
+   no pin, no fixed viewport height, cards flow with the page.
    ────────────────────────────────────────────────────────────────────────── */
 .results-cards-pin {
   width: 100%;
@@ -108,7 +60,7 @@
   background: #edeae2;
 }
 
-/* ── Cards viewport — clips the sliding strip ── */
+/* ── Cards viewport — clips the sliding strip (desktop) ── */
 .results-cards-viewport {
   width: 100%;
   overflow: hidden;
@@ -127,31 +79,38 @@
 
 /* ── Individual metric card ── */
 .metric-card {
-  width: 460px;           /* SSR / no-JS fallback; JS overrides at runtime */
+  width: 460px;           /* SSR / no-JS fallback; JS overrides at runtime on desktop */
   flex-shrink: 0;
   min-height: 700px;
   border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Dark overlay so text stays readable over any photo */
+.metric-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: inherit;
+  z-index: 1;
+}
+
+/* Content sits above the overlay */
+.metric-card-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
   padding: 36px 40px 36px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Card themes */
-.metric-card--dark   { background: #111;    color: #fff; }
-.metric-card--orange { background: #ff5c00; color: #111; }
-.metric-card--light  { background: transparent; border: 1.5px solid #ccc; color: #111; }
-.metric-card--purple { background: #3b1fa8; color: #fff; }
-
-/* Card inner layout */
-.metric-card-index {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  opacity: 0.5;
+  box-sizing: border-box;
+  color: #fff;
 }
 
 .metric-card-number {
@@ -159,19 +118,15 @@
   font-weight: 800;
   line-height: 0.9;
   letter-spacing: -0.04em;
-  margin-top: 40px;
+  color: #fff;
 }
-
-.metric-card--dark   .metric-card-number { color: #fff; }
-.metric-card--orange .metric-card-number { color: #111; }
-.metric-card--light  .metric-card-number { color: #111; }
-.metric-card--purple .metric-card-number { color: #fff; }
 
 .metric-card-label {
   font-size: clamp(18px, 2.2vw, 24px);
   font-weight: 700;
   margin-top: 20px;
   line-height: 1.25;
+  color: #fff;
 }
 
 .metric-card-footnote {
@@ -179,8 +134,57 @@
   font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  opacity: 0.45;
+  opacity: 0.75;
   margin-top: 40px;
+  color: #fff;
+}
+
+/* ── Disclaimer ── */
+.results-disclaimer {
+  text-align: center;
+  max-width: 800px;
+  margin: 72px auto 80px;
+  padding: 0 24px;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.8;
+  color: #777;
+}
+
+/* =========================================================
+   MOBILE / TABLET-PORTRAIT (<=768px)
+   Cards become a normal vertical stack — no pin, no horizontal
+   animation. Purely CSS-driven, GSAP never touches this layout.
+========================================================= */
+@media (max-width: 768px) {
+  .results-cards-pin {
+    height: auto;
+    display: block;
+    padding: 0;
+  }
+
+  .results-cards-viewport {
+    padding: 0 20px;
+    overflow: visible;
+  }
+
+  .results-cards-strip {
+    flex-direction: column;
+    width: 100%;
+    gap: 20px;
+  }
+
+  .metric-card {
+    width: 100% !important;
+    min-height: 420px;
+  }
+
+  .results-disclaimer {
+    margin: 48px auto 56px;
+    font-size: 12px;
+    padding: 0 32px;
+  }
 }
 
 @media (max-width: 400px) {
@@ -211,44 +215,21 @@
     margin: 0;
   }
 
-  .results-subtitle {
-    margin-top: 6px;
-    font-size: 13px;
-    line-height: 1.45;
-  }
-
-  .results-meta-row {
-    padding: 8px 20px 0;
-    margin-top: 8px;
-    font-size: 11px;
-    gap: 6px;
-  }
-
-  /* KILL the big gap between meta row and cards */
   .results-cards-viewport {
-    padding-left: 20px;
-    margin-top: 16px;
-  }
-
-  .results-cards-pin {
-    padding-top: 0 !important;
-    margin-top: 0 !important;
-    min-height: auto;
-  }
-
-  .results-cards-track {
-    margin-top: 0;
-    padding-top: 0;
+    padding: 0 20px;
+    margin-top: 20px;
   }
 
   .metric-card {
-    width: 85vw;
-    min-height: 420px;
+    min-height: 380px;
+  }
+
+  .metric-card-content {
+    padding: 28px 24px 28px;
   }
 
   .metric-card-number {
     font-size: 52px;
-    margin-top: 12px;
   }
 
   .metric-card-label {
@@ -256,6 +237,11 @@
   }
 
   .metric-card-footnote {
-    margin-top: 12px;
+    margin-top: 24px;
+  }
+
+  .results-disclaimer {
+    margin: 40px auto 48px;
+    font-size: 11.5px;
   }
 }

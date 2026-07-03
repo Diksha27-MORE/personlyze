@@ -1,229 +1,53 @@
 /* ================================
-   WORKSPACE SECTION
+   WORKSPACE SECTION (edge-to-edge hero)
 ================================ */
-
-.workspace-section{
-  position:relative;
-  background:#edeae2;
-  overflow:hidden;
-
-  padding:95px 58px 90px;
-  min-height:auto;
+.workspace-section {
+  position: relative;
+  background: #edeae2;
+  overflow: hidden;
+  width: 100%;
+  padding: 95px 0 90px;
 }
 
 /* ── Heading ── */
-.workspace-heading{
-  max-width:1400px;
+.workspace-heading {
+  margin: 0 auto 64px;
+  padding: 0 24px;
+  max-width: 1400px;
 
-
-  font-family:"Gilroy",sans-serif;
-  font-size:clamp(62px,6vw,108px);
-  line-height:.96;
-  letter-spacing:-0.06em;
-  font-weight:800;
-
-  color:#111;
-
-   flex-direction: column;
-  align-items: center;
-
-  opacity:0;
-  transform:translateY(40px);
-}
-
-
-.workspace-subtitle{
-  font-size:clamp(22px,1.7vw,33px);
-  line-height:1.45;
-  font-weight:700;
-  color:#555;
-
-  text-align:center; /* Add this */
-}
-
-/* ── CTA buttons ── */
-.workspace-ctas{
-    display:flex;
-    gap:18px;
-    margin-top:52px;
-    flex-wrap:wrap;
-
-    opacity:0;
-    transform:translateY(24px);
-}
-
-.ws-btn{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-
-    padding:18px 34px;
-
-    border-radius:60px;
-
-    font-size:26px;
-
-    font-weight:500;
-
-    min-height:72px;
-
-    transition:.35s;
-}
-
-/* Primary ghost */
-.ws-btn-ghost {
-  background: transparent;
-  border: 1.5px solid #222;
-  color: #111;
-}
-
-.ws-btn-ghost:hover {
-  background: #111;
-  color: #fff;
-}
-
-/* Beta badge */
-.ws-btn-beta {
-  background: transparent;
-  border: 1.5px solid #bbb;
-  color: #333;
-  position: relative;
-}
-
-.ws-btn-beta:hover {
-  border-color: #666;
-  color: #111;
-}
-
-.beta-tag {
-  display: inline-block;
-  background: #ff6433;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  padding: 2px 8px;
-  border-radius: 999px;
-  margin-left: 4px;
-  vertical-align: middle;
-}
-
-/* ── Video card ── */
-.workspace-video-card{
-
-    margin-top:80px;
-
-    width:85%;
-
-    height:650px;
-
-    border-radius:38px;
-
-    position:relative;
-
-    overflow:hidden;
-
-    cursor:pointer;
-
-    background:linear-gradient(
-    125deg,
-    #efb173 0%,
-    #d58ef5 40%,
-    #7a0edb 72%,
-    #2b58ff 100%
-    );
-
-    opacity:0;
-    transform:translateY(60px);
-
-    box-shadow:
-    0 40px 90px rgba(0,0,0,.12);
-
-    transition:.45s;
-}
-
-.workspace-video-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 36px 80px rgba(0, 0, 0, 0.2);
-}
-
-/* Fluid wave background inside card */
-.video-card-bg {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 70% 100% at 10% 60%, rgba(220, 120, 60, 0.9) 0%, transparent 55%),
-    radial-gradient(ellipse 80% 80% at 90% 20%, rgba(130, 50, 200, 0.85) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 100% at 50% 80%, rgba(30, 140, 200, 0.7) 0%, transparent 60%),
-    linear-gradient(120deg, #d06830 0%, #9040c0 50%, #2080c0 100%);
-  z-index: 0;
-}
-
-.video-card-label{
-
-font-size:14px;
-
-letter-spacing:.38em;
-
-top:34px;
-left:34px;
-}
-
-.video-card-duration{
-
-font-size:18px;
-
-top:34px;
-right:34px;
-}
-
-/* Bottom label */
-.video-card-footer{
-
-position:absolute;
-
-left:40px;
-right:40px;
-bottom:38px;
-
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-.video-card-footer-title{
-
-font-size:42px;
-
-font-weight:600;
-
-line-height:1.1;
-}
-
-.video-card-footer-title span {
-  color: #ff6433;
-}
-
-.video-card-watch {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  color: rgba(255, 255, 255, 0.75);
   font-family: "Gilroy", sans-serif;
-  text-transform: uppercase;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: color 0.2s;
+  font-size: clamp(62px, 9vw, 140px);
+  line-height: 0.96;
+  letter-spacing: -0.06em;
+  font-weight: 800;
+  color: #111;
+  text-align: center;
+
+  opacity: 0;
+  transform: translateY(40px);
 }
 
-.video-card-watch:hover {
-  color: #fff;
+/* ── Full-width hero video ── */
+.workspace-video {
+  position: relative;
+  width: 100vw;
+  margin-left: calc(50% - 50vw); /* break out of any parent padding */
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  cursor: pointer;
+
+  opacity: 0;
+  transform: translateY(60px);
 }
 
-/* Play button */
+.workspace-video-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Play button ── */
 .play-btn {
   position: absolute;
   top: 50%;
@@ -257,7 +81,7 @@ line-height:1.1;
   margin-left: 4px;
 }
 
-/* ── Video modal overlay ── */
+/* ── Video modal ── */
 .video-modal-overlay {
   position: fixed;
   inset: 0;
@@ -273,7 +97,7 @@ line-height:1.1;
 .video-modal-inner {
   width: 100%;
   max-width: 900px;
-  height:650px;
+  height: 650px;
   border-radius: 16px;
   overflow: hidden;
   position: relative;
@@ -302,40 +126,48 @@ line-height:1.1;
   color: #fff;
 }
 
-/* ── Responsive ── */
-@media (max-width: 768px) {
+/* ── Tablet ── */
+@media (max-width: 1024px) {
   .workspace-section {
-    padding: 60px 24px 80px;
+    padding: 72px 0 72px;
   }
-
-  .workspace-ctas {
-    flex-direction: column;
-    align-items: flex-start;
+  .workspace-heading {
+    margin-bottom: 48px;
   }
-
-  .workspace-video-card {
-    height:300px;
-    max-height: none;
+  .play-btn {
+    width: 90px;
+    height: 90px;
   }
-
-  .video-card-label,
-  .video-card-duration,
-  .video-card-footer {
-    left: 20px;
-    right: 20px;
-  }
-  .video-card-image{
-  position:absolute;
-  inset:0;
-
-  width:100%;
-  height:100%;
-
-  object-fit:cover;
-
-  display:block;
-
-  z-index:0;
 }
 
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .workspace-section {
+    padding: 56px 0 56px;
+  }
+
+  .workspace-heading {
+    margin-bottom: 36px;
+    padding: 0 20px;
+    font-size: clamp(44px, 14vw, 72px);
+  }
+
+  /* Taller crop on phones so the video reads as a hero, not a thin strip.
+     object-fit: cover keeps the important center of the frame visible. */
+  .workspace-video {
+    aspect-ratio: auto;
+    height: 60vh;
+    min-height: 320px;
+    max-height: 560px;
+  }
+
+  .play-btn {
+    width: 72px;
+    height: 72px;
+  }
+
+  .video-modal-inner {
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
 }

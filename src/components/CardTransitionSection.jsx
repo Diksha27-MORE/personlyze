@@ -3,6 +3,13 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./CardTransitionSection.css";
 
+// ── Card background images (imported so the bundler resolves the path correctly) ──
+import strategicImg from "../assets/Strategic.jpg";
+import creativeImg from "../assets/Creative.jpg";
+import aiImg from "../assets/AI.png";
+
+const CARD_IMAGES = [strategicImg, creativeImg, aiImg];
+
 gsap.registerPlugin(ScrollTrigger);
 // ── Layout constants (responsive) ───────────────────────────────────────────
 const isMobile = () => window.innerWidth <= 640;
@@ -55,20 +62,63 @@ const SECTION_HEIGHT = "300vh";
 const CARDS = [
   {
     num: "01",
-    title: ["Strategic", "Immersion"],
-    desc: "Deep research and discovery to understand\nyour goals, audience and brand vision.",
+    title: [
+      "Because everything in business must begin with strategy.\nAnd everything in strategy must begin with the consumer."
+    ],
+    desc: [
+      {
+        heading: "Build Consumer Personas",
+        body: "Bringing the customer alive through rich customer profiles that go beyond demographics—capturing motivations, behaviours, anxieties and aspirations.",
+      },
+      {
+        heading: "Craft Consumer Decision Journeys",
+        body: "Mapping every touchpoint, trigger and barrier from discovery to purchase, so you know exactly what to say, when to say it and where it matters most.",
+      },
+      {
+        heading: "Identify High-Impact Personalization Opportunities",
+        body: "Finding the moments where personalization creates the biggest impact on conversion, loyalty and advocacy, helping prioritize creative, budget and technology investments.",
+      },
+    ],
     cta: "Discover the Experience",
   },
+
   {
     num: "02",
-    title: ["Creative", "Exploration"],
-    desc: "Generating bold concepts, visual directions\nand unique experiences that resonate.",
+    title: [
+      "Strategy tells us what to say.\nCreative tells us how to say it."
+    ],
+    desc: [
+      {
+        heading: "Create Content Frameworks",
+        body: "Design the narrative, script, tone of voice, visual language and storytelling structure that makes every personalized video feel authentic and memorable.",
+      },
+      {
+        heading: "Produce Video Assets",
+        body: "End-to-end production—from planning and filming to editing—creating premium video assets that are both brand-ready and AI-ready for personalization.",
+      },
+    ],
     cta: "Discover the Experience",
   },
+
   {
     num: "03",
-    title: ["AI ", "SCALE-UP"],
-    desc: "Refining every detail to deliver\na tailored experience crafted for you.",
+    title: [
+      "The personalization in Personlyze AI.\nMillions of conversations. One intelligent system."
+    ],
+    desc: [
+      {
+        heading: "Create Hyper-Personalized Videos",
+        body: "Using customer data, our AI creates a unique video for every individual while keeping your brand story consistent across every interaction.",
+      },
+      {
+        heading: "Deploy to Marketing Channels",
+        body: "Automatically deliver personalized videos across your existing marketing platforms, ensuring every customer receives the right message at the right moment.",
+      },
+      {
+        heading: "Measure, Review & Calibrate",
+        body: "Continuously monitor performance, optimize campaigns and improve results in real time, making every future interaction smarter than the last.",
+      },
+    ],
     cta: "Discover the Experience",
   },
 ];
@@ -183,13 +233,16 @@ export default function CardTransitionSection() {
         duration: 0.5,
       }, "heroHold1");
 
-      tl.to(cardRefs[1].current, {
-        x: () => BR_X(),
-        y: () => BR_Y(),
-        opacity: 1,
-        ease: E_OUT,
-        duration: 0.65,
-      }, "heroHold1+=0.25");
+tl.to(cardRefs[1].current, {
+  x: () => BR_X(),
+  y: () => BR_Y(),
+  width: () => SMALL_W(),
+  height: () => SMALL_H(),
+  borderRadius: () => SMALL_BR(),
+  opacity: 1,
+  ease: E_OUT,
+  duration: 0.65,
+}, "heroHold1+=0.25");
 
       tl.to({}, { duration: 0.6 }, "heroHold1+=0.9");
 
@@ -241,6 +294,7 @@ export default function CardTransitionSection() {
   ease: E_OUT,
   duration: 0.65,
 }, "transition12+=0.85");
+
       // ── PHASE 4: Hero-02 hold ───────────────────────────────────────────────
       tl.addLabel("heroHold2", 6.0);
       tl.to({}, { duration: 1.5 }, "heroHold2");
@@ -326,7 +380,7 @@ tl.to(cardRefs[1].current, {
         <span className="cts-ambient cts-ambient--br">Skip town, let&apos;s fly</span>
 
         <h1 ref={headlineRef} className="cts-headline">
-          Strategic<br />Immersion
+          What we do<br />
         </h1>
 
         {CARDS.map((card, i) => (
@@ -334,6 +388,12 @@ tl.to(cardRefs[1].current, {
             key={card.num}
             ref={cardRefs[i]}
             className={`cts-card cts-card--${i + 1}`}
+            style={{
+              backgroundImage: `url(${CARD_IMAGES[i]})`,
+              backgroundSize: "contain",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
           >
             <span className="cts-card__num">{card.num}</span>
             <h2 className="cts-card__title">
@@ -350,7 +410,14 @@ tl.to(cardRefs[1].current, {
             ref={descRefs[i]}
             className="cts-desc"
           >
-            <p className="cts-desc__body">{card.desc}</p>
+            <div className="cts-desc__sections">
+              {card.desc.map((section, si) => (
+                <div key={si} className="cts-desc__section">
+                  <h3 className="cts-desc__heading">{section.heading}</h3>
+                  <p className="cts-desc__body">{section.body}</p>
+                </div>
+              ))}
+            </div>
             <a className="cts-desc__cta" href="#">{card.cta}</a>
           </div>
         ))}

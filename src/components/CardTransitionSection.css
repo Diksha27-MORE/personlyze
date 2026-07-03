@@ -1,6 +1,12 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   CardTransitionSection.css — v6 (reference-exact)
+   CardTransitionSection.css — v7 (reference-exact + visual refinements)
    All dimensions, typography and positions matched to reference video.
+   v7 changes (visual only — no GSAP/layout/positioning logic touched):
+     1. Card titles shrunk to a small, elegant caption size.
+     2. Title background kept as a premium semi-transparent black chip.
+     3. Card backgrounds switched to "contain" so the full image is always
+        visible (framed, not cropped) — with a matte/backdrop behind it.
+     4. Description block nudged slightly higher.
 ───────────────────────────────────────────────────────────────────────────── */
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
@@ -74,8 +80,11 @@
    GSAP owns: x, y, width, height, opacity, zIndex, borderRadius.
    CSS owns:  color identity, texture, inner layout, shadow.
 
-   At hero size:  padding 44px, font renders fully.
-   At small size: overflow:hidden clips the text — this is correct & intentional.
+   Background image uses "contain" (set inline in JSX) so the complete
+   artwork is always visible — never cropped or over-zoomed. The card's
+   own background-color (identity colour below) shows through as a matte
+   behind the letterboxed image, so it still reads as a solid, premium card.
+
    border-radius is animated by GSAP (24px hero, 20px small).
 */
 .cts-card {
@@ -98,10 +107,11 @@
     0 32px 80px rgba(0, 0, 0, 0.20);
 }
 
-/* Card colour identities */
-.cts-card--1 { background: #1C1915; }
-.cts-card--2 { background: #161A22; }
-.cts-card--3 { background: #161C16; }
+/* Card background identity colours — act as the matte/frame colour behind
+   the "contain" image, and as a fallback while the image loads. */
+.cts-card--1 { background-color: #1C1915; }
+.cts-card--2 { background-color: #161A22; }
+.cts-card--3 { background-color: #161C16; }
 
 /* Subtle film-grain overlay */
 .cts-card::before {
@@ -147,27 +157,41 @@
 
 /* ── Card title ─────────────────────────────────────────────────────────── */
 /*
-   Hero state: large italic serif fills bottom of card.
-   Small state: text is clipped — only the first character or two show.
+   Hero state: small, elegant italic-serif caption sitting near the bottom
+   of the card — a premium label, not a headline. It must never compete
+   with (or cover) the artwork.
+   Small state: text is clipped — only a hint of the caption shows.
    Font-size is fixed because GSAP animates card dimensions, not font-size.
-   The natural clip at small size is correct reference behavior.
 */
 .cts-card__title {
   position: relative;
-  z-index: 3;
-  display: flex;
+  z-index: 5;
+  display: inline-flex;
   flex-direction: column;
+  align-self: flex-start;
+
   font-family: 'DM Serif Display', Georgia, serif;
   font-style: italic;
   font-weight: 400;
-  /* Reference: ~68px at desktop */
-  font-size: 68px;
-  line-height: 0.93;
-  letter-spacing: -0.03em;
-  color: #F5F1EA;
-  overflow: hidden;
-}
 
+  /* Small, elegant caption — no longer dominates the card */
+  font-size: clamp(13px, 1vw, 16px);
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+
+  color: #fff;
+  overflow: hidden;
+
+  /* Premium semi-transparent black caption chip */
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  padding: 10px 16px;
+  border-radius: 10px;
+
+  max-width: 72%;
+}
 .cts-card__title-line {
   display: block;
 }
@@ -176,21 +200,45 @@
 /*
    Reference: ~280px wide, positioned right of hero card.
    GSAP owns: x, y, opacity.
-   Width and layout are CSS-only.
+   Width and layout are CSS-only. Nudged slightly higher (top offset) so it
+   doesn't visually collide with the small preview card underneath it.
 */
 .cts-desc {
   position: absolute;
-  top: 0;
+  top: -55px; /* moved up further to clear the preview card below */
   left: 0;
   z-index: 20;
-  /* Reference: ~280px wide at 1512px viewport */
-  width: 280px;
+
+  width: 320px;
+
   display: flex;
   flex-direction: column;
-  /* Reference: gap between body and CTA ≈ 26px */
-  gap: 26px;
+  gap: 22px;
+
   will-change: opacity;
   pointer-events: none;
+}
+
+/* ── Description sections (heading + body pairs) ─────────────────────────── */
+.cts-desc__sections {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cts-desc__section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cts-desc__heading {
+  font-family: 'Gilroy', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: rgba(36, 32, 26, 0.92);
+  letter-spacing: 0.005em;
 }
 
 /* ── Description body ───────────────────────────────────────────────────── */
@@ -200,8 +248,8 @@
 */
 .cts-desc__body {
   font-family: 'Gilroy', sans-serif;
-  font-size: 16px;
-  font-weight: 1000;
+  font-size: 14px;
+  font-weight: 400;
   line-height: 1.6;
   color: rgba(36, 32, 26, 0.72);
   letter-spacing: 0.005em;
@@ -291,6 +339,16 @@
     padding-left: 44px; /* room for the numeric step indicator on the left */
   }
 
+  .cts-desc__sections {
+    gap: 16px;
+  }
+
+  .cts-desc__heading {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
   .cts-desc__body {
     font-family: 'DM Sans', system-ui, sans-serif;
     font-size: 15px;
@@ -367,16 +425,32 @@
     letter-spacing: 0.20em;
   }
 
-  .cts-card__title {
-    font-size: 44px;
-    line-height: 0.94;
-  }
+.cts-card__title {
+  font-size: 10px;
+  line-height: 1.15;
+
+  background: rgba(0, 0, 0, 0.45);
+  padding: 10px 14px;
+  border-radius: 12px;
+
+  max-width: 92%;
+}
 
   /* Description — GSAP positions it BELOW the hero on mobile (DESC_Y change).
      Just constrain width so it fits the viewport. */
   .cts-desc {
     width: min(86vw, 360px);
     gap: 18px;
+  }
+
+  .cts-desc__sections {
+    gap: 16px;
+  }
+
+  .cts-desc__heading {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(36, 32, 26, 0.92);
   }
 
   .cts-desc__body {
@@ -397,5 +471,7 @@
   .cts-card        { padding: 18px; }
   .cts-card__title { font-size: 38px; }
   .cts-desc        { width: min(88vw, 320px); gap: 14px; }
+  .cts-desc__sections { gap: 14px; }
+  .cts-desc__heading { font-size: 13px; }
   .cts-desc__body  { font-size: 13px; line-height: 1.5; }
 }
