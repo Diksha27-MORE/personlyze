@@ -14,58 +14,58 @@ gsap.registerPlugin(ScrollTrigger);
 // ── Layout constants (responsive) ───────────────────────────────────────────
 const isMobile = () => window.innerWidth <= 640;
 
-// DESKTOP VALUES ARE UNCHANGED (the ": 780", ": 830", ": 20", ": 158", etc.
-// branches below). Only the isMobile() branches were tuned so the hero
-// card, description and preview thumbnails fit a phone viewport without
-// overlapping.
-const HERO_W  = () => isMobile() ? Math.round(window.innerWidth * 0.58) : 780;
+// All values below are EXACTLY the original constants — hero size, small/
+// thumb sizes, corner slots, timing anchors. Nothing here was changed except
+// one thing, called out below: the vertical gap used inside DESC_Y.
+const HERO_W  = () => isMobile() ? Math.round(window.innerWidth * 0.86) : 780;
 const HERO_H  = () => isMobile() ? Math.round(HERO_W() * (830 / 780))   : 830;
-const HERO_BR = () => isMobile() ? 20 : 20;
+const HERO_BR = () => isMobile() ? 22 : 20;
 
-const SMALL_W  = () => isMobile() ? 84 : 158;
+const SMALL_W  = () => isMobile() ? 96 : 158;
 const SMALL_H  = () => Math.round(SMALL_W() / (780 / 830));
 const SMALL_BR = () => isMobile() ? 14 : 20;
 
-const THUMB_W  = () => isMobile() ? 40 : 58;
+const THUMB_W  = () => isMobile() ? 46 : 58;
 const THUMB_H  = () => Math.round(THUMB_W() / (780 / 830));
 const THUMB_BR = () => isMobile() ? 10 : 12;
 
 // Hero centered horizontally; pushed down on mobile to clear the headline
 const heroX = () => Math.round((window.innerWidth - HERO_W()) / 2) + (isMobile() ? 0 : 40);
 const heroY = () => isMobile()
-  ? Math.round(window.innerHeight * 0.14)
+  ? Math.round(window.innerHeight * 0.18)
   : Math.round((window.innerHeight - HERO_H()) / 2);
 
 // Initial thumbnail (card-01 resting position)
 const thumbX = () => Math.round((window.innerWidth - THUMB_W()) / 2);
-const thumbY = () => Math.round(window.innerHeight * (isMobile() ? 0.80 : 0.72));
+const thumbY = () => Math.round(window.innerHeight * (isMobile() ? 0.82 : 0.72));
 
-// Top-left "timeline" slot for the shrunken (already-seen) card
+// Top-left "timeline" slot for the shrunken card
 const TL_X = () => isMobile() ? 16 : heroX() - 200;
 const TL_Y = () => isMobile() ? 16 : 40;
 
-// Description: right of hero on desktop, BELOW hero on mobile.
-// On mobile HERO_W/HERO_H/heroY were reduced so there is always enough
-// clearance beneath the hero card for the full description to sit without
-// overlapping it or running off the bottom of the viewport.
+// Description: right of hero on desktop, BELOW hero on mobile
+//
+// ONLY CHANGE IN THIS FILE: the mobile gap between the hero card's bottom
+// edge and the description is no longer a flat "+ 20". It's now a small
+// responsive buffer (min 24px, or 3% of viewport height on taller phones)
+// so there's always clear breathing room, regardless of screen size. Hero
+// size/position, description X position, and the desktop formula are
+// untouched.
 const DESC_GAP = 18;
+const MOBILE_DESC_GAP = () => Math.max(24, Math.round(window.innerHeight * 0.03));
 const DESC_X = () => isMobile()
   ? heroX()
   : heroX() + HERO_W() + DESC_GAP;
 const DESC_Y = () => isMobile()
-  ? heroY() + HERO_H() + 16
+  ? heroY() + HERO_H() + MOBILE_DESC_GAP()
   : heroY() + Math.round(HERO_H() * 0.30);
 
-// "Up next" small preview card slot.
-// Desktop: bottom-right of the description column (unchanged).
-// Mobile: TOP-RIGHT corner, mirroring the top-left "seen" slot — this
-// keeps both preview thumbnails pinned to the top strip of the screen,
-// well clear of the hero card + description column that runs beneath it.
+// Bottom-right small preview card slot
 const BR_X = () => isMobile()
   ? window.innerWidth - SMALL_W() - 16
   : DESC_X() + 35;
 const BR_Y = () => isMobile()
-  ? 16
+  ? window.innerHeight - SMALL_H() - 24
   : DESC_Y() + 450;
 
 const SECTION_HEIGHT = "300vh";
