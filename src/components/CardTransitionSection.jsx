@@ -22,8 +22,10 @@ const isMobile = () => window.innerWidth <= 640;
 // vertical space beneath the hero card for the description (up to 3
 // points) to be fully visible without being clipped by .cts-sticky's
 // overflow:hidden. Desktop stays exactly 780/830 — untouched.
-const HERO_W  = () => isMobile() ? Math.round(window.innerWidth * 0.78) : 780;
-const HERO_H  = () => isMobile() ? Math.round(HERO_W() * (830 / 780))   : 830;
+const HERO_W  = () => isMobile() ? Math.round(window.innerWidth * 0.72) : 780;
+// On mobile use a shorter aspect so 3-point descriptions fit under the card
+const HERO_H  = () => isMobile() ? Math.round(HERO_W() * (720 / 780))   : 830;
+
 const HERO_BR = () => isMobile() ? 22 : 20;
 
 const SMALL_W  = () => isMobile() ? 96 : 158;
@@ -41,8 +43,9 @@ const heroX = () => Math.round((window.innerWidth - HERO_W()) / 2) + (isMobile()
 // space below the hero card for the full description block. Desktop
 // keeps its original vertical-centering formula, untouched.
 const heroY = () => isMobile()
-  ? Math.round(window.innerHeight * 0.13)
+  ? Math.round(window.innerHeight * 0.08)   // was 0.13 — nudge up so the description column has more room
   : Math.round((window.innerHeight - HERO_H()) / 2);
+
 
 // Initial thumbnail (card-01 resting position)
 const thumbX = () => Math.round((window.innerWidth - THUMB_W()) / 2);
@@ -65,7 +68,9 @@ const DESC_GAP = 18;
 // "min 24px" to a clearly larger, still-responsive buffer (min 40px, or
 // 5% of viewport height), so the description reads as a separate block
 // rather than crowding the card above it.
-const MOBILE_DESC_GAP = () => Math.max(40, Math.round(window.innerHeight * 0.05));
+// Larger, screen-aware buffer so 2- and 3-point descriptions always fit fully below the hero
+const MOBILE_DESC_GAP = () => Math.max(72, Math.round(window.innerHeight * 0.09));
+
 const DESC_X = () => isMobile()
   ? heroX()
   : heroX() + HERO_W() + DESC_GAP;
@@ -237,12 +242,13 @@ export default function CardTransitionSection() {
       // ── PHASE 1: Headline exits; card-01 grows to hero ──────────────────────
       tl.addLabel("growCard1", 1.5);
 
-      tl.to(headlineRef.current, {
-        y: "-120%",
-        opacity: 1,
-        ease: E_INOUT,
-        duration: 1.2,
-      }, "growCard1");
+tl.to(headlineRef.current, {
+  y: "-120%",
+  opacity: 0,        // was 1 — force it to disappear so it can never bleed into hero-2/3
+  ease: E_INOUT,
+  duration: 0.8,
+}, "growCard1");
+
 
       tl.to(cardRefs[0].current, {
         x: () => heroX(),
@@ -288,7 +294,8 @@ tl.to(cardRefs[1].current, {
   opacity: 1,
   ease: E_OUT,
   duration: 0.65,
-}, isMobile() ? "heroHold1+=1.1" : "heroHold1+=0.25");
+}, isMobile() ? "transition12" : "heroHold1+=0.25");
+
 
       tl.to({}, { duration: 0.6 }, "heroHold1+=0.9");
 
@@ -359,7 +366,8 @@ tl.to(cardRefs[1].current, {
   opacity: 1,
   ease: E_OUT,
   duration: 0.65,
-}, isMobile() ? "heroHold2+=0.9" : "transition12+=0.85");
+}, isMobile() ? "transition23" : "transition12+=0.85");
+
 
       // ── PHASE 4: Hero-02 hold ───────────────────────────────────────────────
       tl.addLabel("heroHold2", 6.0);
