@@ -17,7 +17,12 @@ const isMobile = () => window.innerWidth <= 640;
 // All values below are EXACTLY the original constants — hero size, small/
 // thumb sizes, corner slots, timing anchors. Nothing here was changed except
 // one thing, called out below: the vertical gap used inside DESC_Y.
-const HERO_W  = () => isMobile() ? Math.round(window.innerWidth * 0.86) : 780;
+// MOBILE FIX (issue #2): hero width trimmed from 0.86 -> 0.78 of the
+// viewport. Combined with the heroY change below, this frees up enough
+// vertical space beneath the hero card for the description (up to 3
+// points) to be fully visible without being clipped by .cts-sticky's
+// overflow:hidden. Desktop stays exactly 780/830 — untouched.
+const HERO_W  = () => isMobile() ? Math.round(window.innerWidth * 0.78) : 780;
 const HERO_H  = () => isMobile() ? Math.round(HERO_W() * (830 / 780))   : 830;
 const HERO_BR = () => isMobile() ? 22 : 20;
 
@@ -31,8 +36,12 @@ const THUMB_BR = () => isMobile() ? 10 : 12;
 
 // Hero centered horizontally; pushed down on mobile to clear the headline
 const heroX = () => Math.round((window.innerWidth - HERO_W()) / 2) + (isMobile() ? 0 : 40);
+// MOBILE FIX (issue #2): moved up from 0.18 -> 0.13 of viewport height,
+// pairing with the smaller HERO_W/HERO_H above to leave enough clear
+// space below the hero card for the full description block. Desktop
+// keeps its original vertical-centering formula, untouched.
 const heroY = () => isMobile()
-  ? Math.round(window.innerHeight * 0.18)
+  ? Math.round(window.innerHeight * 0.13)
   : Math.round((window.innerHeight - HERO_H()) / 2);
 
 // Initial thumbnail (card-01 resting position)
@@ -52,7 +61,11 @@ const TL_Y = () => isMobile() ? 16 : 40;
 // size/position, description X position, and the desktop formula are
 // untouched.
 const DESC_GAP = 18;
-const MOBILE_DESC_GAP = () => Math.max(24, Math.round(window.innerHeight * 0.03));
+// MOBILE FIX (issue #2): gap below the hero card increased from a flat
+// "min 24px" to a clearly larger, still-responsive buffer (min 40px, or
+// 5% of viewport height), so the description reads as a separate block
+// rather than crowding the card above it.
+const MOBILE_DESC_GAP = () => Math.max(40, Math.round(window.innerHeight * 0.05));
 const DESC_X = () => isMobile()
   ? heroX()
   : heroX() + HERO_W() + DESC_GAP;
@@ -259,6 +272,13 @@ export default function CardTransitionSection() {
         duration: 0.5,
       }, "heroHold1");
 
+// MOBILE FIX (issue #3): the preview of card-2 used to start fading in
+// almost immediately after the hero-1 description appeared ("+=0.25"),
+// so it was visible while the reader was still going through the
+// description points. On mobile only, this is pushed later in the hold
+// ("+=1.1") so the preview shows up right before the 01->02 transition
+// begins, instead of competing with the description for attention.
+// Desktop keeps the original "+0.25" timing untouched.
 tl.to(cardRefs[1].current, {
   x: () => BR_X(),
   y: () => BR_Y(),
@@ -268,7 +288,7 @@ tl.to(cardRefs[1].current, {
   opacity: 1,
   ease: E_OUT,
   duration: 0.65,
-}, "heroHold1+=0.25");
+}, isMobile() ? "heroHold1+=1.1" : "heroHold1+=0.25");
 
       tl.to({}, { duration: 0.6 }, "heroHold1+=0.9");
 
@@ -324,6 +344,12 @@ tl.to(cardRefs[1].current, {
         duration: 0.5,
       }, "transition12+=0.55");
 
+  // MOBILE FIX (issue #3): same problem one step later — card-3's preview
+  // used to fade in during the 01->02 transition, so it was already
+  // sitting on screen throughout the entire hero-2 hold, distracting from
+  // hero-2's description. On mobile, delay it to just before the 02->03
+  // transition ("heroHold2+=0.9") instead. Desktop keeps its original
+  // "transition12+=0.85" timing untouched.
   tl.to(cardRefs[2].current, {
   x: () => BR_X(),
   y: () => BR_Y(),
@@ -333,7 +359,7 @@ tl.to(cardRefs[1].current, {
   opacity: 1,
   ease: E_OUT,
   duration: 0.65,
-}, "transition12+=0.85");
+}, isMobile() ? "heroHold2+=0.9" : "transition12+=0.85");
 
       // ── PHASE 4: Hero-02 hold ───────────────────────────────────────────────
       tl.addLabel("heroHold2", 6.0);
@@ -406,8 +432,26 @@ tl.to(cardRefs[1].current, {
       // Re-apply non-animated initial card positions on refresh (zoom/resize)
       ScrollTrigger.addEventListener("refreshInit", applyInitialState);
 
-      // Force a refresh when the browser zoom changes the visual viewport
-      const handleResize = () => ScrollTrigger.refresh();
+      // Force a refresh when the browser zoom changes the visual viewport.
+      //
+      // MOBILE FIX: on phones, scrolling shows/hides the browser's address
+      // bar, which fires a 'resize' event purely because the viewport
+      // HEIGHT changed — no layout actually needs recalculating. Every one
+      // of those events was calling ScrollTrigger.refresh(), which runs
+      // refreshInit -> applyInitialState() and yanks the headline back to
+      // opacity:1 / y:0 mid-scroll, right in the middle of hero-02 or
+      // hero-03. That's why the "What we do" headline kept reappearing
+      // throughout the section on mobile even though the growCard1 tween
+      // already sends it off-screen for good. Guarding on WIDTH only means
+      // we still refresh for real layout changes (rotation, pinch-zoom,
+      // desktop window resize) but ignore the mobile toolbar's height-only
+      // noise. Desktop behavior is unchanged — width changes still refresh.
+      let lastWidth = window.innerWidth;
+      const handleResize = () => {
+        if (window.innerWidth === lastWidth) return;
+        lastWidth = window.innerWidth;
+        ScrollTrigger.refresh();
+      };
       window.addEventListener("resize", handleResize);
       window.addEventListener("orientationchange", handleResize);
 
