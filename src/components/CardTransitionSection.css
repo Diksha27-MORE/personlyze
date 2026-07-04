@@ -466,12 +466,14 @@
      margin, so there's always clear space between the hero card and the
      description, on any phone size. This is the only structural change
      in the mobile experience. */
-  .cts-desc {
-    top: 0;
-    margin-top: clamp(12px, 3vh, 28px);
-    width: min(86vw, 360px);
-    gap: 18px;
-  }
+.cts-desc {
+  top: 0;
+  margin-top: 0;
+  padding-left: 0;
+  width: min(86vw, 360px);
+  gap: 18px;
+  text-align: left;
+}
 
   .cts-desc__sections {
     gap: 16px;
