@@ -4,8 +4,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./CardTransitionSection.css";
 
 // ── Card background images (imported so the bundler resolves the path correctly) ──
-import strategicImg from "../assets/Strategic.jpg";
-import creativeImg from "../assets/Creative.jpg";
+import strategicImg from "../assets/Strategic.png";
+import creativeImg from "../assets/Creative.png";
 import aiImg from "../assets/AI.png";
 
 const CARD_IMAGES = [strategicImg, creativeImg, aiImg];
@@ -14,47 +14,58 @@ gsap.registerPlugin(ScrollTrigger);
 // ── Layout constants (responsive) ───────────────────────────────────────────
 const isMobile = () => window.innerWidth <= 640;
 
-const HERO_W  = () => isMobile() ? Math.round(window.innerWidth * 0.86) : 780;
+// DESKTOP VALUES ARE UNCHANGED (the ": 780", ": 830", ": 20", ": 158", etc.
+// branches below). Only the isMobile() branches were tuned so the hero
+// card, description and preview thumbnails fit a phone viewport without
+// overlapping.
+const HERO_W  = () => isMobile() ? Math.round(window.innerWidth * 0.58) : 780;
 const HERO_H  = () => isMobile() ? Math.round(HERO_W() * (830 / 780))   : 830;
-const HERO_BR = () => isMobile() ? 22 : 20;
+const HERO_BR = () => isMobile() ? 20 : 20;
 
-const SMALL_W  = () => isMobile() ? 96 : 158;
+const SMALL_W  = () => isMobile() ? 84 : 158;
 const SMALL_H  = () => Math.round(SMALL_W() / (780 / 830));
 const SMALL_BR = () => isMobile() ? 14 : 20;
 
-const THUMB_W  = () => isMobile() ? 46 : 58;
+const THUMB_W  = () => isMobile() ? 40 : 58;
 const THUMB_H  = () => Math.round(THUMB_W() / (780 / 830));
 const THUMB_BR = () => isMobile() ? 10 : 12;
 
 // Hero centered horizontally; pushed down on mobile to clear the headline
 const heroX = () => Math.round((window.innerWidth - HERO_W()) / 2) + (isMobile() ? 0 : 40);
 const heroY = () => isMobile()
-  ? Math.round(window.innerHeight * 0.18)
+  ? Math.round(window.innerHeight * 0.14)
   : Math.round((window.innerHeight - HERO_H()) / 2);
 
 // Initial thumbnail (card-01 resting position)
 const thumbX = () => Math.round((window.innerWidth - THUMB_W()) / 2);
-const thumbY = () => Math.round(window.innerHeight * (isMobile() ? 0.82 : 0.72));
+const thumbY = () => Math.round(window.innerHeight * (isMobile() ? 0.80 : 0.72));
 
-// Top-left "timeline" slot for the shrunken card
+// Top-left "timeline" slot for the shrunken (already-seen) card
 const TL_X = () => isMobile() ? 16 : heroX() - 200;
 const TL_Y = () => isMobile() ? 16 : 40;
 
-// Description: right of hero on desktop, BELOW hero on mobile
+// Description: right of hero on desktop, BELOW hero on mobile.
+// On mobile HERO_W/HERO_H/heroY were reduced so there is always enough
+// clearance beneath the hero card for the full description to sit without
+// overlapping it or running off the bottom of the viewport.
 const DESC_GAP = 18;
 const DESC_X = () => isMobile()
   ? heroX()
   : heroX() + HERO_W() + DESC_GAP;
 const DESC_Y = () => isMobile()
-  ? heroY() + HERO_H() + 20
+  ? heroY() + HERO_H() + 16
   : heroY() + Math.round(HERO_H() * 0.30);
 
-// Bottom-right small preview card slot
+// "Up next" small preview card slot.
+// Desktop: bottom-right of the description column (unchanged).
+// Mobile: TOP-RIGHT corner, mirroring the top-left "seen" slot — this
+// keeps both preview thumbnails pinned to the top strip of the screen,
+// well clear of the hero card + description column that runs beneath it.
 const BR_X = () => isMobile()
   ? window.innerWidth - SMALL_W() - 16
   : DESC_X() + 35;
 const BR_Y = () => isMobile()
-  ? window.innerHeight - SMALL_H() - 24
+  ? 16
   : DESC_Y() + 450;
 
 const SECTION_HEIGHT = "300vh";
@@ -128,8 +139,12 @@ export default function CardTransitionSection() {
   const stickyRef   = useRef(null);
   const headlineRef = useRef(null);
 
-  const cardRefs = [useRef(null), useRef(null), useRef(null)];
-  const descRefs = [useRef(null), useRef(null), useRef(null)];
+  const cardRefs  = [useRef(null), useRef(null), useRef(null)];
+  const descRefs  = [useRef(null), useRef(null), useRef(null)];
+  // Refs for each card's title chip — needed so GSAP can fade a title in
+  // only while its card is the hero, and fade it out the moment the card
+  // starts shrinking back into a preview thumbnail.
+  const titleRefs = [useRef(null), useRef(null), useRef(null)];
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -180,6 +195,10 @@ export default function CardTransitionSection() {
             opacity: 0,
           });
         });
+
+        // No card starts out as the hero (card-01 starts as a resting
+        // thumbnail), so every title starts hidden.
+        gsap.set(titleRefs.map((r) => r.current), { opacity: 0 });
       };
 
       applyInitialState();
@@ -221,6 +240,13 @@ export default function CardTransitionSection() {
         ease: E_INOUT,
         duration: 1.5,
       }, "growCard1");
+
+      // Title-01 fades in as card-01 finishes becoming the hero.
+      tl.to(titleRefs[0].current, {
+        opacity: 1,
+        ease: E_OUT,
+        duration: 0.6,
+      }, "growCard1+=0.9");
 
       // ── PHASE 2: Hero-01 hold ───────────────────────────────────────────────
       tl.addLabel("heroHold1", 3.0);
@@ -275,6 +301,20 @@ tl.to(cardRefs[1].current, {
         ease: E_IN,
         duration: 0.4,
       }, "transition12");
+
+      // Title-01 fades out as card-01 starts shrinking; title-02 fades in
+      // as card-02 finishes becoming the hero.
+      tl.to(titleRefs[0].current, {
+        opacity: 0,
+        ease: E_IN,
+        duration: 0.3,
+      }, "transition12");
+
+      tl.to(titleRefs[1].current, {
+        opacity: 1,
+        ease: E_OUT,
+        duration: 0.6,
+      }, "transition12+=0.9");
 
       tl.to(descRefs[1].current, {
         x: () => DESC_X(),
@@ -337,6 +377,20 @@ tl.to(cardRefs[1].current, {
         duration: 0.4,
       }, "transition23");
 
+      // Title-02 fades out as card-02 starts shrinking; title-03 fades in
+      // as card-03 finishes becoming the hero.
+      tl.to(titleRefs[1].current, {
+        opacity: 0,
+        ease: E_IN,
+        duration: 0.3,
+      }, "transition23");
+
+      tl.to(titleRefs[2].current, {
+        opacity: 1,
+        ease: E_OUT,
+        duration: 0.6,
+      }, "transition23+=0.9");
+
       tl.to(descRefs[2].current, {
         x: () => DESC_X(),
         y: () => DESC_Y(),
@@ -396,7 +450,7 @@ tl.to(cardRefs[1].current, {
             }}
           >
             <span className="cts-card__num">{card.num}</span>
-            <h2 className="cts-card__title">
+            <h2 ref={titleRefs[i]} className="cts-card__title">
               {card.title.map((line, li) => (
                 <span key={li} className="cts-card__title-line">{line}</span>
               ))}
