@@ -30,7 +30,10 @@
   overflow: hidden;
   cursor: pointer;
 
-  background: #080808;
+  background-color: #080808; /* fallback beneath the inline background-image */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 
   transition:
     opacity   0.4s ease,
@@ -275,90 +278,11 @@
   background: rgba(255,255,255,0.35);
 }
 
-/* ── Per-card deep backgrounds ─────────────────────────────── */
-/* ── Chessboard Layout ───────────────────────────── */
-.real-estate {
-  background: linear-gradient(
-    180deg,
-    #1f8de0 0%,
-    #176db3 50%,
-    #0f4e80 100%
-  );
-}
-
-.bfsi {
-  background: linear-gradient(
-    180deg,
-    #8b3fd9 0%,
-    #6f2eb3 50%,
-    #521d85 100%
-  );
-}
-
-.travel {
-  background: linear-gradient(
-    180deg,
-    #f2c14e 0%,
-    #d9a733 50%,
-    #b88716 100%
-  );
-}
-
-.health {
-  background: linear-gradient(
-    180deg,
-    #ff5b6e 0%,
-    #e63c51 50%,
-    #b91d35 100%
-  );
-}
-
-.retail {
-  background: linear-gradient(
-    180deg,
-    #ff4fa0 0%,
-    #e63789 50%,
-    #b81f65 100%
-  );
-}
-
-.automotive {
-  background: linear-gradient(
-    180deg,
-    #ff944d 0%,
-    #e66d1f 50%,
-    #b85000 100%
-  );
-}
-
-.saas {
-  background: linear-gradient(
-    180deg,
-    #3ecf8e 0%,
-    #28b874 50%,
-    #158856 100%
-  );
-}
-
-.tech {
-  background: linear-gradient(
-    180deg,
-    #00c2ff 0%,
-    #009fd9 50%,
-    #0077a3 100%
-  );
-}
-
-.fashion {
-  background: linear-gradient(
-    180deg,
-    #d56eff 0%,
-    #b94be6 50%,
-    #8b28b8 100%
-  );
-}
-
-/* Black text on white cards */
+/* ── Per-card text-color overrides ──────────────────────────
+   (Gradient backgrounds removed — each card's background is now
+   a PNG applied inline via the `image` property in JS. These
+   overrides remain for industries whose photo is light/busy, so
+   the title stays legible and flips to dark text on hover.) */
 
 .bfsi .dfl-name,
 .health .dfl-name,

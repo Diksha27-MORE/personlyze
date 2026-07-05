@@ -8,6 +8,7 @@ import Workspace from "./components/Workspace";
 import Results from "./components/Results";
 import Industries from "./components/Industries";
 import CardTransitionSection from "./components/CardTransitionSection";
+import Footer from "./components/Footer"; 
 
 // NEW IMPORT
 import IndustryLanding from "./pages/IndustryLanding";
@@ -61,6 +62,10 @@ function App() {
 
             <section className="panel">
               <Industries />
+            </section>
+            
+            <section className="panel">
+              <Footer/>
             </section>
           </div>
         }

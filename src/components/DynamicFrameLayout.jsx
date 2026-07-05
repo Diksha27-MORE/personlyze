@@ -15,18 +15,29 @@ import b2bVideo from "../assets/b2b.mp4";
 import techVideo from "../assets/tech.mp4";
 import fashionVideo from "../assets/fashion.mp4";
 
+// ── New: PNG background images ─────────────────────────────
+import realEstateImg from "../assets/real-estateimg.png";
+import bfsiImg from "../assets/bfsi-img.png";
+import travelImg from "../assets/travelimg.png";
+import healthImg from "../assets/healthimg.png";
+import retailImg from "../assets/Retailimg.png";
+import automotiveImg from "../assets/automotiveimg.png";
+import b2bImg from "../assets/b2bimg.png";
+import techImg from "../assets/techimg.png";
+import fashionImg from "../assets/fashionimg.png";
+
 gsap.registerPlugin(ScrollTrigger);
 
 const industries = [
-  { name: "Real Estate",         video: realEstateVideo, className: "real-estate", slug: "real-estate" },
-  { name: "BFSI",                video: bfsiVideo,       className: "bfsi",        slug: "bfsi"        },
-  { name: "Travel & Hospitality",video: travelVideo,     className: "travel",      slug: "travel"      },
-  { name: "Health & Wellness",   video: healthVideo,     className: "health",      slug: "health"      },
-  { name: "Retail & D2C",        video: retailVideo,     className: "retail",      slug: "retail"      },
-  { name: "Automotive",          video: automotiveVideo, className: "automotive",  slug: "automotive"  },
-  { name: "B2B & SaaS",          video: b2bVideo,        className: "saas",        slug: "b2b"         },
-  { name: "Tech & Startups",     video: techVideo,       className: "tech",        slug: "tech"        },
-  { name: "Fashion & Lifestyle", video: fashionVideo,    className: "fashion",     slug: "fashion"     },
+  { name: "Real Estate",         video: realEstateVideo, image: realEstateImg, className: "real-estate", slug: "real-estate" },
+  { name: "BFSI",                video: bfsiVideo,       image: bfsiImg,       className: "bfsi",        slug: "bfsi"        },
+  { name: "Travel & Hospitality",video: travelVideo,     image: travelImg,     className: "travel",      slug: "travel"      },
+  { name: "Health & Wellness",   video: healthVideo,     image: healthImg,     className: "health",      slug: "health"      },
+  { name: "Retail & D2C",        video: retailVideo,     image: retailImg,     className: "retail",      slug: "retail"      },
+  { name: "Automotive",          video: automotiveVideo, image: automotiveImg, className: "automotive",  slug: "automotive"  },
+  { name: "B2B & SaaS",          video: b2bVideo,        image: b2bImg,        className: "saas",        slug: "b2b"         },
+  { name: "Tech & Startups",     video: techVideo,       image: techImg,       className: "tech",        slug: "tech"        },
+  { name: "Fashion & Lifestyle", video: fashionVideo,    image: fashionImg,    className: "fashion",      slug: "fashion"     },
 ];
 
 /* Max scale reached by the scroll-driven zoom (1 + 1 * 0.9). The reverse
@@ -84,6 +95,7 @@ function IndustryCard({ industry, index, hovered, setHovered, onCardClick, cardR
     <div
       ref={cardRef}
       className={`dfl-card ${industry.className}${isHovered ? " is-hovered" : ""}${isDimmed ? " is-dimmed" : ""}`}
+      style={{ backgroundImage: `url(${industry.image})` }}
       onMouseEnter={() => setHovered(index)}
       onMouseLeave={() => setHovered(null)}
       onClick={() => onCardClick(index)}
