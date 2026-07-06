@@ -105,51 +105,43 @@
   position: relative;
   z-index: 2;
   height: 100%;
-  padding: 36px 40px 36px;
+  padding: 245px 40px 36px;   /* Increase the first value */
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  align-items: center;
   box-sizing: border-box;
+  color: #fff;
+}
+.metric-card-label {
+  font-size: clamp(35px, 4vw, 48px);
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  margin-top: 0;      /* Remove the top margin */
   color: #fff;
 }
 
 .metric-card-number {
-  font-size: clamp(80px, 10vw, 130px);
+  font-size: clamp(100px, 15vw, 150px);
   font-weight: 800;
   line-height: 0.9;
   letter-spacing: -0.04em;
-  color: #fff;
-}
-
-.metric-card-label {
-  font-size: clamp(18px, 2.2vw, 24px);
-  font-weight: 700;
-  margin-top: 20px;
-  line-height: 1.25;
-  color: #fff;
-}
-
-.metric-card-footnote {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  opacity: 0.75;
-  margin-top: 40px;
-  color: #fff;
-}
-
-/* ── Disclaimer ── */
-.results-disclaimer {
   text-align: center;
-  max-width: 800px;
-  margin: 72px auto 80px;
-  padding: 0 24px;
-  font-size: 18px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  line-height: 1.8;
-  color: #777;
+  margin-top: 24px;
+  color: #fff;
+}
+.metric-card-disclaimer {
+  font-size: clamp(9px, 0.85vw, 11px);
+  font-weight: 400;
+  text-align: center;
+  color: #fff;
+  opacity: 0.65;
+  margin-top: auto;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* =========================================================
@@ -180,10 +172,8 @@
     min-height: 420px;
   }
 
-  .results-disclaimer {
-    margin: 48px auto 56px;
-    font-size: 12px;
-    padding: 0 32px;
+  .metric-card-disclaimer {
+    white-space: normal;
   }
 }
 
@@ -228,20 +218,18 @@
     padding: 28px 24px 28px;
   }
 
+  .metric-card-label {
+    font-size: 24px;
+    margin-top: 32px;
+  }
+
   .metric-card-number {
     font-size: 52px;
+    margin-top: 20px;
   }
 
-  .metric-card-label {
-    margin-top: 8px;
-  }
-
-  .metric-card-footnote {
-    margin-top: 24px;
-  }
-
-  .results-disclaimer {
-    margin: 40px auto 48px;
-    font-size: 11.5px;
+  .metric-card-disclaimer {
+    font-size: 10px;
+    opacity: 0.65;
   }
 }

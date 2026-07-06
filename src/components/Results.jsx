@@ -7,7 +7,7 @@ import "./Results.css";
 import bgConversions from "../assets/Higher Conversions.jpg";
 import bgCPA from "../assets/Lower CPA.jpg";
 import bgCTR from "../assets/marketing performance.jpg";
-import bgROAS from "../assets/ROAS Improvement.png";
+import bgROAS from "../assets/ROAS Improvement.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,25 +15,21 @@ const METRICS = [
   {
     number: "150%",
     label: "Higher Conversions",
-    footnote: "VS. INDUSTRY BENCHMARK",
     image: bgConversions,
   },
   {
     number: "50%",
     label: "Lower CPA",
-    footnote: "ACROSS ALL FUNNELS",
     image: bgCPA,
   },
   {
     number: "2×",
     label: "Higher CTR",
-    footnote: "VS. CONTROL CREATIVE",
     image: bgCTR,
   },
   {
     number: "3.8×",
     label: "ROAS Improvement",
-    footnote: "90-DAY PARTNER AVERAGE",
     image: bgROAS,
   },
 ];
@@ -132,22 +128,18 @@ export default function Results() {
               >
                 <div className="metric-card-overlay" />
                 <div className="metric-card-content">
-                  <div>
-                    <div className="metric-card-number">{m.number}</div>
-                    <div className="metric-card-label">{m.label}</div>
+                  <div className="metric-card-label">{m.label}</div>
+                  <div className="metric-card-number">{m.number}</div>
+                  <div className="metric-card-disclaimer">
+                    As established by industry data from personalized video campaigns
+                    across categories and markets across the world.
                   </div>
-                  <div className="metric-card-footnote">{m.footnote}</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
       </div>
-
-      <p className="results-disclaimer">
-        As established by industry data from personalized video campaigns
-        across categories and markets across the world.
-      </p>
 
     </section>
   );

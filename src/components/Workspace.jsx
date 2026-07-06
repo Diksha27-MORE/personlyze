@@ -25,15 +25,21 @@ export default function Workspace() {
         },
       });
 
-      tl.to(headingRef.current, {
+      tl.to(videoRef.current, {
         opacity: 1,
-        y: 0,
-        duration: 0.9,
+        scale: 1,
+        duration: 1.0,
         ease: "power3.out",
       }).to(
-        videoRef.current,
-        { opacity: 1, y: 0, duration: 1.0, ease: "power3.out" },
-        "-=0.4"
+        headingRef.current,
+        {
+          opacity: 1,
+          y: 0,
+          filter: "blur(0px)",
+          duration: 0.9,
+          ease: "power3.out",
+        },
+        "-=0.6"
       );
     }, sectionRef);
 
@@ -52,10 +58,6 @@ export default function Workspace() {
   return (
     <>
       <section className="workspace-section" ref={sectionRef}>
-        <h1 className="workspace-heading" ref={headingRef}>
-          Hello world
-        </h1>
-
         <div
           className="workspace-video"
           ref={videoRef}
@@ -63,6 +65,13 @@ export default function Workspace() {
           role="button"
           aria-label="Play platform walkthrough video"
         >
+          {/* Heading now lives inside the video frame, layered on top of
+              the footage — matches the reference composition instead of
+              sitting above the video as a separate block. */}
+          <h1 className="workspace-heading" ref={headingRef}>
+            Hello world
+          </h1>
+
           <img
             src={workspaceImg}
             alt="Workspace"
