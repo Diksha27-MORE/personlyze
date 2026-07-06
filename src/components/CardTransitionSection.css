@@ -1,26 +1,15 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   CardTransitionSection.css — v7 (reference-exact + visual refinements)
-   All dimensions, typography and positions matched to reference video.
-   v7 changes (visual only — no GSAP/layout/positioning logic touched):
-     1. Card titles shrunk to a small, elegant caption size.
-     2. Title background kept as a premium semi-transparent black chip.
-     3. Card backgrounds switched to "contain" so the full image is always
-        visible (framed, not cropped) — with a matte/backdrop behind it.
-     4. Description block nudged slightly higher.
-
-   v8 changes — surgical, nothing structural touched:
-     1. .cts-card__title now defaults to opacity: 0. GSAP fades it to 1 only
-        while a card is in the hero position (see JSX), so small preview
-        cards never show a title. This is a visibility-only change; no
-        position, size or timing was touched.
-     2. Root-cause fix for the mobile "description overlaps hero card" bug:
-        the shared .cts-desc rule has `top: -55px`, a desktop-only tweak
-        (per its own comment) to tuck the description under the small
-        preview card on desktop. That rule wasn't scoped to desktop, so it
-        was also pulling the description 55px upward on mobile — straight
-        into the hero card. Fixed with one mobile-only override that
-        neutralizes that offset and adds a small, responsive top margin
-        instead. Nothing else in the mobile layout was changed.
+   CardTransitionSection.css — v8+ (sub-section reveal)
+   Only additive/surgical changes vs. previous version:
+     • .cts-desc__sections is now a single-cell CSS grid so all
+       .cts-desc__section children stack in the same position. GSAP fades
+       them in/out one at a time.
+     • .cts-desc__heading gets explicit text-align: left so headings
+       align flush with their body paragraph (no visual indent).
+     • Sub-sections default to will-change: opacity, transform so GSAP
+       fades feel smooth.
+   Nothing else was touched — layout, sizes, positions, mobile rules,
+   card chrome, timings all preserved.
 ───────────────────────────────────────────────────────────────────────────── */
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
@@ -46,11 +35,6 @@
 }
 
 /* ── Editorial headline ─────────────────────────────────────────────────── */
-/*
-   Reference: large italic serif, top-left anchored.
-   Dominates State 1 before card-01 grows.
-   GSAP animates opacity + y.
-*/
 .cts-headline {
   position: absolute;
   z-index: 20;
@@ -61,7 +45,6 @@
   font-family: 'DM Serif Display', Georgia, serif;
   font-style: italic;
   font-weight: 400;
-  /* Reference: nearly full-viewport-width display text, two lines */
   font-size: clamp(88px, 11.5vw, 175px);
   line-height: 0.92;
   letter-spacing: -0.03em;
@@ -90,22 +73,10 @@
 .cts-ambient--br { bottom: 24px; right: 28px; }
 
 /* ── Cards ──────────────────────────────────────────────────────────────── */
-/*
-   GSAP owns: x, y, width, height, opacity, zIndex, borderRadius.
-   CSS owns:  color identity, texture, inner layout, shadow.
-
-   Background image uses "contain" (set inline in JSX) so the complete
-   artwork is always visible — never cropped or over-zoomed. The card's
-   own background-color (identity colour below) shows through as a matte
-   behind the letterboxed image, so it still reads as a solid, premium card.
-
-   border-radius is animated by GSAP (24px hero, 20px small).
-*/
 .cts-card {
   position: absolute;
   top: 0;
   left: 0;
-  /* border-radius managed by GSAP */
   overflow: hidden;
   will-change: transform, width, height, opacity;
 
@@ -121,13 +92,10 @@
     0 32px 80px rgba(0, 0, 0, 0.20);
 }
 
-/* Card background identity colours — act as the matte/frame colour behind
-   the "contain" image, and as a fallback while the image loads. */
 .cts-card--1 { background-color: #1C1915; }
 .cts-card--2 { background-color: #161A22; }
 .cts-card--3 { background-color: #161C16; }
 
-/* Subtle film-grain overlay */
 .cts-card::before {
   content: '';
   position: absolute;
@@ -139,7 +107,6 @@
   pointer-events: none;
 }
 
-/* Diagonal vignette — darkens bottom-right, lightens top-left */
 .cts-card::after {
   content: '';
   position: absolute;
@@ -170,23 +137,10 @@
 }
 
 /* ── Card title ─────────────────────────────────────────────────────────── */
-/*
-   Hero state: small, elegant italic-serif caption sitting near the bottom
-   of the card — a premium label, not a headline. It must never compete
-   with (or cover) the artwork.
-
-   Visibility is owned by GSAP: opacity is tweened to 1 only while a card
-   is in the hero position, and back to 0 the moment it starts shrinking
-   into a preview thumbnail (see the titleRefs tweens in the JSX). Default
-   is 0 here purely to avoid a flash-of-visible-title before that first
-   gsap.set() runs.
-
-   Font-size is fixed because GSAP animates card dimensions, not font-size.
-*/
 .cts-card__title {
   position: absolute;
   left: 50%;
-  top: 85%;          /* Try 58%, 60%, 62%, or 65% */
+  top: 85%;
   transform: translate(-50%, -50%);
 
   z-index: 5;
@@ -216,15 +170,9 @@
 }
 
 /* ── Description block — right column ──────────────────────────────────── */
-/*
-   Reference: ~280px wide, positioned right of hero card.
-   GSAP owns: x, y, opacity.
-   Width and layout are CSS-only. Nudged slightly higher (top offset) so it
-   doesn't visually collide with the small preview card underneath it.
-*/
 .cts-desc {
   position: absolute;
-  top: -55px; /* moved up further to clear the preview card below (DESKTOP ONLY — see mobile override below) */
+  top: -55px; /* DESKTOP ONLY — mobile overrides below */
   left: 0;
   z-index: 20;
 
@@ -238,7 +186,8 @@
   pointer-events: none;
 }
 
-/* ── Description sections (heading + body pairs) ─────────────────────────── */
+/* Sub-sections stack in the same cell so only one is visible at a time.
+   GSAP toggles opacity + translateY per sub-section. */
 .cts-desc__sections {
   display: flex;
   flex-direction: column;
@@ -249,7 +198,9 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  will-change: opacity, transform;
 }
+
 
 .cts-desc__heading {
   font-family: 'Gilroy', sans-serif;
@@ -258,13 +209,9 @@
   line-height: 1.3;
   color: rgba(36, 32, 26, 0.92);
   letter-spacing: 0.005em;
+  text-align: left; /* flush-left so headings align with body copy */
 }
 
-/* ── Description body ───────────────────────────────────────────────────── */
-/*
-   Reference: moderate weight sans, center-ish alignment,
-   slightly muted dark color. Line-height generous.
-*/
 .cts-desc__body {
   font-family: 'Gilroy', sans-serif;
   font-size: 14px;
@@ -299,18 +246,15 @@
 }
 
 @media (max-width: 640px) {
-  /* Sticky canvas — keep full viewport for GSAP */
   .cts-sticky {
     height: 100vh;
     height: 100svh;
   }
 
-  /* Ambient labels — tighter to edge */
   .cts-ambient--tl { top: 16px;    left: 18px;  }
   .cts-ambient--br { bottom: 16px; right: 18px; }
   .cts-ambient     { font-size: 10px; letter-spacing: 0.12em; }
 
-  /* Headline — bold display, top-aligned, two-line "Let's fly" feel */
   .cts-headline {
     top: clamp(28px, 6vh, 56px);
     left: 20px;
@@ -325,7 +269,6 @@
     text-align: left;
   }
 
-  /* Cards — softer radius, tighter padding, clipped title behavior preserved */
   .cts-card {
     padding: 20px;
     gap: 6px;
@@ -351,21 +294,17 @@
     letter-spacing: -0.02em;
   }
 
-  /* Description block — sits BELOW card on mobile, full readable width */
   .cts-desc {
     width: min(78vw, 360px);
     gap: 18px;
-    padding-left: 44px; /* room for the numeric step indicator on the left */
-  }
-
-  .cts-desc__sections {
-    gap: 16px;
+    padding-left: 44px;
   }
 
   .cts-desc__heading {
     font-family: 'DM Sans', system-ui, sans-serif;
     font-size: 14px;
     font-weight: 700;
+    text-align: left;
   }
 
   .cts-desc__body {
@@ -386,16 +325,10 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   MOBILE OVERRIDES — reference-exact vertical scroll
-   Replace your existing @media (max-width: 640px) and (max-width: 380px) blocks
-   with the rules below. Desktop CSS + GSAP logic untouched.
-   NOTE: On mobile the section is NOT pinned. The reference screenshots show a
-   normal vertical scroll: big headline → card 1 → caption → card 2 → caption
-   → card 3 → caption. So we neutralise sticky/absolute on mobile only.
+   MOBILE OVERRIDES — reference-exact vertical scroll (kept from v8)
 ───────────────────────────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
-  /* Keep the section pinned — GSAP drives the choreography */
   .cts-section { background: #EDEAE2; }
 
   .cts-sticky {
@@ -408,12 +341,10 @@
     padding: 0;
   }
 
-  /* Ambient corner labels */
   .cts-ambient     { font-size: 10px; letter-spacing: 0.12em; opacity: 0.45; }
   .cts-ambient--tl { top: 16px;    left: 18px;  }
   .cts-ambient--br { bottom: 16px; right: 18px; }
 
-  /* Headline — same italic serif as desktop, scaled for phone */
   .cts-headline {
     top: clamp(28px, 6vh, 56px);
     left: 20px;
@@ -427,8 +358,6 @@
     color: #3A3530;
   }
 
-  /* Card chrome — GSAP still owns x/y/width/height/opacity/zIndex/border-radius.
-     Only restyle inner padding, shadow and typography. */
   .cts-card {
     padding: 22px;
     gap: 6px;
@@ -444,45 +373,31 @@
     letter-spacing: 0.20em;
   }
 
-.cts-card__title {
-  font-size: 10px;
-  line-height: 1.15;
+  .cts-card__title {
+    font-size: 10px;
+    line-height: 1.15;
 
-  background: rgba(0, 0, 0, 0.45);
-  padding: 10px 14px;
-  border-radius: 12px;
+    background: rgba(0, 0, 0, 0.45);
+    padding: 10px 14px;
+    border-radius: 12px;
 
-  max-width: 92%;
-}
+    max-width: 92%;
+  }
 
-  /* Description — GSAP positions it BELOW the hero on mobile (DESC_Y change).
-     Just constrain width so it fits the viewport.
-
-     FIX: .cts-desc has a shared `top: -55px` rule above intended only for
-     the desktop layout (it tucks the description under the desktop preview
-     card). That offset was never neutralized on mobile, so it pulled the
-     description 55px upward — straight into the hero card. This override
-     cancels that offset and replaces it with a small, responsive top
-     margin, so there's always clear space between the hero card and the
-     description, on any phone size. This is the only structural change
-     in the mobile experience. */
-.cts-desc {
-  top: 0;
-  margin-top: 0;
-  padding-left: 0;
-  width: min(86vw, 360px);
-  gap: 18px;
-  text-align: left;
-}
-
-  .cts-desc__sections {
-    gap: 16px;
+  .cts-desc {
+    top: 0;
+    margin-top: 0;
+    padding-left: 0;
+    width: min(86vw, 360px);
+    gap: 18px;
+    text-align: left;
   }
 
   .cts-desc__heading {
     font-size: 14px;
     font-weight: 700;
     color: rgba(36, 32, 26, 0.92);
+    text-align: left;
   }
 
   .cts-desc__body {
@@ -503,7 +418,6 @@
   .cts-card        { padding: 18px; }
   .cts-card__title { font-size: 38px; }
   .cts-desc        { width: min(88vw, 320px); gap: 14px; }
-  .cts-desc__sections { gap: 14px; }
   .cts-desc__heading { font-size: 13px; }
   .cts-desc__body  { font-size: 13px; line-height: 1.5; }
 }

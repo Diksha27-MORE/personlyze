@@ -8,8 +8,6 @@ import strategicImg from "../assets/Strategic.png";
 import creativeImg from "../assets/Creative.png";
 import aiImg from "../assets/AI.png";
 
-
-
 const CARD_IMAGES = [strategicImg, creativeImg, aiImg];
 
 gsap.registerPlugin(ScrollTrigger);
@@ -63,7 +61,8 @@ const BR_Y = () => isMobile()
 // MOBILE FIX #3: hide non-active preview cards on mobile
 const previewOpacity = () => (isMobile() ? 0 : 1);
 
-const SECTION_HEIGHT = "300vh";
+// Extended to give the sub-section reveal beats real scroll room.
+const SECTION_HEIGHT = "450vh";
 
 const CARDS = [
   {
@@ -108,6 +107,13 @@ export default function CardTransitionSection() {
   const descRefs  = [useRef(null), useRef(null), useRef(null)];
   const titleRefs = [useRef(null), useRef(null), useRef(null)];
 
+  // Refs for each individual description sub-section, per card.
+  // descSectionRefs.current[cardIndex][sectionIndex] -> DOM node.
+  const descSectionRefs = useRef([[], [], []]);
+  const setDescSectionRef = (cardIdx, secIdx) => (el) => {
+    descSectionRefs.current[cardIdx][secIdx] = el;
+  };
+
   useEffect(() => {
     const section = sectionRef.current;
 
@@ -122,7 +128,7 @@ export default function CardTransitionSection() {
         gsap.set(cardRefs[0].current, {
           x: thumbX(), y: thumbY(),
           width: THUMB_W(), height: THUMB_H(),
-          opacity: isMobile() ? 0 : 1, // hidden on mobile until it becomes hero
+          opacity: isMobile() ? 0 : 1,
           zIndex: 10, borderRadius: THUMB_BR(),
         });
 
@@ -140,6 +146,13 @@ export default function CardTransitionSection() {
 
         descRefs.forEach((r) => {
           gsap.set(r.current, { x: DESC_X(), y: DESC_Y(), opacity: 0 });
+        });
+
+        // All sub-sections start hidden, slightly offset downward.
+        descSectionRefs.current.forEach((cardSections) => {
+          cardSections.forEach((el) => {
+            if (el) gsap.set(el, { opacity: 0, y: 30 });
+          });
         });
 
         gsap.set(titleRefs.map((r) => r.current), { opacity: 0 });
@@ -160,6 +173,31 @@ export default function CardTransitionSection() {
         },
       });
 
+      // Helper: cycle sub-sections of a given card between `startLabel`
+      // and `startLabel + windowDur`. Each sub-section fades in with a
+      // small upward translate; when a next one appears the previous
+      // fades out and translates further up. Only ONE is ever visible.
+      const cycleSubSections = (cardIdx, startLabel, windowDur) => {
+        const sections = descSectionRefs.current[cardIdx].filter(Boolean);
+        if (sections.length === 0) return;
+
+        const inDur   = 0.5;
+        const outDur  = 0.4;
+        // Give the last section a "hold" tail equal to one step so
+        // it stays fully visible until the card transition begins.
+        const step = windowDur / sections.length;
+
+        sections.forEach((el, i) => {
+          const inAt  = `${startLabel}+=${(i * step).toFixed(3)}`;
+          tl.to(el, { opacity: 1, y: 0, ease: E_OUT, duration: inDur }, inAt);
+
+          if (i < sections.length - 1) {
+            const outAt = `${startLabel}+=${((i + 1) * step - 0.1).toFixed(3)}`;
+            tl.to(el, { opacity: 0, y: -20, ease: E_IN, duration: outDur }, outAt);
+          }
+        });
+      };
+
       // ── PHASE 0 ──
       tl.addLabel("hold0", 0);
       tl.to({}, { duration: 1.5 });
@@ -175,7 +213,7 @@ export default function CardTransitionSection() {
         x: () => heroX(), y: () => heroY(),
         width : () => HERO_W(), height: () => HERO_H(),
         borderRadius: () => HERO_BR(),
-        opacity: 1, // ensure visible on mobile once it becomes hero
+        opacity: 1,
         ease: E_INOUT, duration: 1.5,
       }, "growCard1");
 
@@ -183,15 +221,16 @@ export default function CardTransitionSection() {
         opacity: 1, ease: E_OUT, duration: 0.6,
       }, "growCard1+=0.9");
 
-      // ── PHASE 2: hero-01 hold ──
+      // ── PHASE 2: hero-01 hold + sub-section cycle ──
+      // Window: heroHold1 (3.0) → transition12 (6.6) => 3.6s available.
       tl.addLabel("heroHold1", 3.0);
 
+      // Container becomes visible; sub-sections drive per-item reveal.
       tl.to(descRefs[0].current, {
         x: () => DESC_X(), y: () => DESC_Y(),
         opacity: 1, ease: E_OUT, duration: 0.5,
       }, "heroHold1");
 
-      // MOBILE FIX #3: opacity respects previewOpacity() → hidden on mobile
       tl.to(cardRefs[1].current, {
         x: () => BR_X(), y: () => BR_Y(),
         width: () => SMALL_W(), height: () => SMALL_H(),
@@ -200,16 +239,17 @@ export default function CardTransitionSection() {
         ease: E_OUT, duration: 0.65,
       }, isMobile() ? "transition12" : "heroHold1+=0.25");
 
-      tl.to({}, { duration: 0.6 }, "heroHold1+=0.9");
+      // Cycle card-01's 3 sub-sections across the hero window.
+      cycleSubSections(0, "heroHold1", 3.4);
 
       // ── PHASE 3: 01 → 02 transition ──
-      tl.addLabel("transition12", 4.5);
+      tl.addLabel("transition12", 6.6);
 
       tl.to(cardRefs[0].current, {
         x: () => TL_X(), y: () => TL_Y(),
         width: () => SMALL_W(), height: () => SMALL_H(),
         borderRadius: () => SMALL_BR(),
-        opacity: () => previewOpacity(), // hide shrunken card on mobile
+        opacity: () => previewOpacity(),
         ease: E_INOUT, duration: 1.5,
       }, "transition12");
 
@@ -217,7 +257,7 @@ export default function CardTransitionSection() {
         x: () => heroX(), y: () => heroY(),
         width: () => HERO_W(), height: () => HERO_H(),
         borderRadius: () => HERO_BR(),
-        opacity: 1, // hero always fully visible
+        opacity: 1,
         zIndex: 10, ease: E_INOUT, duration: 1.5,
       }, "transition12");
 
@@ -239,12 +279,15 @@ export default function CardTransitionSection() {
         ease: E_OUT, duration: 0.65,
       }, isMobile() ? "transition23" : "transition12+=0.85");
 
-      // ── PHASE 4: hero-02 hold ──
-      tl.addLabel("heroHold2", 6.0);
+      // ── PHASE 4: hero-02 hold + sub-section cycle ──
+      // Window: heroHold2 (8.1) → transition23 (10.5) => 2.4s.
+      tl.addLabel("heroHold2", 8.1);
       tl.to({}, { duration: 1.5 }, "heroHold2");
 
+      cycleSubSections(1, "heroHold2", 2.4);
+
       // ── PHASE 5: 02 → 03 transition ──
-      tl.addLabel("transition23", 7.5);
+      tl.addLabel("transition23", 10.5);
 
       tl.to(cardRefs[0].current, {
         x: () => TL_X() - 24, opacity: 0, ease: E_IN, duration: 0.4,
@@ -254,7 +297,7 @@ export default function CardTransitionSection() {
         x: () => TL_X(), y: () => TL_Y(),
         width: () => SMALL_W(), height: () => SMALL_H(),
         borderRadius: () => SMALL_BR(),
-        opacity: () => previewOpacity(), // hide on mobile once it stops being hero
+        opacity: () => previewOpacity(),
         zIndex: 6, ease: E_INOUT, duration: 1.5,
       }, "transition23");
 
@@ -276,9 +319,15 @@ export default function CardTransitionSection() {
         opacity: 1, ease: E_OUT, duration: 0.5,
       }, "transition23+=0.55");
 
-      // ── PHASE 6: hero-03 hold ──
-      tl.addLabel("heroHold3", 9.0);
+      // ── PHASE 6: hero-03 hold + sub-section cycle ──
+      // Window: heroHold3 (12.0) → end. Give ~3.6s so the last item holds.
+      tl.addLabel("heroHold3", 12.0);
       tl.to({}, { duration: 1.0 }, "heroHold3");
+
+      cycleSubSections(2, "heroHold3", 3.4);
+
+      // Tail so scroll doesn't unpin right as the last sub-section appears.
+      tl.to({}, { duration: 1.2 }, "heroHold3+=3.4");
 
       ScrollTrigger.addEventListener("refreshInit", applyInitialState);
 
@@ -336,7 +385,11 @@ export default function CardTransitionSection() {
           <div key={`desc-${card.num}`} ref={descRefs[i]} className="cts-desc">
             <div className="cts-desc__sections">
               {card.desc.map((section, si) => (
-                <div key={si} className="cts-desc__section">
+                <div
+                  key={si}
+                  ref={setDescSectionRef(i, si)}
+                  className="cts-desc__section"
+                >
                   <h3 className="cts-desc__heading">{section.heading}</h3>
                   <p className="cts-desc__body">{section.body}</p>
                 </div>
