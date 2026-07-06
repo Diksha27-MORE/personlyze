@@ -167,7 +167,9 @@
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 1024px) {
+/* Desktop/tablet breakpoint (>768px) is unchanged — button stays
+   absolutely positioned exactly as in the original design. */
+@media (max-width: 1024px) and (min-width: 769px) {
   .hero-center {
     gap: 10px;
     padding: 0 30px;
@@ -189,11 +191,18 @@
   }
 }
 
+/* ---------- Mobile (<=768px) ---------- */
+/* Here the button is taken OUT of absolute positioning and placed back
+   into normal document flow. Since .hero-center becomes a single-column
+   grid on mobile, the button (3rd child, after .hero-left and .hero-right)
+   naturally lands below the PNG. justify-items: center on the grid keeps
+   it horizontally centered without needing left/transform tricks, so it
+   can never overlap the PNG regardless of screen width. */
 @media (max-width: 768px) {
   .hero {
     height: auto;
     min-height: 100vh;
-    padding: 60px 0 120px;
+    padding: 60px 0 60px;
   }
 
   .hero-center {
@@ -226,19 +235,21 @@
     max-width: 520px;
   }
 
+  /* Override absolute positioning: normal flow + top spacing instead of
+     bottom-pinning. This is what guarantees no overlap with the PNG. */
   .hero-demo-btn {
-    position: absolute;
-    left: 50%;
-    bottom: 40px;
-    transform: translateX(-50%);
-    margin: 0;
+    position: relative;
+    left: auto;
+    bottom: auto;
+    transform: none;
+    margin-top: clamp(24px, 6vw, 40px);
   }
 
   .hero-demo-btn:hover {
-    transform: translateX(-50%) translateY(-3px) scale(1.03);
+    transform: translateY(-3px) scale(1.03);
   }
   .hero-demo-btn:active {
-    transform: translateX(-50%) translateY(-1px) scale(1);
+    transform: translateY(-1px) scale(1);
   }
 }
 
@@ -246,8 +257,8 @@
   .hero-logo-video { width: 260px; }
   .hero-right-image { width: 92%; max-width: 360px; }
   .hero-demo-btn {
-    bottom: 30px;
     font-size: 15px;
     padding: 13px 32px;
+    margin-top: clamp(20px, 7vw, 32px);
   }
 }
