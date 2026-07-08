@@ -20,7 +20,7 @@ export default function IndustryLanding() {
     );
   }
 
-  const { theme, heroTitle, heroDescription, cards } = industry;
+  const { theme, heroTitle, heroDescription, cards, image } = industry;
   const totalPages = Math.max(1, Math.ceil(cards.length / CARDS_PER_VIEW));
 
   const goPrev = () => {
@@ -33,10 +33,16 @@ export default function IndustryLanding() {
 
   return (
     <div className="industry-landing" style={{ background: theme.gradient }}>
-      {/* Hero */}
-      <div className="industry-hero">
-        <h1 className="industry-hero__title">{heroTitle}</h1>
-        <p className="industry-hero__description">{heroDescription}</p>
+      {/* Hero — background image is dynamic per industry, driven by slug */}
+      <div
+        className="industry-hero"
+        style={{ backgroundImage: `url(${image})` }}
+      >
+        <div className="industry-hero__overlay" />
+        <div className="industry-hero__content">
+          <h1 className="industry-hero__title">{heroTitle}</h1>
+          <p className="industry-hero__description">{heroDescription}</p>
+        </div>
       </div>
 
       {/* Cards section — fixed light background, holds the carousel */}

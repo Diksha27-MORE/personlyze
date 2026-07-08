@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+// DynamicFrameLayout.jsx
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
 import "./DynamicFrameLayout.css";
 import { FaExpand, FaPlay, FaExternalLinkAlt } from "react-icons/fa";
 import { useNavigate, useNavigationType } from "react-router-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { createPortal } from "react-dom";
 
 import realEstateVideo from "../assets/real-estate.mp4";
 import bfsiVideo from "../assets/bfsi.mp4";
@@ -15,7 +17,6 @@ import b2bVideo from "../assets/b2b.mp4";
 import techVideo from "../assets/tech.mp4";
 import fashionVideo from "../assets/fashion.mp4";
 
-// ── New: PNG background images ─────────────────────────────
 import realEstateImg from "../assets/real-estateimg.png";
 import bfsiImg from "../assets/bfsi-img.png";
 import travelImg from "../assets/travelimg.png";
@@ -29,47 +30,44 @@ import fashionImg from "../assets/fashionimg.png";
 gsap.registerPlugin(ScrollTrigger);
 
 const industries = [
-  { name: "Real Estate",         video: realEstateVideo, image: realEstateImg, className: "real-estate", slug: "real-estate" },
-  { name: "BFSI",                video: bfsiVideo,       image: bfsiImg,       className: "bfsi",        slug: "bfsi"        },
-  { name: "Travel & Hospitality",video: travelVideo,     image: travelImg,     className: "travel",      slug: "travel"      },
-  { name: "Health & Wellness",   video: healthVideo,     image: healthImg,     className: "health",      slug: "health"      },
-  { name: "Retail & D2C",        video: retailVideo,     image: retailImg,     className: "retail",      slug: "retail"      },
-  { name: "Automotive",          video: automotiveVideo, image: automotiveImg, className: "automotive",  slug: "automotive"  },
-  { name: "B2B & SaaS",          video: b2bVideo,        image: b2bImg,        className: "saas",        slug: "b2b"         },
-  { name: "Tech & Startups",     video: techVideo,       image: techImg,       className: "tech",        slug: "tech"        },
-  { name: "Fashion & Lifestyle", video: fashionVideo,    image: fashionImg,    className: "fashion",      slug: "fashion"     },
+  { name: "Real Estate",          video: realEstateVideo, image: realEstateImg, className: "real-estate", slug: "real-estate" },
+  { name: "BFSI",                 video: bfsiVideo,       image: bfsiImg,       className: "bfsi",        slug: "bfsi"        },
+  { name: "Travel & Hospitality", video: travelVideo,     image: travelImg,     className: "travel",      slug: "travel"      },
+  { name: "Health & Wellness",    video: healthVideo,     image: healthImg,     className: "health",      slug: "health"      },
+  { name: "Retail & D2C",         video: retailVideo,     image: retailImg,     className: "retail",      slug: "retail"      },
+  { name: "Automotive",           video: automotiveVideo, image: automotiveImg, className: "automotive",  slug: "automotive"  },
+  { name: "B2B & SaaS",           video: b2bVideo,        image: b2bImg,        className: "saas",        slug: "b2b"         },
+  { name: "Tech & Startups",      video: techVideo,       image: techImg,       className: "tech",        slug: "tech"        },
+  { name: "Fashion & Lifestyle",  video: fashionVideo,    image: fashionImg,    className: "fashion",     slug: "fashion"     },
 ];
 
-/* Max scale reached by the scroll-driven zoom (1 + 1 * 0.9). The reverse
-   transition starts here so the back animation mirrors the forward one. */
 const ZOOM_MAX_SCALE = 1.9;
-
-/* Key used to hand off the selected card + scroll position across the route
-   navigation so the grid can replay the reverse transition when we return. */
 const RETURN_KEY = "dfl_return";
 
-function getPos(index) {
-  return { row: Math.floor(index / 3), col: index % 3 };
-}
+const getPos = (index) => ({ row: Math.floor(index / 3), col: index % 3 });
 
-/* ── Letter-eraser hook ──────────────────────────────────────
-   When active=true  → strips letters from the front one-by-one
-   When active=false → instantly restores full text           */
+const isTouchDevice =
+  typeof window !== "undefined" &&
+  (("ontouchstart" in window) || (navigator.maxTouchPoints > 0));
+
+/* ── Letter-eraser hook ────────────────────────────────────── */
 function useLetterErase(fullText, active) {
   const [displayed, setDisplayed] = useState(fullText);
   const timerRef = useRef(null);
 
   useEffect(() => {
-    clearInterval(timerRef.current);
-
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
     if (active) {
-      // Start erasing from the beginning, one letter every 40 ms
       let len = fullText.length;
       timerRef.current = setInterval(() => {
         len -= 1;
         if (len <= 0) {
           setDisplayed("");
           clearInterval(timerRef.current);
+          timerRef.current = null;
         } else {
           setDisplayed(fullText.slice(fullText.length - len));
         }
@@ -77,114 +75,152 @@ function useLetterErase(fullText, active) {
     } else {
       setDisplayed(fullText);
     }
-
-    return () => clearInterval(timerRef.current);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
   }, [active, fullText]);
 
   return displayed;
 }
 
-/* Individual card so each can own its own eraser hook */
-function IndustryCard({ industry, index, hovered, setHovered, onCardClick, cardRef }){
-  const isHovered = hovered === index;
-  const isDimmed  = hovered !== null && !isHovered;
-
+/* ── IndustryCard ──────────────────────────────────────────── */
+const IndustryCard = memo(function IndustryCard({
+  industry,
+  index,
+  isHovered,
+  isDimmed,
+  setHovered,
+  onCardClick,
+  cardRef,
+}) {
   const displayedName = useLetterErase(industry.name, isHovered);
+  const videoRef = useRef(null);
+
+  // Play/pause preloaded hover video without reloading src.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (isHovered) {
+      v.muted = true;
+      // Kick decoder in advance
+      try { v.currentTime = v.currentTime; } catch { /* ignore */ }
+      const p = v.play();
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    } else {
+      v.pause();
+    }
+  }, [isHovered]);
+
+  const bgStyle = useMemo(
+    () => ({ backgroundImage: `url(${industry.image})` }),
+    [industry.image]
+  );
+
+  const handleEnter = useCallback(() => setHovered(index), [index, setHovered]);
+  const handleLeave = useCallback(() => setHovered(null), [setHovered]);
+  const handleClick = useCallback(() => onCardClick(index), [index, onCardClick]);
+
+  const cardClass =
+    `dfl-card ${industry.className}` +
+    (isHovered ? " is-hovered" : "") +
+    (isDimmed ? " is-dimmed" : "");
 
   return (
     <div
       ref={cardRef}
-      className={`dfl-card ${industry.className}${isHovered ? " is-hovered" : ""}${isDimmed ? " is-dimmed" : ""}`}
-      style={{ backgroundImage: `url(${industry.image})` }}
-      onMouseEnter={() => setHovered(index)}
-      onMouseLeave={() => setHovered(null)}
-      onClick={() => onCardClick(index)}
+      className={cardClass}
+      style={bgStyle}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      onClick={handleClick}
     >
-      {/* Video — only renders on hover card */}
       <video
+        ref={videoRef}
         className={`dfl-video${isHovered ? " dfl-video--visible" : ""}`}
         src={industry.video}
         muted
         loop
-        autoPlay
         playsInline
-        preload="none"
+        preload="auto"
+        disablePictureInPicture
+        // no autoPlay — we control play/pause via effect so no repeated .play() calls
       />
 
-      {/* Dark base overlay */}
       <div className="dfl-overlay" />
 
-      {/* Floating controls */}
       <div className={`dfl-controls${isHovered ? " dfl-controls--visible" : ""}`}>
         <button className="dfl-ctrl-btn" aria-label="Expand"><FaExpand size={10} /></button>
         <button className="dfl-ctrl-btn" aria-label="Play"><FaPlay size={10} /></button>
         <button className="dfl-ctrl-btn" aria-label="Open"><FaExternalLinkAlt size={10} /></button>
       </div>
 
-      {/* Centered title block */}
       <div className={`dfl-title-block${isHovered ? " dfl-title-block--erasing" : ""}`}>
-        <h3 className="dfl-name">
-          {isHovered
-            ? (displayedName.length > 0
-                ? <><span className="dfl-name-ghost">{industry.name}</span><span className="dfl-name-visible">{displayedName}</span></>
-                : null)
-            : industry.name
-          }
-        </h3>
-        {/* Animated separator line */}
+<h3 className="dfl-name">
+  {industry.name}
+</h3>
         <div className={`dfl-sep${isHovered ? " dfl-sep--shrink" : ""}`} />
       </div>
     </div>
   );
-}
+});
 
 export default function DynamicFrameLayout() {
   const navigate = useNavigate();
-  const navigationType = useNavigationType(); // "POP" on browser back/forward
+  const navigationType = useNavigationType();
   const [hovered, setHovered] = useState(null);
 
-  /* ── Fullscreen transition state ──────────────────────────── */
-  const [activeIndex, setActiveIndex] = useState(null); // index of card currently in fullscreen flow
+  const [activeIndex, setActiveIndex] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showScrollCue, setShowScrollCue] = useState(false);
 
   const cardRefs = useRef([]);
-  const fsWrapRef = useRef(null);   // wrapper: owns geometry + zoom scale (animated by GSAP)
-  const fsVideoRef = useRef(null);  // the actual <video>: NEVER receives the zoom transform
+  const fsWrapRef = useRef(null);
+  const fsVideoRef = useRef(null);
   const fsContainerRef = useRef(null);
   const fsTintRef = useRef(null);
   const scrollSpacerRef = useRef(null);
   const scrollTriggerRef = useRef(null);
+  const openTweenRef = useRef(null);
+  const closeTweenRef = useRef(null);
+  const zoomTweenRef = useRef(null);
   const navigatedRef = useRef(false);
   const closingRef = useRef(false);
-  const restoringRef = useRef(false); // true while the reverse (back) transition runs
-  const pageScrollRef = useRef(0);    // page scroll position captured when a card is clicked
+  const restoringRef = useRef(false);
+  const animatingRef = useRef(false);   // guards duplicate open/close animations
+  const pageScrollRef = useRef(0);
+  const activeIndexRef = useRef(null);
 
-  const getColTemplate = () => {
-    if (hovered === null) return "repeat(3, 1fr)";
-    const { col: hCol } = getPos(hovered);
-    return [0, 1, 2].map(c => c === hCol ? "2.1fr" : "0.7fr").join(" ");
-  };
+  useEffect(() => { activeIndexRef.current = activeIndex; }, [activeIndex]);
 
-  const getRowTemplate = () => {
-    if (hovered === null) return "repeat(3, 1fr)";
-    const { row: hRow } = getPos(hovered);
-    return [0, 1, 2].map(r => r === hRow ? "2.1fr" : "0.7fr").join(" ");
-  };
+  const { colTemplate, rowTemplate } = useMemo(() => {
+    if (hovered === null) {
+      return { colTemplate: "repeat(3, 1fr)", rowTemplate: "repeat(3, 1fr)" };
+    }
+    const { row: hRow, col: hCol } = getPos(hovered);
+    return {
+      colTemplate: [0, 1, 2].map(c => c === hCol ? "2.1fr" : "0.7fr").join(" "),
+      rowTemplate: [0, 1, 2].map(r => r === hRow ? "2.1fr" : "0.7fr").join(" "),
+    };
+  }, [hovered]);
 
-  /* Current vertical page scroll, cross-browser */
+  const gridStyle = useMemo(
+    () => ({ gridTemplateColumns: colTemplate, gridTemplateRows: rowTemplate }),
+    [colTemplate, rowTemplate]
+  );
+
   const getScrollY = () =>
     window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
 
-  /* Capture the clicked card's current bounding rect */
   const getCardRect = (index) => {
     const el = cardRefs.current[index];
-    if (!el) return null;
-    return el.getBoundingClientRect();
+    return el ? el.getBoundingClientRect() : null;
   };
 
-  /* Keep the cloned <video> playing no matter what (re-arm on any stall) */
-  const ensurePlaying = useCallback(() => {
+  /* Play the fullscreen clone once; no more per-frame .play() calls. */
+  const primePlayback = useCallback(() => {
     const v = fsVideoRef.current;
     if (!v) return;
     v.muted = true;
@@ -196,27 +232,44 @@ export default function DynamicFrameLayout() {
     }
   }, []);
 
-  /* ── Open fullscreen: animate WRAPPER from card rect → viewport ── */
-  const openFullscreen = useCallback((index) => {
-    // Capture the EXACT page scroll position so we can restore the Industries
-    // section (not the Hero) when the user navigates back later.
-    pageScrollRef.current = getScrollY();
+  /* Rebind a stall recovery listener — only when needed */
+  useEffect(() => {
+    const v = fsVideoRef.current;
+    if (!v) return;
+    const onStalled = () => {
+      if (v.paused) {
+        const p = v.play();
+        if (p && typeof p.catch === "function") p.catch(() => {});
+      }
+    };
+    v.addEventListener("pause", onStalled);
+    v.addEventListener("stalled", onStalled);
+    v.addEventListener("suspend", onStalled);
+    return () => {
+      v.removeEventListener("pause", onStalled);
+      v.removeEventListener("stalled", onStalled);
+      v.removeEventListener("suspend", onStalled);
+    };
+  }, []);
 
+  /* ── Open fullscreen ── */
+  const openFullscreen = useCallback((index) => {
+    if (animatingRef.current || isFullscreen) return; // dedupe double-clicks
     const rect = getCardRect(index);
     if (!rect || !fsWrapRef.current) return;
 
+    animatingRef.current = true;
+    pageScrollRef.current = getScrollY();
     navigatedRef.current = false;
     closingRef.current = false;
+
     setActiveIndex(index);
     setIsFullscreen(true);
 
-    // Lock the real page scroll; the spacer below drives ScrollTrigger instead
-    document.body.style.overflow = "hidden";
-
+document.body.style.setProperty("overflow", "auto", "important");
+document.documentElement.style.setProperty("overflow", "auto", "important");
     const wrapEl = fsWrapRef.current;
 
-    // Position the wrapper exactly over the original card first (no flash).
-    // transform stays scale(1) here — geometry only.
     gsap.set(wrapEl, {
       top: rect.top,
       left: rect.left,
@@ -224,32 +277,30 @@ export default function DynamicFrameLayout() {
       height: rect.height,
       opacity: 1,
       scale: 1,
+      force3D: true,
       transformOrigin: "center center",
     });
 
-    // Start playback immediately and keep it alive through the tween.
-    ensurePlaying();
+    primePlayback();
 
-    // Animate to fullscreen — premium, cinematic easing.
-    // We animate top/left/width/height (layout), NOT scale, so the video
-    // element itself is never under a scaling transform → frames stay live.
-    gsap.to(wrapEl, {
+    if (openTweenRef.current) openTweenRef.current.kill();
+    openTweenRef.current = gsap.to(wrapEl, {
       top: 0,
       left: 0,
       width: window.innerWidth,
       height: window.innerHeight,
       duration: 0.85,
       ease: "power3.inOut",
-      onUpdate: ensurePlaying,
+      force3D: true,
       onComplete: () => {
         if (fsTintRef.current) fsTintRef.current.classList.add("dfl-fullscreen-overlay-tint--visible");
         setShowScrollCue(true);
-        ensurePlaying();
-        // Re-enable body scroll AFTER the expand finishes so the
-        // scroll-driven zoom (Step 4) can begin from a clean state.
-        document.body.style.overflow = "";
-        window.scrollTo(0, 0);
+        primePlayback();
+document.body.style.setProperty("overflow", "auto", "important");
+document.documentElement.style.setProperty("overflow", "auto", "important");
+window.scrollTo(0, 0);
         setupScrollZoom(index);
+        animatingRef.current = false;
       },
     });
 
@@ -258,66 +309,70 @@ export default function DynamicFrameLayout() {
       { opacity: 0 },
       { opacity: 1, duration: 0.4, ease: "power1.out" }
     );
-  }, [ensurePlaying]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFullscreen, primePlayback]);
 
-  /* ── Close fullscreen: reverse animation back into the card ── */
+  /* ── Close fullscreen ── */
   const closeFullscreen = useCallback(() => {
-    if (activeIndex === null || closingRef.current) return;
+    const idx = activeIndexRef.current;
+    if (idx === null || closingRef.current || animatingRef.current) return;
     closingRef.current = true;
+    animatingRef.current = true;
 
     setShowScrollCue(false);
     if (fsTintRef.current) fsTintRef.current.classList.remove("dfl-fullscreen-overlay-tint--visible");
 
-    // Tear down scroll-driven zoom before reversing
     if (scrollTriggerRef.current) {
       scrollTriggerRef.current.kill();
       scrollTriggerRef.current = null;
     }
-    document.body.style.overflow = "hidden";
+    if (zoomTweenRef.current) { zoomTweenRef.current.kill(); zoomTweenRef.current = null; }
 
-    // Return the page to where the card was before the overlay opened,
-    // so the wrapper collapses into the correct on-screen position.
-    window.scrollTo(0, pageScrollRef.current);
+document.body.style.setProperty("overflow", "hidden", "important");
+document.documentElement.style.setProperty("overflow", "hidden", "important");
+window.scrollTo(0, pageScrollRef.current);
 
-    const rect = getCardRect(activeIndex);
+    const rect = getCardRect(idx);
     const wrapEl = fsWrapRef.current;
 
     if (rect && wrapEl) {
-      // Reset zoom scale instantly, then animate geometry back to the card.
-      gsap.set(wrapEl, { scale: 1, transformOrigin: "center center" });
-      gsap.to(wrapEl, {
+      gsap.set(wrapEl, { scale: 1, force3D: true, transformOrigin: "center center" });
+      if (closeTweenRef.current) closeTweenRef.current.kill();
+      closeTweenRef.current = gsap.to(wrapEl, {
         top: rect.top,
         left: rect.left,
         width: rect.width,
         height: rect.height,
         duration: 0.7,
         ease: "power3.inOut",
-        onUpdate: ensurePlaying,
+        force3D: true,
         onComplete: () => {
           gsap.set(wrapEl, { opacity: 0 });
-          document.body.style.overflow = "";
-          window.scrollTo(0, pageScrollRef.current);
-          setIsFullscreen(false);
+document.body.style.setProperty("overflow", "auto", "important");
+document.documentElement.style.setProperty("overflow", "auto", "important");
+window.scrollTo(0, pageScrollRef.current);
+setIsFullscreen(false);
           setActiveIndex(null);
           closingRef.current = false;
+          animatingRef.current = false;
         },
       });
     } else {
-      document.body.style.overflow = "";
+document.body.style.setProperty("overflow", "auto", "important");
+document.documentElement.style.overflow = "";
       window.scrollTo(0, pageScrollRef.current);
       setIsFullscreen(false);
       setActiveIndex(null);
       closingRef.current = false;
+      animatingRef.current = false;
     }
 
     gsap.to(fsContainerRef.current, { opacity: 0, duration: 0.5, ease: "power1.in" });
-  }, [activeIndex, ensurePlaying]);
+  }, []);
 
-  /* ── Step 4: scroll-driven zoom, scrubbed to scroll position ──
-     The scale is applied to the WRAPPER only. The <video> inside fills
-     the wrapper at 100% and is never transformed, so it keeps decoding
-     and painting live frames while the wrapper layer is scaled. */
+  /* ── Scroll-driven zoom ── */
   const setupScrollZoom = useCallback((index) => {
+    
     if (!fsWrapRef.current || !scrollSpacerRef.current) return;
 
     if (scrollTriggerRef.current) {
@@ -326,84 +381,76 @@ export default function DynamicFrameLayout() {
     }
 
     const wrapEl = fsWrapRef.current;
-    gsap.set(wrapEl, { scale: 1, transformOrigin: "center center" });
-    ensurePlaying();
+    gsap.set(wrapEl, { scale: 1, force3D: true, transformOrigin: "center center" });
+    primePlayback();
 
-    scrollTriggerRef.current = ScrollTrigger.create({
-      trigger: scrollSpacerRef.current,
-      start: "top top",
-      end: "bottom top",
-      scrub: true,
-      onUpdate: (self) => {
-        const progress = self.progress; // 0 → 1
-        const scale = 1 + progress * 0.9; // gradual zoom up to ~1.9x
-        // Scale the wrapper layer (GSAP writes transform: ... scale()).
-        gsap.set(wrapEl, { scale });
+    // Quick setter avoids per-frame object allocations / lookups.
+    const setScale = gsap.quickSetter(wrapEl, "scale");
+    let cueHidden = false;
 
-        // Guarantee the live video keeps playing across the whole zoom.
-        ensurePlaying();
+const spacerEl = scrollSpacerRef.current;
+scrollTriggerRef.current = ScrollTrigger.create({
+  start: 0,
+  end: () => spacerEl.offsetHeight,
+  scrub: true,
+  invalidateOnRefresh: true,
+ onUpdate: (self) => {
+  const progress = self.progress;
+  setScale(1 + progress * 0.9);
 
-        // Fade the scroll cue out early in the scroll
-        if (progress > 0.04) {
+  // TEMP DEBUG — remove after confirming
+  console.log("scrollY:", getScrollY(), "docHeight:", document.documentElement.scrollHeight, "progress:", progress.toFixed(3));
+
+        if (!cueHidden && progress > 0.04) {
+          cueHidden = true;
           setShowScrollCue(false);
         }
 
         if (progress >= 0.995 && !navigatedRef.current) {
           navigatedRef.current = true;
-          const industry = industries[index];
-          finishTransition(index, industry.slug);
+          finishTransition(index, industries[index].slug);
         }
       },
     });
-    // Make sure ScrollTrigger has correct measurements after layout settles
     ScrollTrigger.refresh();
-  }, [ensurePlaying]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [primePlayback]);
 
-  /* ── Step 5: navigate once zoom completes ── */
   const finishTransition = useCallback((index, slug) => {
     if (scrollTriggerRef.current) {
       scrollTriggerRef.current.kill();
       scrollTriggerRef.current = null;
     }
-    document.body.style.overflow = "";
-
-    // Remember which card we left from AND the page scroll position of the
-    // Industries section, so the reverse (back) transition can restore the
-    // exact view — not the top/Hero — when the user returns.
+    document.body.style.setProperty("overflow", "auto", "important");
+    document.documentElement.style.setProperty("overflow", "auto", "important");
     try {
       sessionStorage.setItem(
         RETURN_KEY,
         JSON.stringify({ index, scrollY: pageScrollRef.current })
       );
-    } catch { /* ignore storage errors */ }
-
+    } catch { /* ignore */ }
     navigate(`/industry/${slug}`);
   }, [navigate]);
 
-  /* ── Reverse transition (browser Back) ───────────────────────
-     Restores the Industries scroll position first, then replays the
-     forward flow backwards: starts fullscreen + zoomed, zooms back out,
-     then collapses the live video into its original card. */
+  /* ── Reverse transition ── */
   const reverseTransition = useCallback((index, scrollY) => {
     const wrapEl = fsWrapRef.current;
     if (!wrapEl) return;
 
     navigatedRef.current = false;
-    closingRef.current = true;   // keeps the cloned video visible
+    closingRef.current = true;
     restoringRef.current = true;
+    animatingRef.current = true;
     pageScrollRef.current = scrollY || 0;
 
-    // Restore the exact selection + fullscreen state we left in.
     setActiveIndex(index);
     setIsFullscreen(true);
     setShowScrollCue(false);
 
-    // Put the underlying page back at the Industries section BEFORE locking,
-    // so the collapse lands on the real card position (not the Hero).
     window.scrollTo(0, pageScrollRef.current);
-    document.body.style.overflow = "hidden";
+    document.body.style.setProperty("overflow", "hidden", "important");
+    document.documentElement.style.setProperty("overflow", "hidden", "important");
 
-    // Begin from the state we left: fully fullscreen and fully zoomed in.
     gsap.set(wrapEl, {
       top: 0,
       left: 0,
@@ -411,30 +458,41 @@ export default function DynamicFrameLayout() {
       height: window.innerHeight,
       opacity: 1,
       scale: ZOOM_MAX_SCALE,
+      force3D: true,
       transformOrigin: "center center",
     });
     if (fsTintRef.current) fsTintRef.current.classList.add("dfl-fullscreen-overlay-tint--visible");
 
-    ensurePlaying();
+    primePlayback();
 
-    // Wait two frames so the grid has laid out and card rects are accurate,
-    // and re-apply the scroll in case the browser tried to restore its own.
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         window.scrollTo(0, pageScrollRef.current);
-        ensurePlaying();
+        primePlayback();
         const rect = getCardRect(index);
 
-        // 1) Zoom the fullscreen video back out to 1x.
         gsap.to(wrapEl, {
           scale: 1,
           duration: 0.55,
           ease: "power2.out",
-          onUpdate: ensurePlaying,
+          force3D: true,
         });
 
+        const done = () => {
+          if (fsTintRef.current) fsTintRef.current.classList.remove("dfl-fullscreen-overlay-tint--visible");
+          gsap.to(fsContainerRef.current, { opacity: 0, duration: 0.3, ease: "power1.in" });
+          gsap.set(wrapEl, { opacity: 0 });
+document.body.style.setProperty("overflow", "auto", "important");
+document.documentElement.style.setProperty("overflow", "auto", "important");
+window.scrollTo(0, pageScrollRef.current);
+          setIsFullscreen(false);
+          setActiveIndex(null);
+          closingRef.current = false;
+          restoringRef.current = false;
+          animatingRef.current = false;
+        };
+
         if (rect) {
-          // 2) Collapse the fullscreen frame back into its original card.
           gsap.to(wrapEl, {
             top: rect.top,
             left: rect.left,
@@ -443,68 +501,42 @@ export default function DynamicFrameLayout() {
             duration: 0.7,
             ease: "power3.inOut",
             delay: 0.5,
-            onUpdate: ensurePlaying,
-            onComplete: () => {
-              if (fsTintRef.current) fsTintRef.current.classList.remove("dfl-fullscreen-overlay-tint--visible");
-              gsap.to(fsContainerRef.current, { opacity: 0, duration: 0.3, ease: "power1.in" });
-              gsap.set(wrapEl, { opacity: 0 });
-              document.body.style.overflow = "";
-              window.scrollTo(0, pageScrollRef.current);
-              setIsFullscreen(false);
-              setActiveIndex(null);
-              closingRef.current = false;
-              restoringRef.current = false;
-            },
+            force3D: true,
+            onComplete: done,
           });
         } else {
-          // Fallback: no card rect — just dismiss cleanly.
-          if (fsTintRef.current) fsTintRef.current.classList.remove("dfl-fullscreen-overlay-tint--visible");
-          gsap.to(fsContainerRef.current, { opacity: 0, duration: 0.3 });
-          gsap.set(wrapEl, { opacity: 0 });
-          document.body.style.overflow = "";
-          window.scrollTo(0, pageScrollRef.current);
-          setIsFullscreen(false);
-          setActiveIndex(null);
-          closingRef.current = false;
-          restoringRef.current = false;
+          done();
         }
       });
     });
-  }, [ensurePlaying]);
+  }, [primePlayback]);
 
-  /* On mount: if we arrived here via browser Back AND we have a stored
-     selection, restore scroll + replay the reverse transition into that card. */
+  /* Mount: handle browser Back replay */
   useEffect(() => {
-    // Take manual control of scroll restoration so the browser doesn't snap
-    // the page to the top (Hero) before our reverse transition runs.
     let prevScrollRestoration;
     if ("scrollRestoration" in window.history) {
       prevScrollRestoration = window.history.scrollRestoration;
       window.history.scrollRestoration = "manual";
     }
 
-    let raf1;
-    let raf2;
+    let raf1, raf2;
     try {
       const raw = sessionStorage.getItem(RETURN_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
         const index = parsed && typeof parsed.index === "number" ? parsed.index : null;
         const scrollY = parsed && typeof parsed.scrollY === "number" ? parsed.scrollY : 0;
-        // Only replay on real back/forward navigation, not a fresh push.
         if (navigationType === "POP" && index !== null && industries[index]) {
           sessionStorage.removeItem(RETURN_KEY);
-          // Restore scroll immediately to avoid any flash of the Hero.
           window.scrollTo(0, scrollY);
           raf1 = requestAnimationFrame(() => {
             raf2 = requestAnimationFrame(() => reverseTransition(index, scrollY));
           });
         } else {
-          // Different entry path — discard the stale marker.
           sessionStorage.removeItem(RETURN_KEY);
         }
       }
-    } catch { /* ignore storage / parse errors */ }
+    } catch { /* ignore */ }
 
     return () => {
       cancelAnimationFrame(raf1);
@@ -513,91 +545,77 @@ export default function DynamicFrameLayout() {
         window.history.scrollRestoration = prevScrollRestoration;
       }
     };
-    // Run once on mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* Click handler: open if closed, close if open (no navigation here) */
   const handleCardClick = useCallback((index) => {
-    if (restoringRef.current) return; // ignore clicks mid reverse-transition
-    if (isFullscreen) {
-      closeFullscreen();
-    } else {
-      openFullscreen(index);
-    }
+    if (restoringRef.current || animatingRef.current) return;
+    if (isFullscreen) closeFullscreen();
+    else openFullscreen(index);
   }, [isFullscreen, openFullscreen, closeFullscreen]);
 
-  /* Click anywhere on the fullscreen overlay closes it, per Step 3 */
   const handleOverlayClick = useCallback(() => {
-    if (restoringRef.current) return; // don't interrupt the reverse transition
+    if (restoringRef.current || animatingRef.current) return;
     closeFullscreen();
   }, [closeFullscreen]);
 
-  /* When the cloned video gets a source, prime playback immediately so
-     it is already running by the time the expand starts. */
-  useEffect(() => {
-    if (activeIndex !== null) {
-      ensurePlaying();
-    }
-  }, [activeIndex, ensurePlaying]);
-
-  /* Cleanup on unmount: kill ScrollTrigger, restore scroll, clear styles */
+  /* Cleanup on unmount */
   useEffect(() => {
     return () => {
-      if (scrollTriggerRef.current) {
-        scrollTriggerRef.current.kill();
-        scrollTriggerRef.current = null;
-      }
-      document.body.style.overflow = "";
+      if (scrollTriggerRef.current) { scrollTriggerRef.current.kill(); scrollTriggerRef.current = null; }
+      if (openTweenRef.current)  { openTweenRef.current.kill();  openTweenRef.current = null; }
+      if (closeTweenRef.current) { closeTweenRef.current.kill(); closeTweenRef.current = null; }
+      if (zoomTweenRef.current)  { zoomTweenRef.current.kill();  zoomTweenRef.current = null; }
+      ScrollTrigger.getAll().forEach(t => {
+        if (t.vars && t.vars.trigger === scrollSpacerRef.current) t.kill();
+      });
+document.body.style.setProperty("overflow", "auto", "important");
+document.documentElement.style.setProperty("overflow", "auto", "important");
     };
+  }, []);
+
+  const setCardRef = useCallback((index) => (el) => {
+    cardRefs.current[index] = el;
   }, []);
 
   return (
     <>
-      <div
-        className="dfl-grid"
-        style={{
-          gridTemplateColumns: getColTemplate(),
-          gridTemplateRows:    getRowTemplate(),
-        }}
-      >
+      <div className="dfl-grid" style={gridStyle}>
         {industries.map((industry, index) => (
           <IndustryCard
-            key={index}
+            key={industry.slug}
             industry={industry}
             index={index}
-            hovered={hovered}
+            isHovered={hovered === index}
+            isDimmed={hovered !== null && hovered !== index}
             setHovered={setHovered}
             onCardClick={handleCardClick}
-            cardRef={(el) => (cardRefs.current[index] = el)}
+            cardRef={setCardRef(index)}
           />
         ))}
       </div>
 
-      {/* ── Fullscreen transition layer (Apple-style) ───────────── */}
-      {isFullscreen && (
-        <div
-          ref={fsContainerRef}
-          className="dfl-fullscreen"
-          onClick={handleOverlayClick}
-        >
-          {/* Scroll spacer drives the ScrollTrigger scrub; lives
-              behind the fixed video/tint, invisible to the eye */}
-          <div ref={scrollSpacerRef} className="dfl-scroll-spacer" />
-        </div>
-      )}
+{isFullscreen && (
+  <div
+    ref={fsContainerRef}
+    className="dfl-fullscreen"
+    onClick={handleOverlayClick}
+  />
+)}
 
-      {/* Wrapper + video clone + tint + scroll cue render independently of
-          dfl-fullscreen's mount so the close animation can run smoothly
-          even as isFullscreen toggles false mid-tween.
+{isFullscreen &&
+  createPortal(
+    <div ref={scrollSpacerRef} className="dfl-scroll-spacer" />,
+    document.body
+  )}
 
-          KEY: the WRAPPER owns geometry + zoom scale (animated by GSAP).
-          The <video> stays untouched (no scaling transform), is never
-          recreated, and keeps playing live frames the whole time. */}
       <div
         ref={fsWrapRef}
         className="dfl-fullscreen-video"
-        style={{ opacity: isFullscreen || closingRef.current ? 1 : 0 }}
+        style={{
+          opacity: isFullscreen || closingRef.current ? 1 : 0,
+          pointerEvents: isFullscreen ? "auto" : "none",
+        }}
         onClick={handleOverlayClick}
       >
         <video
@@ -609,6 +627,7 @@ export default function DynamicFrameLayout() {
           autoPlay
           playsInline
           preload="auto"
+          disablePictureInPicture
         />
       </div>
 
@@ -618,6 +637,9 @@ export default function DynamicFrameLayout() {
         <span className="dfl-scroll-cue-text">Scroll Down</span>
         <span className="dfl-scroll-cue-arrow">↓</span>
       </div>
+
+      {/* Silence unused-var warning; kept for potential mobile branches. */}
+      {false && isTouchDevice}
     </>
   );
 }

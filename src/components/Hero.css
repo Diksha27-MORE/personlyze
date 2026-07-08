@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
 
 * {
   margin: 0;
@@ -15,7 +15,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: "Gilroy", "Inter", sans-serif;
 }
 
 .hero-video {
@@ -77,17 +76,91 @@
 .hero-right {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   justify-content: center;
-  /* was -80px; move further left so PNG starts closer to center */
+  align-items: flex-start;
+
   transform: translateX(-140px);
 }
 
-.hero-right-image {
-  width: 750px;
-  max-width: none;
-  height: auto;
-  object-fit: contain;
+/* ===============================
+   PERSONLYZE
+=================================*/
+.hero-brand{
+  display:flex;
+  align-items:flex-end;
+  line-height:0.88;
+
+  font-family: var(--heading);
+}
+
+.brand-name{
+    font-size:108px;
+    color:#fff;
+
+    font-family:var(--heading);
+
+    letter-spacing:-5px;
+}
+
+.brand-dot{
+    font-size:108px;
+    color:#d10000;
+
+    font-family:var(--heading);
+}
+
+.brand-ai{
+    font-size:108px;
+    color:#d10000;
+
+    font-family:var(--heading);
+
+    letter-spacing:-5px;
+}
+
+/* ===============================
+   TAGLINE
+=================================*/
+.hero-tagline{
+  display:flex;
+  align-items:flex-end;
+
+  margin-top:-6px;      /* Move the tagline slightly DOWN */
+  margin-left:88px;
+
+  gap:22px;
+
+  flex-wrap:nowrap;     /* Keep everything on ONE line */
+  white-space:nowrap;   /* Prevent line break */
+}
+
+.strategy{
+  font-family: var(--light );
+
+  font-size: 50px;
+  font-weight: 750;   /* Instead of 300 */
+
+  color: #d10000;
+
+  letter-spacing: -1px;
+  line-height: 1;
+
+  position: relative;
+  top: 8px;
+  left: -8px;
+}
+.personalization{
+  font-family: var(--light);
+  font-size: 50px;
+  font-weight: 300;
+  color: #fff;
+
+  letter-spacing: -1px;
+  line-height: 1;
+
+  position: relative;
+  top: 8px;      /* Same vertical position as strategy-first */
+  left: +5px;    /* Same horizontal offset as strategy-first */
 }
 
 /* ---------- Premium SaaS "Book a Demo" button ---------- */
@@ -103,7 +176,6 @@
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 999px;
   color: #fff;
-  font-family: "Inter", sans-serif;
   font-size: 17px;
   font-weight: 600;
   letter-spacing: 0.2px;
@@ -169,28 +241,38 @@
 /* ---------- Responsive ---------- */
 /* Desktop/tablet breakpoint (>768px) is unchanged — button stays
    absolutely positioned exactly as in the original design. */
-@media (max-width: 1024px) and (min-width: 769px) {
-  .hero-center {
-    gap: 10px;
-    padding: 0 30px;
-  }
-  .hero-logo-video {
-    width: 520px;
-    transform: translateX(20px);
-  }
-  .hero-right {
-    transform: translateX(-80px);
-  }
-  .hero-right-image {
-    width: 500px;
-  }
-  .hero-demo-btn {
-    bottom: 40px;
-    font-size: 16px;
-    padding: 15px 40px;
-  }
+@media(max-width:768px){
+
+.hero-right{
+    transform:none;
+    align-items:center;
 }
 
+.hero-brand{
+    justify-content:center;
+}
+
+.brand-name,
+.brand-dot,
+.brand-ai{
+    font-size:64px;
+}
+
+.hero-tagline{
+    margin-left:0;
+    margin-top:0;
+
+    gap:14px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+.strategy,
+.personalization{
+    font-size:24px;
+}
+
+}
 /* ---------- Mobile (<=768px) ---------- */
 /* Here the button is taken OUT of absolute positioning and placed back
    into normal document flow. Since .hero-center becomes a single-column
@@ -260,5 +342,26 @@
     font-size: 15px;
     padding: 13px 32px;
     margin-top: clamp(20px, 7vw, 32px);
+  }
+}
+.hero-demo-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.hero-demo-btn__arrow {
+  font-size: 20px;
+  line-height: 1;
+  animation: bounceArrow 1.5s ease-in-out infinite;
+}
+
+@keyframes bounceArrow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
   }
 }

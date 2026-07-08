@@ -68,10 +68,13 @@ export default function Workspace() {
           {/* Heading now lives inside the video frame, layered on top of
               the footage — matches the reference composition instead of
               sitting above the video as a separate block. */}
-          <h1 className="workspace-heading" ref={headingRef}>
-            Hello world
-          </h1>
-
+<section className="workspace-title">
+  <h1 className="workspace-heading" ref={headingRef}>
+    what is&nbsp;
+    <span className="workspace-brand">personlyze</span>
+    <span className="workspace-ai">.ai</span>?
+  </h1>
+</section>
           <img
             src={workspaceImg}
             alt="Workspace"

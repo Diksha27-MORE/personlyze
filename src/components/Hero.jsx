@@ -1,7 +1,7 @@
 import "./Hero.css";
 import backgroundVideo from "../assets/hero-video.mp4";
 import LogoAnimation from "../assets/Logo animation new.webm";
-import personlyzePng from "../assets/personlyzepng.png";
+
 
 function Hero() {
   const handleBookDemo = () => {
@@ -38,21 +38,28 @@ function Hero() {
         </div>
 
         {/* Right Side */}
-        <div className="hero-right">
-          <img
-            src={personlyzePng}
-            alt="Personlyze"
-            className="hero-right-image"
-          />
-        </div>
+<div className="hero-right">
 
+  <h1 className="hero-brand">
+    <span className="brand-name">personlyze</span>
+    <span className="brand-dot">.</span>
+    <span className="brand-ai">ai</span>
+  </h1>
+
+  <div className="hero-tagline">
+    <span className="strategy">strategy-first</span>
+    <span className="personalization">personalization</span>
+  </div>
+
+</div>
         {/* Centered CTA */}
-        <button
-          className="hero-demo-btn"
-          onClick={handleBookDemo}
-        >
-          <span className="hero-demo-btn__label">Book a Demo</span>
-        </button>
+<button
+  className="hero-demo-btn"
+  onClick={handleBookDemo}
+>
+  <span className="hero-demo-btn__label">Know More</span>
+  <span className="hero-demo-btn__arrow">↓</span>
+</button>
       </div>
     </section>
   );

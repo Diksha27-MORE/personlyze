@@ -197,7 +197,6 @@
 /* ── Title text ────────────────────────────────────────────── */
 
 .dfl-name {
-  font-family: "Gilroy", serif;
   font-style: italic;
   font-weight: 300;
   font-size: clamp(1.05rem, 1.6vw + 0.3rem, 2.1rem);
@@ -436,7 +435,6 @@
 }
 
 .dfl-scroll-cue-text {
-  font-family: "DM Sans", sans-serif;
   font-style: italic;
   font-weight: 300;
   font-size: 0.78rem;

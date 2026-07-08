@@ -1,13 +1,12 @@
-import realEstateVideo from "../assets/real-estate.mp4";
-import bfsiVideo from "../assets/bfsi.mp4";
-import travelVideo from "../assets/travel.mp4";
-import healthVideo from "../assets/health.mp4";
-import retailVideo from "../assets/Retail.mp4";
-import automotiveVideo from "../assets/automotive.mp4";
-import b2bVideo from "../assets/b2b.mp4";
-import techVideo from "../assets/tech.mp4";
-import fashionVideo from "../assets/fashion.mp4";
-
+import realEstateImg from "../assets/real-estateimg.png";
+import bfsiImg from "../assets/bfsi-img.png";
+import travelImg from "../assets/travelimg.png";
+import healthImg from "../assets/healthimg.png";
+import retailImg from "../assets/Retailimg.png";
+import automotiveImg from "../assets/automotiveimg.png";
+import b2bImg from "../assets/b2bimg.png";
+import techImg from "../assets/techimg.png";
+import fashionImg from "../assets/fashionimg.png";
 /**
  * Each card has six display fields, always rendered in this order with
  * these exact labels in the UI:
@@ -27,7 +26,8 @@ const industries = [
   {
     slug: "real-estate",
     name: "Real Estate",
-    video: realEstateVideo,
+    
+    image: realEstateImg,
     className: "real-estate",
     theme: {
       primary: "#1f8de0",
@@ -210,7 +210,8 @@ const industries = [
   {
     slug: "bfsi",
     name: "BFSI",
-    video: bfsiVideo,
+    
+    image: bfsiImg,
     className: "bfsi",
     theme: {
       primary: "#8b3fd9",
@@ -423,7 +424,8 @@ const industries = [
   {
     slug: "travel",
     name: "Travel & Hospitality",
-    video: travelVideo,
+    
+    image: travelImg,
     className: "travel",
     theme: {
       primary: "#f2c14e",
@@ -640,7 +642,8 @@ const industries = [
   {
     slug: "health",
     name: "Health & Wellness",
-    video: healthVideo,
+    
+    image: healthImg,
     className: "health",
     theme: {
       primary: "#ff5b6e",
@@ -854,7 +857,8 @@ const industries = [
   {
     slug: "retail",
     name: "Retail & D2C",
-    video: retailVideo,
+    
+    image: retailImg,
     className: "retail",
     theme: {
       primary: "#ff4fa0",
@@ -1067,7 +1071,8 @@ const industries = [
   {
     slug: "automotive",
     name: "Automotive",
-    video: automotiveVideo,
+    
+    image: automotiveImg,
     className: "automotive",
     theme: {
       primary: "#ff944d",
@@ -1284,7 +1289,8 @@ const industries = [
   {
     slug: "b2b",
     name: "B2B & SaaS",
-    video: b2bVideo,
+    
+    image: b2bImg,
     className: "saas",
     theme: {
       primary: "#3ecf8e",
@@ -1499,7 +1505,8 @@ const industries = [
   {
     slug: "tech",
     name: "Tech & Startups",
-    video: techVideo,
+    
+    image: techImg,
     className: "tech",
     theme: {
       primary: "#00c2ff",
@@ -1713,7 +1720,8 @@ const industries = [
   {
     slug: "fashion",
     name: "Fashion & Lifestyle",
-    video: fashionVideo,
+    
+    image: fashionImg,
     className: "fashion",
     theme: {
       primary: "#d56eff",

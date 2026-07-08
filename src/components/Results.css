@@ -4,30 +4,7 @@
 
 .results-section {
   background: #edeae2;
-  font-family: "Gilroy", sans-serif;
-}
 
-/* ── Section eyebrow ── */
-.results-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 60px 60px 0;
-}
-
-.results-eyebrow-rule {
-  width: 48px;
-  height: 1.5px;
-  background: #111;
-  flex-shrink: 0;
-}
-
-.results-eyebrow-label {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.22em;
-  color: #111;
-  text-transform: uppercase;
 }
 
 /* ── Heading block — normal page flow, no GSAP ── */
@@ -35,12 +12,48 @@
   padding: 32px 60px 0;
 }
 
-.results-heading {
-  font-size: clamp(52px, 7.5vw, 100px);
-  font-weight: 800;
-  line-height: 1.0;
-  letter-spacing: -0.03em;
-  color: #111;
+.results-heading-block{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    width:100%;
+    padding:28px 0 24px;
+}
+
+.results-heading{
+    margin:0;
+
+    display:inline-flex;
+    align-items:baseline;
+    justify-content:center;
+
+    text-align:center;
+
+    font-family:var(--heading);
+
+    font-size:clamp(58px,7vw,102px);
+
+    line-height:0.95;
+    letter-spacing:-0.055em;
+
+    color:#111;
+}
+
+.results-brand{
+    font-family:var(--heading);
+    color:#111;
+
+    margin-left:16px;
+    letter-spacing:-0.055em;
+}
+
+.results-ai{
+    font-family:var(--heading);
+    color:#d10000;
+
+    margin-left:2px;
+    letter-spacing:-0.055em;
 }
 
 /* ── Cards pin wrapper ─────────────────────────────────────────────────────
@@ -91,6 +104,16 @@
   background-repeat: no-repeat;
 }
 
+/* Invisible flex item placed after the last card. It has zero width, but
+   because .results-cards-strip has `gap: 24px`, the browser still inserts
+   a real 24px gap before it — identical to the gaps between cards — and
+   that gap is included in strip.scrollWidth, so the pinned scroll doesn't
+   release until it has scrolled past too. */
+.results-cards-spacer {
+  width: 0;
+  flex-shrink: 0;
+}
+
 /* Dark overlay so text stays readable over any photo */
 .metric-card-overlay {
   position: absolute;
@@ -113,37 +136,56 @@
   box-sizing: border-box;
   color: #fff;
 }
-.metric-card-label {
-  font-size: clamp(35px, 4vw, 48px);
-  font-weight: 800;
-  line-height: 1.15;
-  text-align: center;
-  margin-top: 0;      /* Remove the top margin */
-  color: #fff;
-}
 
+/* Number now appears first */
 .metric-card-number {
+  font-family: "Avenir Black";
   font-size: clamp(100px, 15vw, 150px);
-  font-weight: 800;
+  font-weight: 900;
   line-height: 0.9;
   letter-spacing: -0.04em;
   text-align: center;
-  margin-top: 24px;
+  margin-top: 0;
   color: #fff;
 }
-.metric-card-disclaimer {
-  font-size: clamp(9px, 0.85vw, 11px);
+
+/* Label now appears directly below the number */
+.metric-card-label {
+  font-family: "Avenir Light";
+  font-size: clamp(35px, 4vw, 48px);
+  font-weight: 900;
+  line-height: 1.15;
+  text-align: center;
+  margin-top: 16px;
+  color: #fff;
+}
+
+/* Sits above the disclaimer; margin-top: auto pushes this
+   (and the disclaimer beneath it) down toward the bottom of the card. */
+.metric-card-footnote {
+  font-family: "Avenir Light";
+  font-size: clamp(13px, 1.4vw, 16px);
   font-weight: 400;
   text-align: center;
   color: #fff;
-  opacity: 0.65;
   margin-top: auto;
+  line-height: 1.3;
+}
+
+/* Pushed much lower, with a clear gap above it, and shown as fine print */
+.metric-card-disclaimer {
+  font-family: "Avenir Light";
+  font-size: 9px;
+  font-weight: 300;
+  text-align: center;
+  color: #fff;
+  opacity: 0.5;
+  margin-top: 28px;
   line-height: 1.4;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 /* =========================================================
    MOBILE / TABLET-PORTRAIT (<=768px)
    Cards become a normal vertical stack — no pin, no horizontal
@@ -175,22 +217,16 @@
   .metric-card-disclaimer {
     white-space: normal;
   }
+
+  .results-cards-spacer {
+    display: none;
+  }
 }
 
 @media (max-width: 400px) {
   .results-section {
     padding-top: 0;
     padding-bottom: 0;
-  }
-
-  .results-eyebrow {
-    padding: 12px 20px 0;
-    gap: 8px;
-    margin: 0;
-  }
-
-  .results-eyebrow-rule {
-    width: 28px;
   }
 
   .results-heading-block {
@@ -217,19 +253,22 @@
   .metric-card-content {
     padding: 28px 24px 28px;
   }
+.metric-card-number {
+   font-family: "Avenir Black";
+  font-weight: 900;
+}
 
-  .metric-card-label {
-    font-size: 24px;
-    margin-top: 32px;
-  }
+.metric-card-label{
+    font-family: "Avenir light";
+    font-weight: 700;
+    font-size: 42px;
+}
 
-  .metric-card-number {
-    font-size: 52px;
-    margin-top: 20px;
-  }
+.metric-card-footnote{
+    font-family: "Avenir Light";
+}
 
-  .metric-card-disclaimer {
-    font-size: 10px;
-    opacity: 0.65;
-  }
+.metric-card-disclaimer{
+    font-family: "Avenir Light";
+}
 }

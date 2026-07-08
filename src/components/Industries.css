@@ -10,11 +10,11 @@
   justify-content: center;
 
   background: #edeae2;
-  font-family: "Gilroy", sans-serif;
 
   text-align: center;
   padding: 120px 24px;
 }
+
 
 /* =========================
    HEADER BLOCK
@@ -25,43 +25,54 @@
   margin-bottom: 80px;
 }
 
-/* BIG HERO HEADING */
+
+/* =========================
+   BIG HERO HEADING
+========================= */
+
 .industries-header h2 {
-  font-size: clamp(56px, 6vw, 120px);  /* VERY BIG */
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.04em;
-  color: #000;
+  margin: 0;
+
+  font-family: "Avenir Black";
+  font-size: clamp(58px, 7vw, 102px);
+
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+
+  color: #111;
 }
 
-/* SUB TEXT */
+
+/* =========================
+   SUB TEXT
+========================= */
+
 .industries-header p {
   margin-top: 24px;
-  font-size: clamp(16px, 1.5vw, 22px);
-  font-weight: 400;
+
+  font-family: "Avenir Light";
+
+  font-size: clamp(18px, 1.5vw, 22px);
+
+  font-weight: 300;
+  line-height: 1.6;
+
   color: #111;
   opacity: 0.85;
-  line-height: 1.6;
+
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
 }
 
-/* =========================
-   PREMIUM TOUCH (optional)
-========================= */
-
-.industries-header h2 {
-  background: linear-gradient(90deg, #000, #444);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
 
 /* =========================
    RESPONSIVE
 ========================= */
 
 @media (max-width: 768px) {
+
   .industries-header h2 {
     font-size: 48px;
   }
@@ -69,4 +80,5 @@
   .industries-header p {
     font-size: 16px;
   }
+
 }

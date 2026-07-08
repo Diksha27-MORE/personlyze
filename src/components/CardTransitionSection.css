@@ -1,19 +1,3 @@
-/* ─────────────────────────────────────────────────────────────────────────────
-   CardTransitionSection.css — v8+ (sub-section reveal)
-   Only additive/surgical changes vs. previous version:
-     • .cts-desc__sections is now a single-cell CSS grid so all
-       .cts-desc__section children stack in the same position. GSAP fades
-       them in/out one at a time.
-     • .cts-desc__heading gets explicit text-align: left so headings
-       align flush with their body paragraph (no visual indent).
-     • Sub-sections default to will-change: opacity, transform so GSAP
-       fades feel smooth.
-   Nothing else was touched — layout, sizes, positions, mobile rules,
-   card chrome, timings all preserved.
-───────────────────────────────────────────────────────────────────────────── */
-
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;700;800&display=swap');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ── Scroll shell ───────────────────────────────────────────────────────── */
@@ -22,7 +6,6 @@
   background: #EDEAE2;
 }
 
-/* ── Sticky canvas ──────────────────────────────────────────────────────── */
 .cts-sticky {
   position: sticky;
   top: 0;
@@ -34,43 +17,20 @@
   isolation: isolate;
 }
 
-/* ── Editorial headline ─────────────────────────────────────────────────── */
-.cts-headline {
-  position: absolute;
-  z-index: 20;
-  top: clamp(24px, 5.5vh, 64px);
-  left: clamp(28px, 3.5vw, 56px);
-  right: clamp(28px, 3.5vw, 56px);
+.cts-headline{
+    margin:0;
 
-  font-family: 'DM Serif Display', Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: clamp(88px, 11.5vw, 175px);
-  line-height: 0.92;
-  letter-spacing: -0.03em;
-  color: #3A3530;
+    text-align:center;
 
-  will-change: opacity, transform;
-  pointer-events: none;
-  user-select: none;
+    font-family:var(--heading);
+
+    font-size:clamp(58px,7vw,102px);
+
+    line-height:0.95;
+    letter-spacing:-0.055em;
+
+    color:#111;
 }
-
-/* ── Ambient corner labels ──────────────────────────────────────────────── */
-.cts-ambient {
-  position: absolute;
-  z-index: 30;
-  font-family: 'Gilroy', sans-serif;
-  font-size: clamp(9px, 0.8vw, 11px);
-  font-weight: 400;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: #3A3530;
-  opacity: 0.4;
-  pointer-events: none;
-  user-select: none;
-}
-.cts-ambient--tl { top: 24px;    left: 28px;  }
-.cts-ambient--br { bottom: 24px; right: 28px; }
 
 /* ── Cards ──────────────────────────────────────────────────────────────── */
 .cts-card {
@@ -122,57 +82,69 @@
   pointer-events: none;
 }
 
-/* ── Card number ────────────────────────────────────────────────────────── */
-.cts-card__num {
+/* ── Top-left stack: number + label ─────────────────────────────────────── */
+.cts-card__topleft {
   position: absolute;
-  top: 22px;
-  left: 26px;
+  top: 26px;
+  left: 40px;
   z-index: 3;
-  font-family: 'Gilroy', sans-serif;
-  font-size: 11px;
-  font-weight: 300;
-  letter-spacing: 0.22em;
-  color: rgba(255, 255, 255, 0.22);
-  user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+
 }
 
-/* ── Card title ─────────────────────────────────────────────────────────── */
+.cts-card__num {
+  font-family: "Avenir Light";
+  font-size: 38px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Big in-card title, top-left, below the number ──────────────────────── */
+.cts-card__label-line {
+  display: block;
+
+  font-family: "Avenir Black" !important;
+  font-weight: 900 !important;
+
+  font-size: 4.5em;      /* thoda aur bada */
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+
+  color: #ffffff;          /* pure white */
+}
+
 .cts-card__title {
   position: absolute;
-  left: 50%;
-  top: 85%;
-  transform: translate(-50%, -50%);
+  left: 40px;
+  right: 40px;
+  bottom: 28px;
 
-  z-index: 5;
-  text-align: center;
+  font-family: "Avenir Light";
 
-  font-family: 'DM Serif Display', Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
+ 
+  font-size: clamp(19px, 1.3vw, 2px);  /* Increased size */
+  line-height: 1.45;                     /* Better readability */
+  letter-spacing: 0.01em;
 
-  font-size: clamp(13px, 1vw, 16px);
-  line-height: 1.35;
+  color: #ffffff;
 
-  color: #fff;
+  width: auto;
+  max-width: none;
+  white-space: pre-line;
 
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-
-  padding: 12px 18px;
-  border-radius: 12px;
-
-  max-width: 70%;
   opacity: 0;
 }
-.cts-card__title-line {
-  display: block;
-}
+.cts-card__title-line { display: block; }
 
-/* ── Description block — right column ──────────────────────────────────── */
+/* ── Alternating description panels (left / right of hero) ──────────────── */
 .cts-desc {
   position: absolute;
-  top: -55px; /* DESKTOP ONLY — mobile overrides below */
+  top: 0;
   left: 0;
   z-index: 20;
 
@@ -180,14 +152,18 @@
 
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 18px;
 
-  will-change: opacity;
+  will-change: opacity, transform;
   pointer-events: none;
 }
 
-/* Sub-sections stack in the same cell so only one is visible at a time.
-   GSAP toggles opacity + translateY per sub-section. */
+.cts-desc--left  .cts-desc__heading,
+.cts-desc--left  .cts-desc__body { text-align: left; }
+
+.cts-desc--right .cts-desc__heading,
+.cts-desc--right .cts-desc__body { text-align: left; }
+
 .cts-desc__sections {
   display: flex;
   flex-direction: column;
@@ -197,75 +173,45 @@
 .cts-desc__section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   will-change: opacity, transform;
 }
 
-
 .cts-desc__heading {
-  font-family: 'Gilroy', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
+  font-family: "Avenir Black";
+  font-size: clamp(22px, 1.5vw, 28px);   /* ← Heading size */
+  font-weight: 900;
   line-height: 1.3;
-  color: rgba(36, 32, 26, 0.92);
-  letter-spacing: 0.005em;
-  text-align: left; /* flush-left so headings align with body copy */
+  color: #000;                           /* Pure black */
 }
 
 .cts-desc__body {
-  font-family: 'Gilroy', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(36, 32, 26, 0.72);
-  letter-spacing: 0.005em;
-
-  white-space: pre-line;
-  text-align: left;
+  font-family: "Avenir Light";
+  font-size: clamp(18px, 1.2vw, 22px);   /* ← Body text size */
+  font-weight: 300;
+  line-height: 1.5;
+  color: #000;                           /* Pure black */
 }
-
-/* ── CTA link ───────────────────────────────────────────────────────────── */
-.cts-desc__cta {
-  pointer-events: all;
-  display: inline-block;
-  font-family: 'Gilroy', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  color: rgba(36, 32, 26, 0.50);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-color: rgba(36, 32, 26, 0.18);
-  cursor: pointer;
-  transition: color 0.25s ease, text-decoration-color 0.25s ease;
-}
-
-.cts-desc__cta:hover {
-  color: rgba(36, 32, 26, 0.88);
-  text-decoration-color: rgba(36, 32, 26, 0.45);
-}
-
+/* ─────────────────────────────────────────────────────────────────────────
+   MOBILE — both side panels collapse to the same spot beneath the hero.
+   Cycle animation shows one point at a time, so no overlap issues.
+───────────────────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .cts-sticky {
     height: 100vh;
     height: 100svh;
   }
 
-  .cts-ambient--tl { top: 16px;    left: 18px;  }
-  .cts-ambient--br { bottom: 16px; right: 18px; }
-  .cts-ambient     { font-size: 10px; letter-spacing: 0.12em; }
-
   .cts-headline {
-    top: clamp(28px, 6vh, 56px);
+    top: clamp(14px, 2vh, 24px);
     left: 20px;
     right: 20px;
-    font-family: 'DM Sans', system-ui, sans-serif;
-    font-style: normal;
-    font-weight: 800;
-    font-size: clamp(72px, 22vw, 110px);
+    font-family: "Avenir Black";
+    font-weight: 900;
+    font-size: clamp(56px, 16vw, 96px);
     line-height: 0.92;
-    letter-spacing: -0.04em;
-    color: #0E1A2B;
+    letter-spacing: -0.03em;
+    color: #3A3530;
     text-align: left;
   }
 
@@ -278,146 +224,44 @@
       0 10px 28px rgba(0, 0, 0, 0.16);
   }
 
-  .cts-card__num {
+  .cts-card__topleft {
     top: 14px;
     left: 16px;
-    font-size: 10px;
-    letter-spacing: 0.18em;
-  }
-
-  .cts-card__title {
-    font-family: 'DM Sans', system-ui, sans-serif;
-    font-style: normal;
-    font-weight: 700;
-    font-size: 28px;
-    line-height: 1.0;
-    letter-spacing: -0.02em;
-  }
-
-  .cts-desc {
-    width: min(78vw, 360px);
-    gap: 18px;
-    padding-left: 44px;
-  }
-
-  .cts-desc__heading {
-    font-family: 'DM Sans', system-ui, sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    text-align: left;
-  }
-
-  .cts-desc__body {
-    font-family: 'DM Sans', system-ui, sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 1.38;
-    color: #16202E;
-    letter-spacing: 0;
-    text-align: left;
-  }
-
-  .cts-desc__cta {
-    font-size: 13px;
-    color: rgba(22, 32, 46, 0.65);
-    text-underline-offset: 4px;
-  }
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   MOBILE OVERRIDES — reference-exact vertical scroll (kept from v8)
-───────────────────────────────────────────────────────────────────────────── */
-
-@media (max-width: 640px) {
-  .cts-section { background: #EDEAE2; }
-
-  .cts-sticky {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    height: 100svh;
-    overflow: hidden;
-    background: #EDEAE2;
-    padding: 0;
-  }
-
-  .cts-ambient     { font-size: 10px; letter-spacing: 0.12em; opacity: 0.45; }
-  .cts-ambient--tl { top: 16px;    left: 18px;  }
-  .cts-ambient--br { bottom: 16px; right: 18px; }
-
-  .cts-headline {
-    top: clamp(28px, 6vh, 56px);
-    left: 20px;
-    right: 20px;
-    font-family: 'DM Serif Display', Georgia, serif;
-    font-style: italic;
-    font-weight: 400;
-    font-size: clamp(64px, 18vw, 96px);
-    line-height: 0.92;
-    letter-spacing: -0.03em;
-    color: #3A3530;
-  }
-
-  .cts-card {
-    padding: 22px;
-    gap: 6px;
-    box-shadow:
-      0 2px 10px rgba(0, 0, 0, 0.10),
-      0 10px 28px rgba(0, 0, 0, 0.18),
-      0 22px 56px rgba(0, 0, 0, 0.20);
+    gap: 8px;
   }
 
   .cts-card__num {
-    top: 14px; left: 16px;
-    font-size: 10px;
-    letter-spacing: 0.20em;
+    font-size: 22px;
+  }
+
+  .cts-card__label {
+    font-size: clamp(28px, 8vw, 48px);
+    line-height: 0.95;
   }
 
   .cts-card__title {
-    font-size: 10px;
-    line-height: 1.15;
-
-    background: rgba(0, 0, 0, 0.45);
-    padding: 10px 14px;
-    border-radius: 12px;
-
+    font-size: 13px;
+    line-height: 1.4;
     max-width: 92%;
+    bottom: 18px;
   }
 
   .cts-desc {
-    top: 0;
-    margin-top: 0;
-    padding-left: 0;
     width: min(86vw, 360px);
-    gap: 18px;
-    text-align: left;
+    gap: 14px;
   }
 
-  .cts-desc__heading {
-    font-size: 14px;
-    font-weight: 700;
-    color: rgba(36, 32, 26, 0.92);
-    text-align: left;
-  }
-
-  .cts-desc__body {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1.5;
-    color: rgba(36, 32, 26, 0.78);
-  }
-
-  .cts-desc__cta {
-    font-size: 13px;
-    text-underline-offset: 4px;
-  }
+  .cts-desc__heading { font-size: 15px; }
+  .cts-desc__body    { font-size: 13px; line-height: 1.5; }
 }
 
 @media (max-width: 380px) {
-  .cts-headline    { font-size: clamp(56px, 17vw, 84px); }
+  .cts-headline    { font-size: clamp(48px, 15vw, 72px); }
   .cts-card        { padding: 18px; }
-  .cts-card__title { font-size: 38px; }
-  .cts-desc        { width: min(88vw, 320px); gap: 14px; }
-  .cts-desc__heading { font-size: 13px; }
-  .cts-desc__body  { font-size: 13px; line-height: 1.5; }
+  .cts-card__num   { font-size: 20px; }
+  .cts-card__label { font-size: 26px; }
+  .cts-card__title { font-size: 12px; }
+  .cts-desc        { width: min(88vw, 320px); gap: 12px; }
+  .cts-desc__heading { font-size: 14px; }
+  .cts-desc__body  { font-size: 12px; line-height: 1.5; }
 }

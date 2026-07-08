@@ -1,44 +1,52 @@
-/* ================================
-   WORKSPACE SECTION (edge-to-edge hero)
-================================ */
-.workspace-section {
-  position: relative;
-  background: #edeae2;
-  overflow: hidden;
-  width: 100%;
-  /* No top padding at all — video is now flush against whatever
-     precedes this section, zero gap. */
-  padding: 0 0 72px;
+/* ─────────────────────────────────────────────
+   WORKSPACE HEADING
+───────────────────────────────────────────── */
+
+.workspace-title{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    width:100%;
+    padding:28px 0 24px;
 }
 
-/* ── Heading (positioned INSIDE .workspace-video, see JSX) ── */
-.workspace-heading {
-  position: absolute;
-  top: 40px;
-  left: 50%;
-  transform: translateX(-50%) translateY(14px);
-  z-index: 4;
+.workspace-heading{
+    margin:0;
 
-  margin: 0;
-  padding: 0 24px;
-  width: 100%;
-  max-width: 900px;
+    display:inline-flex;
+    align-items:baseline;
+    justify-content:center;
 
-  font-family: "Gilroy", sans-serif;
-  font-size: clamp(16px, 2vw, 22px);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  line-height: 1.2;
-  color: #fff;
-  text-align: center;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.3);
+    text-align:center;
 
-  opacity: 0;
-  filter: blur(6px);
-  will-change: transform, opacity, filter;
-  pointer-events: none;
+    font-family:var(--heading);
+
+    font-size:clamp(58px,7vw,102px);
+
+    line-height:0.95;
+    letter-spacing:-0.055em;
+
+    color:#111;
 }
 
+/* personlyze */
+.workspace-brand{
+    font-family:var(--heading);
+    color:#111;
+
+    letter-spacing:-0.055em;
+}
+
+/* .ai */
+.workspace-ai{
+    font-family:var(--heading);
+    color:#d10000;
+
+    letter-spacing:-0.055em;
+
+    margin-left:2px;
+}
 /* ── Full-width hero video ── */
 .workspace-video {
   position: relative;
