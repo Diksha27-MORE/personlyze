@@ -224,7 +224,6 @@ display: flex;
   .workspace-title{
     padding:4px 20px 0;
     margin:0;
-
     display:flex;
     justify-content:center;
     align-items:center;
@@ -232,22 +231,16 @@ display: flex;
 
   .workspace-heading{
     margin:0;
-
     font-size:clamp(36px,10vw,56px);
     line-height:1;
     letter-spacing:-1px;
-
     display:flex;
     justify-content:center;
     align-items:center;
-
     flex-wrap:nowrap;
     white-space:nowrap;
-
     text-align:center;
   }
-
-}
 
   .workspace-brand{
     color:inherit;
@@ -258,25 +251,18 @@ display: flex;
     margin-left:2px;
   }
 
-  /* Video */
+  .workspace-video{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    margin-left:calc(50% - 50vw);
+    overflow:hidden;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+  }
 
-.workspace-video{
-  position:relative;
-
-  width:100vw;
-  height:100vh;
-
-  margin-left:calc(50% - 50vw);
-
-  overflow:hidden;
-
-  cursor:pointer;
-
-  display:flex;
-  flex-direction:column;
-
-  justify-content:flex-start;
-}
   .workspace-video::before{
     height:70px;
   }
