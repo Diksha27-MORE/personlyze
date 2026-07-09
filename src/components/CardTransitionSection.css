@@ -139,7 +139,11 @@
 
   opacity: 0;
 }
-.cts-card__title-line { display: block; }
+/* Reserve each line's height so the typing effect doesn't shift the layout */
+.cts-card__title-line {
+  display: block;
+  min-height: 1.45em;
+}
 
 /* ── Alternating description panels (left / right of hero) ──────────────── */
 .cts-desc {

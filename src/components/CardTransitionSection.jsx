@@ -27,7 +27,7 @@ const THUMB_W  = () => isMobile() ? 46 : 58;
 const THUMB_H  = () => Math.round(THUMB_W() / (780 / 830));
 const THUMB_BR = () => isMobile() ? 10 : 12;
 
-const heroX = () => Math.round((window.innerWidth - HERO_W()) / 2) 
+const heroX = () => Math.round((window.innerWidth - HERO_W()) / 2)
 const heroY = () => isMobile()
   ? Math.round(window.innerHeight * 0.08)
   : Math.round((window.innerHeight - HERO_H()) / 2);
@@ -38,7 +38,7 @@ const thumbY = () => Math.round(window.innerHeight * (isMobile() ? 0.82 : 0.72))
 const TL_X = () => isMobile() ? 16 : heroX() - 200;
 const TL_Y = () => isMobile() ? 16 : 40;
 
-const DESC_GAP = 60; // gap from card (change 80 to 60/100 as needed)
+const DESC_GAP = 60;
 
 const MOBILE_DESC_GAP = () =>
   Math.max(72, Math.round(window.innerHeight * 0.09));
@@ -48,12 +48,10 @@ const MOBILE_DESC_W = () =>
 
 const DESC_W_DESKTOP = 320;
 
-// ── Left/right panel positions ───────────────────────────
 const DESC_X_LEFT = () => {
   if (isMobile()) {
     return Math.round((window.innerWidth - MOBILE_DESC_W()) / 2);
   }
-
   return heroX() - (DESC_W_DESKTOP + DESC_GAP);
 };
 
@@ -61,7 +59,6 @@ const DESC_X_RIGHT = () => {
   if (isMobile()) {
     return Math.round((window.innerWidth - MOBILE_DESC_W()) / 2);
   }
-
   return heroX() + HERO_W() + DESC_GAP;
 };
 const DESC_Y = () => isMobile()
@@ -77,9 +74,35 @@ const BR_Y = () => isMobile()
 
 const previewOpacity = () => (isMobile() ? 0 : 1);
 
-const SECTION_HEIGHT = "450vh";
+// ── Timeline pacing constants — tune these to change the scroll feel ──────
+// These are the knobs. Everything else below is computed from them, so
+// there are no more "magic number" labels to get out of sync.
+const HOLD0_DUR            = 1.5;  // initial hold before headline exits
+const HEADLINE_EXIT_DUR    = 0.8;
+const CARD_GROW_DUR        = 1.5;  // thumbnail/preview -> hero
+const LABEL_IN_DELAY       = 0.9;  // when the in-card label/title fade in, relative to grow start
+const LABEL_IN_DUR         = 0.6;
+const LABEL_OUT_DUR        = 0.3;
+const TYPE_START_DELAY     = 1.5;  // gap after grow starts before the typewriter begins
+const TYPE_DURS            = [1.2, 1.4, 1.4]; // UNCHANGED — typing speed per card
+const POST_TYPE_PAUSE      = 0.3;  // beat after typing finishes, before side panel appears
+const DESC_FADE_IN_DUR     = 0.5;
+const DESC_FADE_OUT_DUR    = 0.4;
+const SECTION_IN_DUR       = 0.6;
+const SECTION_OUT_DUR      = 0.5;
+const SECTION_HOLD_DUR     = 1.8;  // ← THE FIX: dedicated scroll-time per side-section
+const HOLD_AFTER_SECTIONS  = 0.6;  // beat after the last section before the next transition
+const NEXT_PREVIEW_DELAY   = 0.6;  // when the upcoming card's small preview appears
+const NEXT_PREVIEW_DUR     = 0.65;
+const TL_SHRINK_DUR        = 1.5;  // hero -> top-left "history" thumbnail
+const GRANDPARENT_FADE_DUR = 0.4;  // the older TL thumbnail fading away completely
+const FINAL_HOLD_DUR       = 1.0;
+const FINAL_PAUSE_DUR      = 1.2;
 
-// EXACT line breaks per requirement
+// Section height scales with the total timeline length above. If you change
+// SECTION_HOLD_DUR a lot, bump this proportionally (it was tuned for ~1.8s/section).
+const SECTION_HEIGHT = "900vh";
+
 const CARDS = [
   {
     num: "01",
@@ -115,6 +138,8 @@ const CARDS = [
   },
 ];
 
+const CARD_LINES = CARDS.map((c) => c.bottom.split("\n"));
+
 // Point 1 → LEFT, Point 2 → RIGHT, Point 3 → LEFT ...
 const sideForIndex = (si) => (si % 2 === 0 ? "left" : "right");
 
@@ -126,10 +151,15 @@ export default function CardTransitionSection() {
   const cardRefs  = [useRef(null), useRef(null), useRef(null)];
   const descLeftRefs  = [useRef(null), useRef(null), useRef(null)];
   const descRightRefs = [useRef(null), useRef(null), useRef(null)];
-  const titleRefs = [useRef(null), useRef(null), useRef(null)]; // bottom description text
-  const labelRefs = [useRef(null), useRef(null), useRef(null)]; // big in-card title
+  const titleRefs = [useRef(null), useRef(null), useRef(null)];
+  const labelRefs = [useRef(null), useRef(null), useRef(null)];
 
-  // Flat per-card section refs keyed by ORIGINAL section index (0..n)
+  const lineRefs = [
+    [useRef(null), useRef(null)],
+    [useRef(null), useRef(null)],
+    [useRef(null), useRef(null)],
+  ];
+
   const descSectionRefs = useRef([[], [], []]);
   const setDescSectionRef = (cardIdx, secIdx) => (el) => {
     descSectionRefs.current[cardIdx][secIdx] = el;
@@ -143,6 +173,16 @@ export default function CardTransitionSection() {
     const E_INOUT = "power3.inOut";
 
     const ctx = gsap.context(() => {
+      const renderTyped = (cardIdx, p) => {
+        const [l0, l1] = lineRefs[cardIdx];
+        if (!l0.current || !l1.current) return;
+        const [t0, t1] = CARD_LINES[cardIdx];
+        const total = t0.length + t1.length;
+        const shown = Math.round(gsap.utils.clamp(0, 1, p) * total);
+        l0.current.textContent = t0.slice(0, Math.min(shown, t0.length));
+        l1.current.textContent = shown > t0.length ? t1.slice(0, shown - t0.length) : "";
+      };
+
       const applyInitialState = () => {
         gsap.set(headlineRef.current, { opacity: 1, y: 0 });
 
@@ -172,7 +212,6 @@ export default function CardTransitionSection() {
           if (r.current) gsap.set(r.current, { x: DESC_X_RIGHT(), y: DESC_Y(), opacity: 0 });
         });
 
-        // Section enter offset: left slides in from -x, right slides in from +x
         descSectionRefs.current.forEach((cardSections) => {
           cardSections.forEach((el, si) => {
             if (!el) return;
@@ -183,6 +222,8 @@ export default function CardTransitionSection() {
 
         gsap.set(titleRefs.map((r) => r.current), { opacity: 0 });
         gsap.set(labelRefs.map((r) => r.current), { opacity: 0 });
+
+        CARDS.forEach((_, i) => renderTyped(i, 0));
       };
 
       applyInitialState();
@@ -200,151 +241,128 @@ export default function CardTransitionSection() {
         },
       });
 
-      const cycleSubSections = (cardIdx, startLabel, windowDur) => {
+      const typeText = (cardIdx, atTime, dur) => {
+        const proxy = { p: 0 };
+        tl.to(
+          proxy,
+          {
+            p: 1,
+            duration: dur,
+            ease: "none",
+            onUpdate: () => renderTyped(cardIdx, proxy.p),
+          },
+          atTime,
+        );
+      };
+
+      // Reveal side-sections ONE AT A TIME. Each section gets `perSectionDur`
+      // of dedicated scroll-scrubbed timeline — not a shared leftover window.
+      // Section 1 shows and holds → fades out as Section 2 fades in → holds →
+      // fades out as Section 3 fades in → holds until the next transition.
+      const cycleSubSections = (cardIdx, startTime, perSectionDur) => {
         const sections = descSectionRefs.current[cardIdx]
           .map((el, si) => ({ el, si }))
           .filter((x) => x.el);
-        if (sections.length === 0) return;
-
-        const inDur   = 0.5;
-        const outDur  = 0.4;
-        const step = windowDur / sections.length;
+        if (sections.length === 0) return 0;
 
         sections.forEach(({ el, si }, i) => {
-          const inAt  = `${startLabel}+=${(i * step).toFixed(3)}`;
-          tl.to(el, { opacity: 1, x: 0, ease: E_OUT, duration: inDur }, inAt);
+          const slotStart = startTime + i * perSectionDur;
+          tl.to(el, { opacity: 1, x: 0, ease: E_OUT, duration: SECTION_IN_DUR }, slotStart);
 
           if (i < sections.length - 1) {
-            const outAt = `${startLabel}+=${((i + 1) * step - 0.1).toFixed(3)}`;
-            const outX  = sideForIndex(si) === "left" ? -20 : 20;
-            tl.to(el, { opacity: 0, x: outX, ease: E_IN, duration: outDur }, outAt);
+            const outX = sideForIndex(si) === "left" ? -20 : 20;
+            const outAt = slotStart + perSectionDur - SECTION_OUT_DUR;
+            tl.to(el, { opacity: 0, x: outX, ease: E_IN, duration: SECTION_OUT_DUR }, outAt);
           }
         });
+
+        return sections.length * perSectionDur;
       };
 
-      // Helper: both side panels for a card
       const descPair = (i) => [descLeftRefs[i].current, descRightRefs[i].current].filter(Boolean);
 
-      // PHASE 0
-      tl.addLabel("hold0", 0);
-      tl.to({}, { duration: 1.5 });
+      // ── Build the timeline card-by-card ─────────────────────────────────
+      let t = 0;
+      tl.addLabel("hold0", t);
+      t += HOLD0_DUR;
 
-      // PHASE 1: headline exits; card-01 grows
-      tl.addLabel("growCard1", 1.5);
+      CARDS.forEach((card, i) => {
+        const growAt = t;
+        tl.addLabel(`grow${i}`, growAt);
 
-      tl.to(headlineRef.current, {
-        y: "-120%", opacity: 0, ease: E_INOUT, duration: 0.8,
-      }, "growCard1");
+        if (i === 0) {
+          tl.to(headlineRef.current, {
+            y: "-120%", opacity: 0, ease: E_INOUT, duration: HEADLINE_EXIT_DUR,
+          }, growAt);
+        } else {
+          // Previous hero shrinks into the top-left "history" thumbnail
+          tl.to(cardRefs[i - 1].current, {
+            x: () => TL_X(), y: () => TL_Y(),
+            width: () => SMALL_W(), height: () => SMALL_H(),
+            borderRadius: () => SMALL_BR(),
+            opacity: () => previewOpacity(),
+            ease: E_INOUT, duration: TL_SHRINK_DUR,
+          }, growAt);
 
-      tl.to(cardRefs[0].current, {
-        x: () => heroX(), y: () => heroY(),
-        width : () => HERO_W(), height: () => HERO_H(),
-        borderRadius: () => HERO_BR(),
-        opacity: 1,
-        ease: E_INOUT, duration: 1.5,
-      }, "growCard1");
+          // The card before THAT (if any) fades away entirely
+          if (i - 2 >= 0) {
+            tl.to(cardRefs[i - 2].current, {
+              x: () => TL_X() - 24, opacity: 0, ease: E_IN, duration: GRANDPARENT_FADE_DUR,
+            }, growAt);
+          }
 
-      tl.to(labelRefs[0].current, { opacity: 1, ease: E_OUT, duration: 0.6 }, "growCard1+=0.9");
-      tl.to(titleRefs[0].current, { opacity: 1, ease: E_OUT, duration: 0.6 }, "growCard1+=0.9");
+          tl.to(descPair(i - 1), { opacity: 0, ease: E_IN, duration: DESC_FADE_OUT_DUR }, growAt);
+          tl.to(labelRefs[i - 1].current, { opacity: 0, ease: E_IN, duration: LABEL_OUT_DUR }, growAt);
+          tl.to(titleRefs[i - 1].current, { opacity: 0, ease: E_IN, duration: LABEL_OUT_DUR }, growAt);
+          tl.call(() => renderTyped(i - 1, 0), null, growAt + 0.3);
+        }
 
-      // PHASE 2: hero-01 hold + sub-section cycle
-      tl.addLabel("heroHold1", 3.0);
+        // Current card grows to hero size/position
+        tl.to(cardRefs[i].current, {
+          x: () => heroX(), y: () => heroY(),
+          width: () => HERO_W(), height: () => HERO_H(),
+          borderRadius: () => HERO_BR(),
+          opacity: 1, zIndex: 10,
+          ease: E_INOUT, duration: CARD_GROW_DUR,
+        }, growAt);
 
-      tl.to(descPair(0), { opacity: 1, ease: E_OUT, duration: 0.5 }, "heroHold1");
+        // In-card label + bottom title reveal
+        tl.to(labelRefs[i].current, { opacity: 1, ease: E_OUT, duration: LABEL_IN_DUR }, growAt + LABEL_IN_DELAY);
+        tl.to(titleRefs[i].current, { opacity: 1, ease: E_OUT, duration: LABEL_IN_DUR }, growAt + LABEL_IN_DELAY);
 
-      tl.to(cardRefs[1].current, {
-        x: () => BR_X(), y: () => BR_Y(),
-        width: () => SMALL_W(), height: () => SMALL_H(),
-        borderRadius: () => SMALL_BR(),
-        opacity: () => previewOpacity(),
-        ease: E_OUT, duration: 0.65,
-      }, isMobile() ? "transition12" : "heroHold1+=0.25");
+        // Typewriter — duration UNCHANGED
+        const typeStart = growAt + TYPE_START_DELAY;
+        const typeDur = TYPE_DURS[i];
+        typeText(i, typeStart, typeDur);
 
-      cycleSubSections(0, "heroHold1", 3.4);
+        // Only once typing is fully done does the side-panel sequence begin
+        const sectionsStart = typeStart + typeDur + POST_TYPE_PAUSE;
+        tl.to(descPair(i), { opacity: 1, ease: E_OUT, duration: DESC_FADE_IN_DUR }, sectionsStart);
+        const sectionsDuration = cycleSubSections(i, sectionsStart, SECTION_HOLD_DUR);
 
-      // PHASE 3: 01 → 02
-      tl.addLabel("transition12", 6.6);
+        // Upcoming card's small preview appears partway through this hold
+        if (i + 1 < CARDS.length) {
+          tl.to(cardRefs[i + 1].current, {
+            x: () => BR_X(), y: () => BR_Y(),
+            width: () => SMALL_W(), height: () => SMALL_H(),
+            borderRadius: () => SMALL_BR(),
+            opacity: () => previewOpacity(),
+            ease: E_OUT, duration: NEXT_PREVIEW_DUR,
+          }, sectionsStart + NEXT_PREVIEW_DELAY);
+        }
 
-      tl.to(cardRefs[0].current, {
-        x: () => TL_X(), y: () => TL_Y(),
-        width: () => SMALL_W(), height: () => SMALL_H(),
-        borderRadius: () => SMALL_BR(),
-        opacity: () => previewOpacity(),
-        ease: E_INOUT, duration: 1.5,
-      }, "transition12");
+        const holdEnd = sectionsStart + sectionsDuration + HOLD_AFTER_SECTIONS;
 
-      tl.to(cardRefs[1].current, {
-        x: () => heroX(), y: () => heroY(),
-        width: () => HERO_W(), height: () => HERO_H(),
-        borderRadius: () => HERO_BR(),
-        opacity: 1,
-        zIndex: 10, ease: E_INOUT, duration: 1.5,
-      }, "transition12");
-
-      tl.to(descPair(0), { opacity: 0, ease: E_IN, duration: 0.4 }, "transition12");
-
-      tl.to(labelRefs[0].current, { opacity: 0, ease: E_IN, duration: 0.3 }, "transition12");
-      tl.to(titleRefs[0].current, { opacity: 0, ease: E_IN, duration: 0.3 }, "transition12");
-      tl.to(labelRefs[1].current, { opacity: 1, ease: E_OUT, duration: 0.6 }, "transition12+=0.9");
-      tl.to(titleRefs[1].current, { opacity: 1, ease: E_OUT, duration: 0.6 }, "transition12+=0.9");
-
-      tl.to(descPair(1), { opacity: 1, ease: E_OUT, duration: 0.5 }, "transition12+=0.55");
-
-      tl.to(cardRefs[2].current, {
-        x: () => BR_X(), y: () => BR_Y(),
-        width: () => SMALL_W(), height: () => SMALL_H(),
-        borderRadius: () => SMALL_BR(),
-        opacity: () => previewOpacity(),
-        ease: E_OUT, duration: 0.65,
-      }, isMobile() ? "transition23" : "transition12+=0.85");
-
-      // PHASE 4: hero-02 hold
-      tl.addLabel("heroHold2", 8.1);
-      tl.to({}, { duration: 1.5 }, "heroHold2");
-
-      cycleSubSections(1, "heroHold2", 2.4);
-
-      // PHASE 5: 02 → 03
-      tl.addLabel("transition23", 10.5);
-
-      tl.to(cardRefs[0].current, {
-        x: () => TL_X() - 24, opacity: 0, ease: E_IN, duration: 0.4,
-      }, "transition23");
-
-      tl.to(cardRefs[1].current, {
-        x: () => TL_X(), y: () => TL_Y(),
-        width: () => SMALL_W(), height: () => SMALL_H(),
-        borderRadius: () => SMALL_BR(),
-        opacity: () => previewOpacity(),
-        zIndex: 6, ease: E_INOUT, duration: 1.5,
-      }, "transition23");
-
-      tl.to(cardRefs[2].current, {
-        x: () => heroX(), y: () => heroY(),
-        width : () => HERO_W(), height: () => HERO_H(),
-        borderRadius: () => HERO_BR(),
-        opacity: 1,
-        zIndex: 10, ease: E_INOUT, duration: 1.5,
-      }, "transition23");
-
-      tl.to(descPair(1), { opacity: 0, ease: E_IN, duration: 0.4 }, "transition23");
-
-      tl.to(labelRefs[1].current, { opacity: 0, ease: E_IN, duration: 0.3 }, "transition23");
-      tl.to(titleRefs[1].current, { opacity: 0, ease: E_IN, duration: 0.3 }, "transition23");
-      tl.to(labelRefs[2].current, { opacity: 1, ease: E_OUT, duration: 0.6 }, "transition23+=0.9");
-      tl.to(titleRefs[2].current, { opacity: 1, ease: E_OUT, duration: 0.6 }, "transition23+=0.9");
-
-      tl.to(descPair(2), { opacity: 1, ease: E_OUT, duration: 0.5 }, "transition23+=0.55");
-
-      // PHASE 6: hero-03 hold
-      tl.addLabel("heroHold3", 12.0);
-      tl.to({}, { duration: 1.0 }, "heroHold3");
-
-      cycleSubSections(2, "heroHold3", 3.4);
-
-      tl.to(descPair(2), { opacity: 0, ease: E_IN, duration: 0.5 }, "heroHold3+=3.5");
-
-      tl.to({}, { duration: 1.2 }, "heroHold3+=3.4");
+        if (i === CARDS.length - 1) {
+          // Last card: hold on Section 3, then fade its panel and settle
+          tl.to({}, { duration: FINAL_HOLD_DUR }, holdEnd);
+          tl.to(descPair(i), { opacity: 0, ease: E_IN, duration: DESC_FADE_OUT_DUR }, holdEnd + FINAL_HOLD_DUR);
+          tl.to({}, { duration: FINAL_PAUSE_DUR }, holdEnd + FINAL_HOLD_DUR);
+          t = holdEnd + FINAL_HOLD_DUR + FINAL_PAUSE_DUR;
+        } else {
+          t = holdEnd;
+        }
+      });
 
       ScrollTrigger.addEventListener("refreshInit", applyInitialState);
 
@@ -371,7 +389,7 @@ export default function CardTransitionSection() {
     <section ref={sectionRef} className="cts-section" style={{ height: SECTION_HEIGHT }}>
       <div ref={stickyRef} className="cts-sticky">
         <h1 ref={headlineRef} className="cts-headline">
-          What we do 
+          What we do
         </h1>
 
         {CARDS.map((card, i) => (
@@ -386,7 +404,6 @@ export default function CardTransitionSection() {
               backgroundRepeat: "no-repeat",
             }}
           >
-            {/* Top-left stack: number, then label directly below */}
             <div className="cts-card__topleft">
               <span className="cts-card__num">{card.num}</span>
               <div ref={labelRefs[i]} className="cts-card__label">
@@ -396,10 +413,15 @@ export default function CardTransitionSection() {
               </div>
             </div>
 
-            {/* Bottom description text */}
             <h2 ref={titleRefs[i]} className="cts-card__title">
               {card.bottom.split("\n").map((line, li) => (
-                <span key={li} className="cts-card__title-line">{line}</span>
+                <span
+                  key={li}
+                  ref={lineRefs[i][li]}
+                  className="cts-card__title-line"
+                >
+                  {line}
+                </span>
               ))}
             </h2>
           </div>

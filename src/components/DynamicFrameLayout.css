@@ -1,463 +1,308 @@
 /* ============================================================
    DYNAMIC FRAME LAYOUT  ·  Premium Editorial Grid
-   Reference: Luma-style — pure black, serif italic, centered titles
    ============================================================ */
 
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400;1,600&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap");
 
 /* ── Grid ──────────────────────────────────────────────────── */
-
 .dfl-grid {
   width: 100%;
   height: 100vh;
   min-height: 580px;
-
   display: grid;
   gap: 1px;
   padding: 0;
-
-  background: #111;          /* gap colour — thin grey dividers like reference */
-
+  background: #111;
   transition:
     grid-template-columns 0.62s cubic-bezier(.22,1,.36,1),
     grid-template-rows    0.62s cubic-bezier(.22,1,.36,1);
 }
 
 /* ── Card ──────────────────────────────────────────────────── */
-
 .dfl-card {
   position: relative;
   overflow: hidden;
   cursor: pointer;
-
-  background-color: #080808; /* fallback beneath the inline background-image */
+  background-color: #080808;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-
-  transition:
-    opacity   0.4s ease,
-    filter    0.4s ease,
-    box-shadow 0.5s ease;
-
+  transition: opacity 0.4s ease, filter 0.4s ease, box-shadow 0.5s ease;
   transform: translateZ(0);
 }
 
-/* Non-hovered: slightly dim but still readable */
-.dfl-card.is-dimmed {
-  opacity: 0.72;
-  filter: brightness(0.75);
-}
+.dfl-card.is-dimmed { opacity: 0.72; filter: brightness(0.75); }
 
-/* Active card — luxury golden glow */
 .dfl-card.is-hovered {
-  opacity: 1;
-  filter: none;
+  opacity: 1; filter: none;
   box-shadow:
-    0 0 0 1px rgba(212, 175, 95, 0.22),
-    0 0 25px rgba(212, 175, 95, 0.18),
-    0 0 70px rgba(212, 175, 95, 0.10),
-    inset 0 0 60px rgba(212, 175, 95, 0.04);
+    0 0 0 1px rgba(212,175,95,0.22),
+    0 0 25px rgba(212,175,95,0.18),
+    0 0 70px rgba(212,175,95,0.10),
+    inset 0 0 60px rgba(212,175,95,0.04);
   z-index: 10;
 }
 
-/* Subtle corner shimmer on hover */
+/* Hide source card while its clone is expanded (shared-element illusion) */
+.dfl-card.is-source-hidden { visibility: hidden; }
+
 .dfl-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  background: linear-gradient(
-    135deg,
-    rgba(255,255,255,0.045) 0%,
-    transparent 40%
-  );
-  opacity: 0;
-  transition: opacity 0.4s ease;
+  content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,255,255,0.045) 0%, transparent 40%);
+  opacity: 0; transition: opacity 0.4s ease;
 }
 .dfl-card.is-hovered::after { opacity: 1; }
 
 /* ── Video ─────────────────────────────────────────────────── */
-
 .dfl-video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-
-  opacity: 0;
-  transform: scale(1.04);
-
-  z-index: 1;
-  will-change: opacity, transform;
-
-  transition:
-    opacity   0.7s ease 0.25s,     /* delayed so letters erase first */
-    transform 1.4s cubic-bezier(.22,1,.36,1);
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transform: scale(1.04);
+  z-index: 1; will-change: opacity, transform;
+  transition: opacity 0.7s ease 0.25s, transform 1.4s cubic-bezier(.22,1,.36,1);
 }
-
-.dfl-video--visible {
-  opacity: 1;
-  transform: scale(1);
-}
+.dfl-video--visible { opacity: 1; transform: scale(1); }
 
 /* ── Gradient overlay ──────────────────────────────────────── */
-
 .dfl-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  background: linear-gradient(
-    180deg,
-    rgba(0,0,0,0.38) 0%,
-    rgba(0,0,0,0.12) 45%,
-    rgba(0,0,0,0.55) 100%
-  );
+  position: absolute; inset: 0; z-index: 2;
+  background: linear-gradient(180deg, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.12) 45%, rgba(0,0,0,0.55) 100%);
   transition: opacity 0.5s ease;
 }
-
-.dfl-card.is-hovered .dfl-overlay {
-  opacity: 0.45;
-}
+.dfl-card.is-hovered .dfl-overlay { opacity: 0.45; }
 
 /* ── Floating Controls ─────────────────────────────────────── */
-
 .dfl-controls {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 10;
-
-  display: flex;
-  gap: 7px;
-
-  opacity: 0;
-  transform: translateY(-6px);
-  pointer-events: none;
-
-  transition:
-    opacity   0.3s ease,
-    transform 0.4s cubic-bezier(.22,1,.36,1);
+  position: absolute; top: 14px; right: 14px; z-index: 10;
+  display: flex; gap: 7px;
+  opacity: 0; transform: translateY(-6px); pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(.22,1,.36,1);
 }
-
-.dfl-controls--visible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: all;
-}
+.dfl-controls--visible { opacity: 1; transform: translateY(0); pointer-events: all; }
 
 .dfl-ctrl-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
+  width: 30px; height: 30px; border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.2);
   background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  color: rgba(255,255,255,0.75);
-  cursor: pointer;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  transition:
-    background 0.2s ease,
-    color      0.2s ease,
-    transform  0.25s ease;
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  color: rgba(255,255,255,0.75); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.25s ease;
 }
-
 .dfl-ctrl-btn:hover {
   background: rgba(212,175,95,0.18);
   border-color: rgba(212,175,95,0.45);
-  color: #e8c96a;
-  transform: scale(1.12);
+  color: #e8c96a; transform: scale(1.12);
 }
 
-/* ── Title Block — always centered ────────────────────────── */
-
+/* ── Title Block ───────────────────────────────────────────── */
 .dfl-title-block {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-
-  pointer-events: none;
-
-  transition: opacity 0.2s ease;
+  position: absolute; inset: 0; z-index: 5;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  pointer-events: none; transition: opacity 0.2s ease;
 }
-
-/* ── Title text ────────────────────────────────────────────── */
 
 .dfl-name {
-  font-style: italic;
+  font-family: var(--heading);
   font-weight: 300;
   font-size: clamp(1.05rem, 1.6vw + 0.3rem, 2.1rem);
-  line-height: 1.1;
-  letter-spacing: 0.01em;
+  line-height: 1.1; letter-spacing: 0.01em;
   color: rgba(255,255,255,0.88);
-  margin: 0;
-  padding: 0;
-  text-align: center;
-  white-space: nowrap;
-
-  transition: color 0.3s ease;
-  position: relative;
+  margin: 0; padding: 0; text-align: center; white-space: nowrap;
+  transition: color 0.3s ease; position: relative;
 }
-
-.dfl-card.is-hovered .dfl-name {
-  color: rgba(255,255,255,1);
-}
-
-/* Ghost layer keeps layout width stable while letters erase */
-.dfl-name-ghost {
-  visibility: hidden;
-  display: block;
-  height: 0;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.dfl-name-visible {
-  display: block;
-  /* letters drop out from the left, so text right-aligns naturally */
-  text-align: right;
-  transition: none;
-}
-
-/* ── Separator line ────────────────────────────────────────── */
+.dfl-card.is-hovered .dfl-name { color: rgba(255,255,255,1); }
 
 .dfl-sep {
-  display: block;
-  height: 1px;
-  width: 36px;
-  background: rgba(255,255,255,0.55);
-  border-radius: 1px;
-
-  transition:
-    width      0.55s cubic-bezier(.22,1,.36,1),
-    background 0.4s ease,
-    opacity    0.4s ease;
+  display: block; height: 1px; width: 36px;
+  background: rgba(255,255,255,0.55); border-radius: 1px;
+  transition: width 0.55s cubic-bezier(.22,1,.36,1), background 0.4s ease, opacity 0.4s ease;
 }
-
-/* Expand on ALL cards when any card is hovered (subtle pulse) */
-.dfl-grid:hover .dfl-sep {
-  width: 28px;
-}
-
-/* Hovered card's separator grows wider with gold tint */
-.dfl-card.is-hovered .dfl-sep {
-  width: 52px;
-  background: rgba(212,175,95,0.75);
-}
-
-/* Shrink to invisible as letters erase */
+.dfl-grid:hover .dfl-sep { width: 28px; }
+.dfl-card.is-hovered .dfl-sep { width: 52px; background: rgba(212,175,95,0.75); }
 .dfl-sep--shrink {
-  width: 0 !important;
-  opacity: 0;
-  transition:
-    width   0.38s cubic-bezier(.22,1,.36,1) 0.05s,
-    opacity 0.3s ease 0.05s;
+  width: 0 !important; opacity: 0;
+  transition: width 0.38s cubic-bezier(.22,1,.36,1) 0.05s, opacity 0.3s ease 0.05s;
 }
 
-/* ── Non-hovered: title stays readable ─────────────────────── */
+.dfl-card.is-dimmed .dfl-name { color: rgba(255,255,255,0.72); }
+.dfl-card.is-dimmed .dfl-sep  { background: rgba(255,255,255,0.35); }
 
-.dfl-card.is-dimmed .dfl-name {
-  color: rgba(255,255,255,0.72);
-}
+.bfsi .dfl-name, .health .dfl-name, .automotive .dfl-name, .tech .dfl-name { color: #fff !important; }
+.bfsi .dfl-sep,  .health .dfl-sep,  .automotive .dfl-sep,  .tech .dfl-sep  { background: rgb(222,220,220) !important; }
+.bfsi.is-hovered .dfl-name, .health.is-hovered .dfl-name,
+.automotive.is-hovered .dfl-name, .tech.is-hovered .dfl-name {color: #fff !important; }
 
-.dfl-card.is-dimmed .dfl-sep {
-  background: rgba(255,255,255,0.35);
-}
-
-/* ── Per-card text-color overrides ──────────────────────────
-   (Gradient backgrounds removed — each card's background is now
-   a PNG applied inline via the `image` property in JS. These
-   overrides remain for industries whose photo is light/busy, so
-   the title stays legible and flips to dark text on hover.) */
-
-.bfsi .dfl-name,
-.health .dfl-name,
-.automotive .dfl-name,
-.tech .dfl-name {
-  color: #ffffff !important;
-}
-
-.bfsi .dfl-sep,
-.health .dfl-sep,
-.automotive .dfl-sep,
-.tech .dfl-sep {
-  background: rgb(222, 220, 220) !important;
-}
-
-.bfsi.is-hovered .dfl-name,
-.health.is-hovered .dfl-name,
-.automotive.is-hovered .dfl-name,
-.tech.is-hovered .dfl-name {
-  color: #000000 !important;
-}
 /* ── Mobile ────────────────────────────────────────────────── */
-
 @media (max-width: 768px) {
   .dfl-grid {
     grid-template-columns: 1fr !important;
     grid-template-rows: auto !important;
-    height: auto;
-    gap: 1px;
+    height: auto; gap: 1px;
   }
-
-  .dfl-card {
-    min-height: 190px;
-  }
-
-  .dfl-card.is-dimmed {
-    opacity: 0.85;
-    filter: none;
-  }
-
-  .dfl-name {
-    font-size: 1.6rem;
-  }
-
-  .dfl-sep {
-    width: 28px;
-  }
+  .dfl-card { min-height: 190px; }
+  .dfl-card.is-dimmed { opacity: 0.85; filter: none; }
+  .dfl-name { font-size: 1.6rem; }
+  .dfl-sep { width: 28px; }
 }
 
 /* ============================================================
-   FULLSCREEN TRANSITION LAYER  ·  Added — does not alter
-   any rule above. Apple-style expand / scroll-zoom / navigate.
+   FULLSCREEN TRANSITION LAYER
    ============================================================ */
 
-/* Scroll spacer that drives ScrollTrigger progress while the
-   fullscreen overlay is open. Visually invisible, sits behind
-   the fixed overlay, simply gives the page scrollable height. */
 .dfl-scroll-spacer {
   position: relative;
   width: 100%;
-  height: 250vh;
+  height: 260vh;      /* fallback; JS overrides with a fixed pixel height */
+  min-height: 1200px;
   pointer-events: none;
 }
 
-/* Fixed fullscreen overlay container */
 .dfl-fullscreen {
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  background: #000;
-  overflow: hidden;
-  will-change: opacity;
+  position: fixed; inset: 0; z-index: 999;
+  background: #000; overflow: hidden; will-change: opacity;
 }
 
-/* WRAPPER that animates from the card's rect to fullscreen and is the
-   element that gets the scroll-driven zoom (transform: scale).
-   The video lives INSIDE this and is never transformed itself. */
+/*
+ * Shared-element wrapper. Positioned/sized in JS (top/left/width/height),
+ * transformed by GSAP for the open/close card <-> fullscreen expand.
+ *
+ * IMPORTANT: no static `transform` here. This element's transform is
+ * fully owned by GSAP (via gsap.set/gsap.to with force3D). A hard-coded
+ * CSS `transform` on the same property GSAP writes to is redundant at
+ * best and, once GSAP starts writing inline `transform` styles on this
+ * node every open/close cycle, serves no purpose — removed to avoid any
+ * ambiguity about which layer "owns" this element's transform.
+ */
 .dfl-fullscreen-video {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
-  overflow: hidden;
-  background: #000;
-  /* Hint the compositor: this layer's geometry + transform change. */
-  will-change: transform, width, height, top, left;
-  /* Promote to its own GPU layer up front so scaling stays smooth. */
-  transform: translateZ(0);
+  position: fixed; top: 0; left: 0;
+  z-index: 1000; overflow: hidden; background: #000;
+  will-change: transform, width, height, top, left, border-radius;
   backface-visibility: hidden;
 }
 
-/* The actual <video>. It simply fills the wrapper and is NEVER given a
-   scaling transform — only a flat translateZ(0) for a stable GPU layer —
-   so the browser keeps decoding/painting live frames during the zoom. */
+/*
+ * Actual video: fills the wrapper. This element IS transformed by
+ * ScrollTrigger (via a real gsap.to(...) scale tween bound through the
+ * tween's own `scrollTrigger` config — see setupScrollZoom) to produce
+ * the visible zoom, so it must be compositor-promoted (will-change:
+ * transform) and must NOT carry a static/conflicting CSS `transform` —
+ * GSAP owns this element's transform entirely once setupScrollZoom()
+ * runs. `transform-origin` is declared here as a baseline (mirrored by
+ * JS) so the origin is never ambiguous before JS has a chance to set it.
+ */
 .dfl-fullscreen-video-inner {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  background: #000;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  will-change: auto;
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; display: block; background: #000;
+  backface-visibility: hidden; will-change: transform;
+  transform-origin: 50% 50%;
 }
 
-/* Dark gradient over the fullscreen video, echoes .dfl-overlay */
 .dfl-fullscreen-overlay-tint {
-  position: fixed;
-  inset: 0;
-  z-index: 1001;
-  background: linear-gradient(
-    180deg,
-    rgba(0,0,0,0.25) 0%,
-    rgba(0,0,0,0.05) 40%,
-    rgba(0,0,0,0.65) 100%
-  );
-  pointer-events: none;
-  opacity: 0;
+  position: fixed; inset: 0; z-index: 1001;
+  background: linear-gradient(180deg,
+    rgba(0,0,0,0.28) 0%,
+    rgba(0,0,0,0.08) 40%,
+    rgba(0,0,0,0.75) 100%);
+  pointer-events: none; opacity: 0;
   transition: opacity 0.5s ease;
 }
+.dfl-fullscreen-overlay-tint--visible { opacity: 1; }
 
-.dfl-fullscreen-overlay-tint--visible {
-  opacity: 1;
+/* Industry title under the fullscreen video */
+.dfl-fs-caption {
+  position: fixed; left: 0; right: 0; bottom: 12vh;
+  z-index: 1003;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.dfl-fs-caption--visible { opacity: 1; }
+
+.dfl-fs-eyebrow {
+  font-family:var(--heading);
+  font-size: 0.72rem;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  text-shadow: 0 1px 14px rgba(0,0,0,0.55);
+}
+
+.dfl-fs-title {
+  font-family:var(--heading);
+   font-weight: 300;
+  font-size: clamp(2.2rem, 5.5vw, 5.2rem);
+  line-height: 1; letter-spacing: 0.005em; margin: 0;
+  color: #fff;
+  text-shadow: 0 2px 30px rgba(0,0,0,0.55);
+  text-align: center;
+  will-change: transform, opacity;
+}
+
+.dfl-fs-rule {
+  height: 1px; width: 64px;
+  background: rgba(212,175,95,0.85);
+  box-shadow: 0 0 20px rgba(212,175,95,0.35);
 }
 
 /* "Scroll Down" prompt */
 .dfl-scroll-cue {
-  position: fixed;
-  left: 50%;
-  bottom: 56px;
-  z-index: 1002;
+  position: fixed; left: 50%; bottom: 40px; z-index: 1004;
   transform: translateX(-50%);
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-
-  pointer-events: none;
-  color: #fff;
-
-  opacity: 0;
-  transition: opacity 0.5s ease 0.35s;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  pointer-events: none; color: #fff;
+  opacity: 0; transition: opacity 0.5s ease 0.35s;
 }
-
-.dfl-scroll-cue--visible {
-  opacity: 1;
-  animation: dfl-float 2.1s ease-in-out infinite;
-}
-
+.dfl-scroll-cue--visible { opacity: 1; animation: dfl-float 2.1s ease-in-out infinite; }
 .dfl-scroll-cue-text {
-  font-style: italic;
-  font-weight: 300;
-  font-size: 0.78rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  font-style: italic; font-weight: 300;
+  font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase;
   color: rgba(255,255,255,0.92);
   text-shadow: 0 1px 12px rgba(0,0,0,0.5);
 }
-
 .dfl-scroll-cue-arrow {
-  font-size: 1.05rem;
-  line-height: 1;
+  font-size: 1.05rem; line-height: 1;
   color: rgba(255,255,255,0.92);
   text-shadow: 0 1px 12px rgba(0,0,0,0.5);
 }
-
 @keyframes dfl-float {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(8px); }
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  50% {
+    transform: translateX(-50%) translateY(8px);
+  }
+}
+@media (max-width: 768px) {
+  .dfl-scroll-cue { bottom: 28px; }
+  .dfl-fs-caption { bottom: 16vh; }
 }
 
-@media (max-width: 768px) {
-  .dfl-scroll-cue {
-    bottom: 36px;
-  }
+/* ============================================================
+   DETAIL PAGE ENTRY (opt-in — used by /industry/:slug)
+   Wrap your detail page root in `.dfl-detail-enter` to get a
+   matching continuation from the fullscreen video.
+   ============================================================ */
+.dfl-detail-enter {
+  animation: dfl-detail-in 0.9s cubic-bezier(.22,1,.36,1) both;
+  transform-origin: center center;
+}
+.dfl-detail-enter .dfl-detail-hero {
+  animation: dfl-detail-hero-in 1.1s cubic-bezier(.22,1,.36,1) both;
+}
+.dfl-detail-enter .dfl-detail-body > * {
+  animation: dfl-detail-body-in 0.9s cubic-bezier(.22,1,.36,1) both;
+  animation-delay: 0.25s;
+}
+@keyframes dfl-detail-in {
+  from { opacity: 0; transform: scale(1.06); filter: blur(6px); }
+  to   { opacity: 1; transform: scale(1);    filter: blur(0);   }
+}
+@keyframes dfl-detail-hero-in {
+  from { transform: scale(1.12); opacity: 0.7; }
+  to   { transform: scale(1);    opacity: 1;   }
+}
+@keyframes dfl-detail-body-in {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0);    }
 }

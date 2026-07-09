@@ -3,24 +3,26 @@
 ───────────────────────────────────────────── */
 
 .workspace-title{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    width:100%;
-    padding:28px 0 24px;
+display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+     padding-top: 65px;
+    padding-bottom: 60px;
+     padding:40px 12px 30px;
 }
-
 .workspace-heading{
     margin:0;
 
     display:inline-flex;
     align-items:baseline;
     justify-content:center;
+    flex-wrap:wrap;
 
     text-align:center;
 
-    font-family:var(--heading);
+    font-family:'Avenir Black', var(--heading) !important;
+    font-weight:900 !important;
 
     font-size:clamp(58px,7vw,102px);
 
@@ -30,21 +32,46 @@
     color:#111;
 }
 
+/* Force Avenir Black on every span inside the heading, overriding any
+   global index.css rule that swaps <span> elements to a light font.
+   (The global rule itself is untouched — this only wins inside .workspace-heading.) */
+.workspace-heading,
+.workspace-heading span{
+    font-family:'Avenir Black', var(--heading) !important;
+    font-weight:900 !important;
+    font-style:normal !important;
+}
+
+/* Individual reveal units — GSAP drives ONLY the `color` property here.
+   display:inline (not inline-block) keeps word spacing/kerning identical
+   to plain text — no blur, no opacity, no transform, ever. */
+.reveal-word{
+    display:inline;
+    color:#CFCFCF;
+}
+
+/* Literal space characters between reveal-word spans. Kept as their own
+   span (rather than raw whitespace between JSX elements) so spacing is
+   never collapsed by JSX whitespace-trimming, while staying unaffected
+   by the color animation. */
+.heading-space{
+    display:inline;
+    white-space:pre;
+    color:#111; /* spaces are invisible either way; keeps font rule simple */
+}
+
 /* personlyze */
 .workspace-brand{
-    font-family:var(--heading);
-    color:#111;
-
+    color:inherit;
     letter-spacing:-0.055em;
 }
 
-/* .ai */
+/* .ai — starts light grey like every other word, and is animated to red
+   (not black) by GSAP. No color !important here so the inline style GSAP
+   sets can win; font rules stay forced via the block above. */
 .workspace-ai{
-    font-family:var(--heading);
-    color:#d10000;
-
+    color:#CFCFCF;
     letter-spacing:-0.055em;
-
     margin-left:2px;
 }
 /* ── Full-width hero video ── */
@@ -189,36 +216,85 @@
   }
 }
 
-/* ── Mobile ── */
-@media (max-width: 640px) {
-  .workspace-section {
-    padding: 0 0 48px;
+/* ===============================
+   MOBILE
+================================= */
+@media (max-width:640px){
+
+  .workspace-title{
+    padding:4px 20px 0;
+    margin:0;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
   }
 
-  .workspace-heading {
-    top: 20px;
-    padding: 0 20px;
-    font-size: clamp(14px, 4vw, 17px);
+  .workspace-heading{
+    margin:0;
+
+    font-size:clamp(36px,10vw,56px);
+    line-height:1;
+    letter-spacing:-1px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    flex-wrap:nowrap;
+    white-space:nowrap;
+
+    text-align:center;
   }
 
-  .workspace-video {
-    aspect-ratio: auto;
-    height: 60vh;
-    min-height: 320px;
-    max-height: 560px;
+}
+
+  .workspace-brand{
+    color:inherit;
   }
 
-  .workspace-video::before {
-    height: 90px;
+  .workspace-ai{
+    color:#CFCFCF;
+    margin-left:2px;
   }
 
-  .play-btn {
-    width: 72px;
-    height: 72px;
+  /* Video */
+
+.workspace-video{
+  position:relative;
+
+  width:100vw;
+  height:100vh;
+
+  margin-left:calc(50% - 50vw);
+
+  overflow:hidden;
+
+  cursor:pointer;
+
+  display:flex;
+  flex-direction:column;
+
+  justify-content:flex-start;
+}
+  .workspace-video::before{
+    height:70px;
   }
 
-  .video-modal-inner {
-    height: auto;
-    aspect-ratio: 16 / 9;
+  .play-btn{
+    width:72px;
+    height:72px;
   }
+
+  .play-btn svg{
+    width:20px;
+    height:20px;
+  }
+
+  .video-modal-inner{
+    width:100%;
+    height:auto;
+    aspect-ratio:16/9;
+  }
+
 }
