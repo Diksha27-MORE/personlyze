@@ -8,7 +8,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #ffffff;
+  color: rgba(255,255,255,0.88);
   position: relative;
   overflow-x: hidden;
 }
@@ -20,7 +20,7 @@
   align-items: center;
   justify-content: center;
   background: #000;
-  color: #fff;
+  color: rgba(255,255,255,0.88);
 }
 
 .industry-landing__not-found h1 {
@@ -116,7 +116,7 @@
   border-radius: 50%;
   border: none;
   background: rgba(0, 0, 0, 0.5);
-  color: #fff;
+ color: rgba(255,255,255,0.88);
   font-size: 1.1rem;
   display: flex;
   align-items: center;
@@ -175,7 +175,7 @@
   border-radius: 16px;
   overflow: hidden;
   cursor: default;
-  color: #ffffff;
+  color: rgba(255,255,255,0.88);
   border: 1px solid rgba(0, 0, 0, 0.08);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
   transition: box-shadow 0.3s ease, transform 0.3s ease;
@@ -202,12 +202,13 @@
 }
 
 .industry-card__placeholder-title {
-  font-size: 1.4rem;
-  font-weight: 500;
+  font-family: var(--heading);
+  font-size: 1.8rem;
+  font-weight: 900;
   letter-spacing: 0.02em;
   line-height: 1.3;
+  color: #131212;
 }
-
 /* Detail panel: slides up from the bottom, inside the card, same card size */
 .industry-card__detail {
   position: absolute;
@@ -287,51 +288,262 @@
   line-height: 1.55;
   opacity: 0.95;
 }
+/* Replace the existing .industry-cards-section rule with this: */
+.industry-cards-section {
+  width: 100%;
+  padding: 56px 0 80px;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.industry-cards-section__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.industry-cards-section > .industry-carousel {
+  position: relative;
+  z-index: 2;
+}
+.industry-cards-section__overlay {
+  display: none;
+}
+/* Add — sits behind the placeholder + detail layers */
+
+.industry-card__placeholder,
+.industry-card__detail {
+  z-index: 1;
+}
+/* CHANGE: theme.gradient inline background was removed from the JSX.
+   Give the landing a neutral base so the hero + cards section still
+   sit on a defined background. Adjust color to taste. */
+
 
 /* ==========================================================================
    Responsive
    ========================================================================== */
+/* ==========================================================================
+   MOBILE REDESIGN (max-width: 768px)  — additive only
+   ========================================================================== */
 
-@media (max-width: 900px) {
-  .industry-hero__title {
-    font-size: 3rem;
-  }
-
-  .industry-card-slot {
-    flex: 0 0 calc(100% / 2);
-  }
-
-  .industry-card {
-    height: 320px;
+@media (max-width: 768px) {
+  /* Hide desktop carousel entirely on mobile */
+  .industry-landing:not(.industry-landing--mobile) .industry-cards-section {
+    display: none;
   }
 }
 
-@media (max-width: 600px) {
-  .industry-hero {
-    padding: 72px 20px 40px;
-  }
+/* ---------- Mobile: two Challenge placeholder cards ---------------------- */
+.industry-landing--mobile .mobile-challenges {
+  width: 100%;
+  padding: 32px 20px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: #f4efe7;
+}
 
-  .industry-hero__title {
-    font-size: 2.2rem;
-  }
+.mobile-challenge-card {
+  width: 100%;
+  min-height: 180px;
+  background: #ffffff;
+  border: none;
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08),
+              0 2px 6px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
 
-  .industry-hero__description {
-    font-size: 1rem;
-  }
+.mobile-challenge-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
 
-  .industry-card-slot {
-    flex: 0 0 100%;
-  }
+.mobile-challenge-card__title {
+  font-family: var(--heading);
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #131212;
+  text-align: center;
+}
 
-  .industry-card {
-    height: 300px;
-  }
+/* ---------- Fullscreen Instagram-style overlay --------------------------- */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
 
-  .industry-carousel__arrow--left {
-    left: 4px;
-  }
+.mobile-overlay__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+}
 
-  .industry-carousel__arrow--right {
-    right: 4px;
+.mobile-overlay__sheet {
+  position: fixed;
+  top: 20px;          /* upar sirf itna gap */
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  width: 100%;
+  height: calc(100vh - 20px);
+
+  background: #0d0d0f;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
+.mobile-overlay__close {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  right: 14px;
+  z-index: 5;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 1.6rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.mobile-overlay__close:active {
+  transform: scale(0.92);
+}
+
+/* Horizontal snap carousel */
+.mobile-overlay__track {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-overlay__track::-webkit-scrollbar { display: none; }
+
+.mobile-overlay__slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  padding: 20px 20px 55px; /* dots ke liye neeche space */
+  box-sizing: border-box;
+}
+
+/* Reuse the desktop .industry-card look — mobile just overrides sizing */
+.industry-card--mobile {
+  width: 100%;
+  max-width: 480px;
+
+  height: calc(100vh - 60px);
+
+  border-radius: 28px;
+
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tap-to-reveal (mirrors :hover behavior from desktop) */
+.industry-card--mobile.is-revealed .industry-card__detail {
+  transform: translateY(0%);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.industry-card--mobile.is-revealed .industry-card__placeholder {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* Kill hover-triggered overlay on touch devices */
+@media (hover: none) {
+  .industry-card--mobile:hover .industry-card__detail,
+  .industry-card--mobile:focus-within .industry-card__detail {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
   }
+  .industry-card--mobile.is-revealed .industry-card__detail {
+    transform: translateY(0%);
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* Video card play button */
+.industry-card__play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Pagination dots */
+.mobile-overlay__dots {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+
+  display: flex;
+  gap: 8px;
+  z-index: 5;
+}
+.mobile-overlay__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  background: rgba(255,255,255,.35);
+  transition: all .3s ease;
+}
+
+.mobile-overlay__dot.is-active {
+  background: #fff;
+  transform: scale(1.4);
 }

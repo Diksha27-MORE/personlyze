@@ -118,6 +118,18 @@ display: flex;
                       (this is very likely what caused your thin strip) */
   vertical-align: top;
 }
+.workspace-video picture{
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+.workspace-video-media{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
 
 /* ── Play button ── */
 .play-btn {
@@ -219,10 +231,11 @@ display: flex;
 /* ===============================
    MOBILE
 ================================= */
+
 @media (max-width:640px){
 
   .workspace-title{
-    padding:4px 20px 0;
+    padding:10px 16px 14px !important; /* top | left-right | bottom */
     margin:0;
     display:flex;
     justify-content:center;
@@ -267,11 +280,18 @@ display: flex;
     height:70px;
   }
 
+@media (max-width:640px){
+
   .play-btn{
+    top:65%;
+    left:50%;
+    transform:translate(-50%, -50%);
+
     width:72px;
     height:72px;
   }
 
+}
   .play-btn svg{
     width:20px;
     height:20px;

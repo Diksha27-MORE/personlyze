@@ -288,7 +288,17 @@ export default function DynamicFrameLayout() {
         window.scrollTo(0, 0);
 
         setShowTitle(true);
-        if (fsTitleRef.current) {
+        // FIX (null target #2): fsTitleRef and fsSubtitleRef both belong to
+        // elements inside the same `{isFullscreen && activeIndustry && (...)}`
+        // block, so they mount together — but the original guard only
+        // checked `fsTitleRef.current` before passing BOTH refs into the
+        // array target. That let a `null` slip into the array on any frame
+        // where only one ref had attached, which GSAP's array-target
+        // resolution flags as "GSAP target not found." (as opposed to the
+        // "target null not found." wording used for a single null argument).
+        // Checking both refs before firing removes that possibility
+        // entirely, with no change to the animation itself.
+        if (fsTitleRef.current && fsSubtitleRef.current) {
           gsap.fromTo(
             [fsTitleRef.current, fsSubtitleRef.current],
             { y: 24, opacity: 0, filter: "blur(6px)" },
@@ -307,6 +317,33 @@ export default function DynamicFrameLayout() {
       { opacity: 0 },
       { opacity: 1, duration: 0.55, ease: "power2.out" }
     );
+
+    // FIX (null target #1 — the primary cause of both warnings):
+    // fsContainerRef points at a <div> that is conditionally rendered
+    // (`{isFullscreen && (<div ref={fsContainerRef} .../>)}`). Above, we
+    // just called `setIsFullscreen(true)`, but React batches that state
+    // update — it does NOT apply synchronously, so the conditional div has
+    // not been mounted yet at this point in the function. That means
+    // `fsContainerRef.current` was still `null` (left over from the
+    // previous render, when isFullscreen was false), and the gsap.fromTo
+    // call right above this comment was firing on a null target every
+    // single time `openFullscreen` ran — this is exactly what produced
+    // "GSAP target null not found." in the console.
+    //
+    // The fix: defer the animation to the next animation frame (after
+    // React has committed the re-render and the div genuinely exists in
+    // the DOM), and guard on the ref just in case. Duration, easing, and
+    // opacity values are untouched — the fade timing is visually identical,
+    // delayed only by a single frame (~16ms), which is imperceptible and
+    // is also why this fade wasn't reliably showing up before.
+    requestAnimationFrame(() => {
+      if (!fsContainerRef.current) return;
+      gsap.fromTo(
+        fsContainerRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.55, ease: "power2.out" }
+      );
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFullscreen, primePlayback]);
 
@@ -362,7 +399,15 @@ export default function DynamicFrameLayout() {
       animatingRef.current = false;
     }
 
-    gsap.to(fsContainerRef.current, { opacity: 0, duration: 0.5, ease: "power2.in" });
+    // FIX: defensive null guard. In the normal flow fsContainerRef.current
+    // is still mounted here (isFullscreen hasn't flushed to false yet in
+    // this synchronous call), so this wasn't the source of either console
+    // warning — but it relies on the same "ref must already exist"
+    // assumption that caused the bug above, so it's guarded the same way
+    // for consistency. No effect on the fade-out animation or its timing.
+    if (fsContainerRef.current) {
+      gsap.to(fsContainerRef.current, { opacity: 0, duration: 0.5, ease: "power2.in" });
+    }
   }, []);
 
   /* ── Scroll-driven zoom + text reveal ──────────────────────
@@ -526,7 +571,14 @@ export default function DynamicFrameLayout() {
 
         const done = () => {
           if (fsTintRef.current) fsTintRef.current.classList.remove("dfl-fullscreen-overlay-tint--visible");
-          gsap.to(fsContainerRef.current, { opacity: 0, duration: 0.35, ease: "power2.in" });
+          // FIX: guard here too — reverseTransition follows the same
+          // pattern as closeFullscreen (fsContainerRef is expected to
+          // already be mounted since isFullscreen is still true at this
+          // point), but the guard costs nothing and keeps every
+          // fsContainerRef.current usage in the file consistent.
+          if (fsContainerRef.current) {
+            gsap.to(fsContainerRef.current, { opacity: 0, duration: 0.35, ease: "power2.in" });
+          }
           gsap.set(wrapEl, { opacity: 0 });
           document.body.style.setProperty("overflow", "auto", "important");
           document.documentElement.style.setProperty("overflow", "auto", "important");

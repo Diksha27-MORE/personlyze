@@ -12,12 +12,18 @@ const CARD_IMAGES = [strategicImg, creativeImg, aiImg];
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ── Layout constants (responsive) — UNCHANGED ───────────────────────────────
+// ── Layout constants (responsive) ───────────────────────────────
 const isMobile = () => window.innerWidth <= 640;
 
-const HERO_W  = () => isMobile() ? Math.round(window.innerWidth * 0.72) : 780;
-const HERO_H  = () => isMobile() ? Math.round(HERO_W() * (720 / 780))   : 830;
-const HERO_BR = () => isMobile() ? 22 : 20;
+// CHANGED: on mobile the hero card is now fullscreen (100vw x 100svh).
+// window.innerHeight is used as the JS-side proxy for 100svh since GSAP
+// needs a concrete pixel value (the CSS side still uses `100svh` for the
+// sticky wrapper itself, see .cts-sticky in the CSS file).
+const HERO_W  = () => isMobile() ? window.innerWidth  : 780;
+const HERO_H  = () => isMobile() ? window.innerHeight : 830;
+// CHANGED: mobile hero border radius reduced to ~0 ("almost all radius removed").
+// Kept at 2px instead of a hard 0 to avoid a hairline aliasing edge on the image.
+const HERO_BR = () => isMobile() ? 2 : 20;
 
 const SMALL_W  = () => isMobile() ? 96 : 158;
 const SMALL_H  = () => Math.round(SMALL_W() / (780 / 830));
@@ -28,8 +34,10 @@ const THUMB_H  = () => Math.round(THUMB_W() / (780 / 830));
 const THUMB_BR = () => isMobile() ? 10 : 12;
 
 const heroX = () => Math.round((window.innerWidth - HERO_W()) / 2)
+// CHANGED: mobile hero now starts flush at the very top (0) instead of an
+// 8vh offset, since it fills the whole screen edge-to-edge.
 const heroY = () => isMobile()
-  ? Math.round(window.innerHeight * 0.08)
+  ? 0
   : Math.round((window.innerHeight - HERO_H()) / 2);
 
 const thumbX = () => Math.round((window.innerWidth - THUMB_W()) / 2);
@@ -40,29 +48,42 @@ const TL_Y = () => isMobile() ? 16 : 40;
 
 const DESC_GAP = 60;
 
+// CHANGED: these two are only used by the desktop DESC_X/DESC_Y branches now.
+// Mobile has its own dedicated bottom-anchored constants below.
 const MOBILE_DESC_GAP = () =>
   Math.max(72, Math.round(window.innerHeight * 0.09));
 
-const MOBILE_DESC_W = () =>
-  Math.min(Math.round(window.innerWidth * 0.86), 360);
-
 const DESC_W_DESKTOP = 320;
+
+// NEW: mobile description panel now lives INSIDE the fullscreen card, near
+// the bottom, over a dark gradient — not below the hero like before.
+const MOBILE_DESC_SIDE_PAD   = 24;  // left/right inset, matches card's premium margin
+const MOBILE_DESC_BLOCK_H    = 180; // approx reserved height for one description block
+                                     // (keep in sync with .cts-desc__sections min-height in CSS)
+const MOBILE_DESC_BOTTOM_PAD = 56;  // gap from the bottom safe area
 
 const DESC_X_LEFT = () => {
   if (isMobile()) {
-    return Math.round((window.innerWidth - MOBILE_DESC_W()) / 2);
+    // CHANGED: left-aligned, flush with the card's own padding — no longer
+    // centered in a narrow floating box.
+    return MOBILE_DESC_SIDE_PAD;
   }
   return heroX() - (DESC_W_DESKTOP + DESC_GAP);
 };
 
 const DESC_X_RIGHT = () => {
   if (isMobile()) {
-    return Math.round((window.innerWidth - MOBILE_DESC_W()) / 2);
+    // CHANGED: left and right panels collapse to the exact same inset on
+    // mobile, since only one description panel is ever shown at a time.
+    return MOBILE_DESC_SIDE_PAD;
   }
   return heroX() + HERO_W() + DESC_GAP;
 };
+
+// CHANGED: on mobile, description now anchors near the BOTTOM of the
+// fullscreen hero card (over the gradient) instead of below the hero.
 const DESC_Y = () => isMobile()
-  ? heroY() + HERO_H() + MOBILE_DESC_GAP()
+  ? window.innerHeight - MOBILE_DESC_BLOCK_H - MOBILE_DESC_BOTTOM_PAD
   : heroY() + Math.round(HERO_H() * 0.30);
 
 const BR_X = () => isMobile()
@@ -72,41 +93,46 @@ const BR_Y = () => isMobile()
   ? window.innerHeight - SMALL_H() - 24
   : DESC_Y() + 450;
 
+// NOTE: previewOpacity() is already 0 on mobile, so the top-left "history"
+// thumbnail and the bottom-right "up next" thumbnail are already invisible
+// on mobile today. That's what makes the fullscreen hero swap feel clean —
+// nothing unrelated is left floating on screen. Left untouched.
 const previewOpacity = () => (isMobile() ? 0 : 1);
 
 // ── Timeline pacing constants — tune these to change the scroll feel ──────
-// These are the knobs. Everything else below is computed from them, so
-// there are no more "magic number" labels to get out of sync.
-const HOLD0_DUR            = 1.5;  // initial hold before headline exits
+// UNCHANGED — none of the animation timing changed, only WHERE things move to.
+const HOLD0_DUR            = 1.5;
 const HEADLINE_EXIT_DUR    = 0.8;
-const CARD_GROW_DUR        = 1.5;  // thumbnail/preview -> hero
-const LABEL_IN_DELAY       = 0.9;  // when the in-card label/title fade in, relative to grow start
+const CARD_GROW_DUR        = 1.5;
+const LABEL_IN_DELAY       = 0.9;
 const LABEL_IN_DUR         = 0.6;
 const LABEL_OUT_DUR        = 0.3;
-const TYPE_START_DELAY     = 1.5;  // gap after grow starts before the typewriter begins
-const TYPE_DURS            = [1.2, 1.4, 1.4]; // UNCHANGED — typing speed per card
-const POST_TYPE_PAUSE      = 0.3;  // beat after typing finishes, before side panel appears
+const TYPE_START_DELAY     = 1.5;
+const TYPE_DURS            = [1.2, 1.4, 1.4];
+const POST_TYPE_PAUSE      = 0.3;
 const DESC_FADE_IN_DUR     = 0.5;
 const DESC_FADE_OUT_DUR    = 0.4;
 const SECTION_IN_DUR       = 0.6;
 const SECTION_OUT_DUR      = 0.5;
-const SECTION_HOLD_DUR     = 1.8;  // ← THE FIX: dedicated scroll-time per side-section
-const HOLD_AFTER_SECTIONS  = 0.6;  // beat after the last section before the next transition
-const NEXT_PREVIEW_DELAY   = 0.6;  // when the upcoming card's small preview appears
+const SECTION_HOLD_DUR     = 1.8;
+const HOLD_AFTER_SECTIONS  = 0.6;
+const NEXT_PREVIEW_DELAY   = 0.6;
 const NEXT_PREVIEW_DUR     = 0.65;
-const TL_SHRINK_DUR        = 1.5;  // hero -> top-left "history" thumbnail
-const GRANDPARENT_FADE_DUR = 0.4;  // the older TL thumbnail fading away completely
+const TL_SHRINK_DUR        = 1.5;
+const GRANDPARENT_FADE_DUR = 0.4;
 const FINAL_HOLD_DUR       = 1.0;
 const FINAL_PAUSE_DUR      = 1.2;
 
-// Section height scales with the total timeline length above. If you change
-// SECTION_HOLD_DUR a lot, bump this proportionally (it was tuned for ~1.8s/section).
-const SECTION_HEIGHT = "900vh";
-
+const SECTION_HEIGHT = "700vh";
+// CHANGED: each card now carries an extra `mobileTitle` field — a short,
+// premium-feeling title shown only on mobile ("01 / Strategic Immersion")
+// in place of the huge desktop-style all-caps label ("01 / STRATEGY").
+// Desktop still renders `label` exactly as before — nothing removed.
 const CARDS = [
   {
     num: "01",
     label: "STRATEGY",
+    mobileTitle:"STRATEGY",
     bottom:
       "Because everything in business must begin with strategy.\nAnd everything in strategy must begin with the consumer.",
     desc: [
@@ -117,7 +143,8 @@ const CARDS = [
   },
   {
     num: "02",
-    label: "CREATIVE",
+    label: "DESIGN",
+    mobileTitle:  "DESIGN",
     bottom:
       "Strategy tells us what to say. Creative shows us how to say it.\nSo that it's relevant, grabs attention, and makes us do something..",
     desc: [
@@ -128,6 +155,7 @@ const CARDS = [
   {
     num: "03",
     label: "ARTIFICIAL\nINTELLIGENCE",
+    mobileTitle:"ARTIFICIAL\nINTELLIGENCE",
     bottom:
       "Personalized videos, at a scale no human team could achieve alone.\nTo get you millions of conversations, happening simultaneously.",
     desc: [
@@ -141,6 +169,9 @@ const CARDS = [
 const CARD_LINES = CARDS.map((c) => c.bottom.split("\n"));
 
 // Point 1 → LEFT, Point 2 → RIGHT, Point 3 → LEFT ...
+// NOTE: this still drives desktop's left/right alternation. On mobile both
+// "sides" render at the same inset (see DESC_X_LEFT/RIGHT above), so the
+// left/right distinction is purely a desktop concern now.
 const sideForIndex = (si) => (si % 2 === 0 ? "left" : "right");
 
 export default function CardTransitionSection() {
@@ -215,8 +246,14 @@ export default function CardTransitionSection() {
         descSectionRefs.current.forEach((cardSections) => {
           cardSections.forEach((el, si) => {
             if (!el) return;
-            const fromX = sideForIndex(si) === "left" ? -30 : 30;
-            gsap.set(el, { opacity: 0, x: fromX, y: 0 });
+            // CHANGED: on mobile every section stacks in the exact same spot
+            // (see CSS: .cts-desc__section becomes position:absolute on
+            // mobile), so the slide-in offset there is a small vertical
+            // nudge instead of desktop's left/right nudge — the CSS handles
+            // the stacking, this just keeps the "slide" feel on entry.
+            const fromX = isMobile() ? 0 : (sideForIndex(si) === "left" ? -30 : 30);
+            const fromY = isMobile() ? 14 : 0;
+            gsap.set(el, { opacity: 0, x: fromX, y: fromY });
           });
         });
 
@@ -255,10 +292,10 @@ export default function CardTransitionSection() {
         );
       };
 
-      // Reveal side-sections ONE AT A TIME. Each section gets `perSectionDur`
-      // of dedicated scroll-scrubbed timeline — not a shared leftover window.
-      // Section 1 shows and holds → fades out as Section 2 fades in → holds →
-      // fades out as Section 3 fades in → holds until the next transition.
+      // UNCHANGED: still reveals one description point at a time, holding
+      // for SECTION_HOLD_DUR before the next one fades in/out. On mobile the
+      // CSS makes all sections occupy the same box, so this same "fade one,
+      // fade the next" logic now visually reads as an in-place crossfade.
       const cycleSubSections = (cardIdx, startTime, perSectionDur) => {
         const sections = descSectionRefs.current[cardIdx]
           .map((el, si) => ({ el, si }))
@@ -267,12 +304,13 @@ export default function CardTransitionSection() {
 
         sections.forEach(({ el, si }, i) => {
           const slotStart = startTime + i * perSectionDur;
-          tl.to(el, { opacity: 1, x: 0, ease: E_OUT, duration: SECTION_IN_DUR }, slotStart);
+          tl.to(el, { opacity: 1, x: 0, y: 0, ease: E_OUT, duration: SECTION_IN_DUR }, slotStart);
 
           if (i < sections.length - 1) {
-            const outX = sideForIndex(si) === "left" ? -20 : 20;
+            const outX = isMobile() ? 0 : (sideForIndex(si) === "left" ? -20 : 20);
+            const outY = isMobile() ? -14 : 0;
             const outAt = slotStart + perSectionDur - SECTION_OUT_DUR;
-            tl.to(el, { opacity: 0, x: outX, ease: E_IN, duration: SECTION_OUT_DUR }, outAt);
+            tl.to(el, { opacity: 0, x: outX, y: outY, ease: E_IN, duration: SECTION_OUT_DUR }, outAt);
           }
         });
 
@@ -282,6 +320,9 @@ export default function CardTransitionSection() {
       const descPair = (i) => [descLeftRefs[i].current, descRightRefs[i].current].filter(Boolean);
 
       // ── Build the timeline card-by-card ─────────────────────────────────
+      // UNCHANGED: timeline structure, ordering, and durations are identical
+      // to before. Only the x/y/width/height/borderRadius VALUES fed into it
+      // (via the constants above) differ on mobile.
       let t = 0;
       tl.addLabel("hold0", t);
       t += HOLD0_DUR;
@@ -295,7 +336,6 @@ export default function CardTransitionSection() {
             y: "-120%", opacity: 0, ease: E_INOUT, duration: HEADLINE_EXIT_DUR,
           }, growAt);
         } else {
-          // Previous hero shrinks into the top-left "history" thumbnail
           tl.to(cardRefs[i - 1].current, {
             x: () => TL_X(), y: () => TL_Y(),
             width: () => SMALL_W(), height: () => SMALL_H(),
@@ -304,7 +344,6 @@ export default function CardTransitionSection() {
             ease: E_INOUT, duration: TL_SHRINK_DUR,
           }, growAt);
 
-          // The card before THAT (if any) fades away entirely
           if (i - 2 >= 0) {
             tl.to(cardRefs[i - 2].current, {
               x: () => TL_X() - 24, opacity: 0, ease: E_IN, duration: GRANDPARENT_FADE_DUR,
@@ -317,7 +356,6 @@ export default function CardTransitionSection() {
           tl.call(() => renderTyped(i - 1, 0), null, growAt + 0.3);
         }
 
-        // Current card grows to hero size/position
         tl.to(cardRefs[i].current, {
           x: () => heroX(), y: () => heroY(),
           width: () => HERO_W(), height: () => HERO_H(),
@@ -326,21 +364,17 @@ export default function CardTransitionSection() {
           ease: E_INOUT, duration: CARD_GROW_DUR,
         }, growAt);
 
-        // In-card label + bottom title reveal
         tl.to(labelRefs[i].current, { opacity: 1, ease: E_OUT, duration: LABEL_IN_DUR }, growAt + LABEL_IN_DELAY);
         tl.to(titleRefs[i].current, { opacity: 1, ease: E_OUT, duration: LABEL_IN_DUR }, growAt + LABEL_IN_DELAY);
 
-        // Typewriter — duration UNCHANGED
         const typeStart = growAt + TYPE_START_DELAY;
         const typeDur = TYPE_DURS[i];
         typeText(i, typeStart, typeDur);
 
-        // Only once typing is fully done does the side-panel sequence begin
         const sectionsStart = typeStart + typeDur + POST_TYPE_PAUSE;
         tl.to(descPair(i), { opacity: 1, ease: E_OUT, duration: DESC_FADE_IN_DUR }, sectionsStart);
         const sectionsDuration = cycleSubSections(i, sectionsStart, SECTION_HOLD_DUR);
 
-        // Upcoming card's small preview appears partway through this hold
         if (i + 1 < CARDS.length) {
           tl.to(cardRefs[i + 1].current, {
             x: () => BR_X(), y: () => BR_Y(),
@@ -354,7 +388,6 @@ export default function CardTransitionSection() {
         const holdEnd = sectionsStart + sectionsDuration + HOLD_AFTER_SECTIONS;
 
         if (i === CARDS.length - 1) {
-          // Last card: hold on Section 3, then fade its panel and settle
           tl.to({}, { duration: FINAL_HOLD_DUR }, holdEnd);
           tl.to(descPair(i), { opacity: 0, ease: E_IN, duration: DESC_FADE_OUT_DUR }, holdEnd + FINAL_HOLD_DUR);
           tl.to({}, { duration: FINAL_PAUSE_DUR }, holdEnd + FINAL_HOLD_DUR);
@@ -407,12 +440,21 @@ export default function CardTransitionSection() {
             <div className="cts-card__topleft">
               <span className="cts-card__num">{card.num}</span>
               <div ref={labelRefs[i]} className="cts-card__label">
+                {/* Desktop label — UNCHANGED, still the big all-caps title.
+                    Hidden on mobile via CSS (.cts-card__label-line). */}
                 {card.label.split("\n").map((line, li) => (
                   <span key={li} className="cts-card__label-line">{line}</span>
                 ))}
+                {/* NEW: mobile-only premium title ("01 / Strategic Immersion").
+                    Lives inside the same ref'd container as the desktop label
+                    so it inherits the exact same GSAP fade-in/out timing —
+                    no new animation code needed. Hidden on desktop via CSS. */}
+                <span className="cts-card__mobile-title">{card.mobileTitle}</span>
               </div>
             </div>
 
+            {/* Bottom typewriter paragraph — UNCHANGED on desktop.
+                Hidden on mobile via CSS (display:none on .cts-card__title). */}
             <h2 ref={titleRefs[i]} className="cts-card__title">
               {card.bottom.split("\n").map((line, li) => (
                 <span

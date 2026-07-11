@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./Workspace.css";
 import workspaceImg from "../assets/workspace.png";
+import workspaceMobileImg from "../assets/workspace-mobile.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -128,11 +129,18 @@ export default function Workspace() {
               </span>
             </h1>
           </section>
-          <img
-            src={workspaceImg}
-            alt="Workspace"
-            className="workspace-video-media"
-          />
+<picture>
+  <source
+    media="(max-width: 640px)"
+    srcSet={workspaceMobileImg}
+  />
+
+  <img
+    src={workspaceImg}
+    alt="Workspace"
+    className="workspace-video-media"
+  />
+</picture>
 
           <button
             className="play-btn"

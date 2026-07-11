@@ -294,11 +294,12 @@
     justify-content:center;
 }
 
-.brand-name,
-.brand-dot,
-.brand-ai{
-    font-size:64px;
-}
+  .brand-name,
+  .brand-dot,
+  .brand-ai{
+    font-size:56px;
+    letter-spacing:-2px;
+  }
 
 .hero-tagline{
     margin-left:0;
@@ -375,8 +376,8 @@
   }
 
   .hero-logo-video{
-    width:190px;
-    max-width:70vw;
+  width:500px;      /* 190px -> 280px */
+    max-width:100vw;
     margin:0;
     padding:0;
     transform:none;
@@ -403,12 +404,7 @@
     line-height:1;
   }
 
-  .brand-name,
-  .brand-dot,
-  .brand-ai{
-    font-size:44px;
-    letter-spacing:-2px;
-  }
+
 
   .hero-tagline{
     margin-top:6px;      /* Small gap after heading */
@@ -447,15 +443,9 @@
 
 @media (max-width:480px){
 
-  .hero-logo-video{
-    width:170px;
-  }
 
-  .brand-name,
-  .brand-dot,
-  .brand-ai{
-    font-size:38px;
-  }
+
+
 
   .strategy,
   .personalization{

@@ -4,19 +4,19 @@
 
 .results-section {
   background: #edeae2;
-
+  margin-top: 0; /* remove the negative pull-up — the gap height below now does that job explicitly */
 }
 
 /* ── Heading block — normal page flow, no GSAP ── */
 
 .results-heading-block{
-display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-     padding:28px 0 24px; /* Same */
+  display: flex;
+  justify-content: center;
+  align-items: center;   /* vertically centers the heading within this block */
+  width: 100%;
+  height: 160px;          /* fixed gap height — adjust this single value to match how tall you want the transition gap to be */
+  padding: 0;             /* no asymmetric padding — centering is handled by align-items */
 }
-
 .results-heading{
     margin:0;
 
@@ -59,8 +59,12 @@ display: flex;
    no pin, no fixed viewport height, cards flow with the page.
    ────────────────────────────────────────────────────────────────────────── */
 .results-cards-pin {
+   padding-top: 0;
+    align-items: flex-start;
+  
   width: 100%;
-  height: 100vh;
+  
+  min-height: 745px;
   display: flex;
   align-items: center;
   padding-top: 0;
@@ -90,7 +94,7 @@ display: flex;
 .metric-card {
   width: 460px;           /* SSR / no-JS fallback; JS overrides at runtime on desktop */
   flex-shrink: 0;
-  min-height: 700px;
+  min-height: 800px;
   border-radius: 20px;
   position: relative;
   overflow: hidden;
@@ -131,6 +135,37 @@ display: flex;
   align-items: center;
   box-sizing: border-box;
   color: #fff;
+}
+
+/* ── Group wrappers ──────────────────────────────────────────────────────
+   On desktop these are made invisible to layout with `display:contents`,
+   so .metric-card-number / -label / -footnote / -disclaimer behave as
+   four direct flex children of .metric-card-content exactly as before —
+   zero desktop behavior change.
+   On mobile (see media query) these become real, independently
+   positioned boxes as part of the Instagram-style carousel layout.
+   ────────────────────────────────────────────────────────────────────── */
+.metric-card-top,
+.metric-card-bottom {
+  display: contents;
+}
+
+/* Mobile-only wrapper around number + label + description. Invisible to
+   desktop layout (display:contents), so desktop children order/behavior
+   is untouched. */
+.metric-card-mobile-panel {
+  display: contents;
+}
+
+/* Mobile-only floating badge. Hidden entirely on desktop. */
+.metric-card-badge {
+  display: none;
+}
+
+/* Mobile-only description paragraph (reuses the disclaimer copy).
+   Hidden entirely on desktop — desktop keeps using .metric-card-disclaimer. */
+.metric-card-description {
+  display: none;
 }
 
 /* Number now appears first */
@@ -182,16 +217,20 @@ display: flex;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Pagination dots — hidden on desktop, only shown in the mobile carousel */
+.results-dots {
+  display: none;
+}
+
 /* =========================================================
-   MOBILE / TABLET-PORTRAIT (<=768px)
-   Cards become a normal vertical stack — no pin, no horizontal
-   animation. Purely CSS-driven, GSAP never touches this layout.
-========================================================= */
-/* =========================================================
-   MOBILE (<=768px)
-========================================================= */
-/* =========================================================
-   MOBILE (<=768px)
+   MOBILE (<=768px) — Instagram-style multi-photo carousel
+   NOTE: This is the ONLY mobile block in this file. If your
+   project has another @media (max-width:768px) rule for
+   .results-* classes anywhere else (a second file, a global
+   overrides.css, styled-components, etc.), that is why changes
+   "don't apply" — whichever rule loads LAST in the cascade wins,
+   not whichever one you edited most recently.
 ========================================================= */
 
 @media (max-width:768px){
@@ -199,144 +238,275 @@ display: flex;
   /* ---------- Section ---------- */
 
   .results-section{
-    padding:0;
-    margin:0;
-    background:#edeae2;
+    padding:0 !important;
+    margin-top:-24px !important; /* smaller than desktop's -60px since mobile already sits closer to the top */
+    margin-bottom:0 !important;
+    background:#edeae2 !important;
   }
 
-  /* Heading — tight to top, matches "What is personlyze.ai?" spacing */
-  .results-heading-block{
-    display:flex;
-    justify-content:center;
-    align-items:baseline;
+  /* Heading — sits right at the top of the section, no dead space above it */
+.results-heading-block{
+     padding-bottom: 30px;
+    display:flex !important;
+    justify-content:center !important;
+    align-items:baseline !important;
 
-    padding:20px 16px 14px;
-    margin:0;
-  }
-
+    padding:0px 20px 14px !important;
+    margin-top:-40px !important;
+}
   .results-heading{
-    margin:0;
+    margin:0 !important;
 
-    display:inline-flex;
-    align-items:baseline;
-    justify-content:center;
+    display:inline-flex !important;
+    align-items:baseline !important;
+    justify-content:center !important;
 
-    font-size:clamp(30px, 9vw, 48px);
-    line-height:1;
-    letter-spacing:-0.03em;
+    font-size:clamp(45px, 9vw, 48px) !important;
+    line-height:1 !important;
+    letter-spacing:-0.03em !important;
 
-    white-space:nowrap;
-    text-align:center;
+    white-space:nowrap !important;
+    text-align:center !important;
   }
 
   .results-brand{
-    margin-left:8px;
-    letter-spacing:-0.03em;
+    margin-left:8px !important;
+    letter-spacing:-0.03em !important;
   }
 
   .results-ai{
-    margin-left:1px;
-    letter-spacing:-0.03em;
+    margin-left:1px !important;
+    letter-spacing:-0.03em !important;
   }
 
-  /* ---------- Cards ---------- */
+  /* ---------- Cards pin / carousel shell ---------- */
 
   .results-cards-pin{
-    height:auto;
-    display:block;
-    padding:0;
+    height:auto !important;
+    display:block !important;
+    padding:0 !important;
   }
 
+  /* This is now the actual horizontal scroll container — native CSS
+     scroll-snap does all the paging, no JS drives the motion. The JS
+     effect only reads scrollLeft afterwards to sync the dots. */
   .results-cards-viewport{
-    padding:0 20px;
-    overflow:visible;
-    margin-top:0;
+    display:block !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    padding:0 24px !important;
+      margin-top:-65px !important;
+
+    scroll-snap-type:x mandatory !important;
+    -webkit-overflow-scrolling:touch !important;
+    overscroll-behavior-x:contain !important; /* keeps native rubber-band bounce
+                                                   at the edges instead of the
+                                                   page scrolling underneath */
+
+    scrollbar-width:none !important;          /* Firefox */
+    -ms-overflow-style:none !important;        /* old Edge/IE */
+  }
+  .results-cards-viewport::-webkit-scrollbar{
+    display:none !important;                  /* Chrome/Safari */
   }
 
   .results-cards-strip{
-    display:flex;
-    flex-direction:column;
-    gap:22px;
-    width:100%;
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:stretch !important;
+    gap:16px !important;
+    width:max-content !important;
+    scroll-padding-inline:24px !important;
   }
 
   .results-cards-spacer{
-    display:none;
+    display:none !important;                  /* not needed — the last card
+                                                   itself is the final snap
+                                                   point on mobile */
   }
+
+  /* ---------- Card shell — big, premium, "almost full width" ---------- */
 
   .metric-card{
-    width:100% !important;
-    min-height:440px;
-    border-radius:18px;
+    width:calc(100vw - 48px) !important;       /* full-bleed minus the 24px
+                                                   side padding on each edge —
+                                                   a hint of the next card
+                                                   peeks in, Instagram-style */
+    min-height:560px !important;
+    border-radius:32px !important;
+    scroll-snap-align:center !important;
+    scroll-snap-stop:always !important;
+
+    box-shadow:
+      0 20px 45px rgba(0,0,0,0.28),
+      0 6px 16px rgba(0,0,0,0.18) !important;
   }
 
-  /* ---------- Card Layout ---------- */
-  /* Number + label grouped and centered in the upper portion via
-     matching auto-margins; footnote + disclaimer pinned to bottom. */
+  /* Slightly deepen the photo overlay so text reads clean without any
+     glass panel behind it */
+  .metric-card-overlay{
+    background:
+      linear-gradient(
+        to top,
+        rgba(0,0,0,0.62) 0%,
+        rgba(0,0,0,0.30) 42%,
+        rgba(0,0,0,0.15) 65%,
+        rgba(0,0,0,0.35) 100%
+      ) !important;
+  }
 
   .metric-card-content{
-    position:relative;
-    height:100%;
+    position:absolute !important;
+    inset:0 !important;
 
-    display:flex;
-    flex-direction:column;
-    align-items:center;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:flex-end !important;
+    align-items:stretch !important;
 
-    padding:24px 22px 22px;
-    box-sizing:border-box;
-
-    text-align:center;
+    padding:24px !important;
+    box-sizing:border-box !important;
   }
 
-  /* Center block — pushed down from top by auto margin,
-     leaving equal flexible space before the footer block */
-  .metric-card-number{
-    margin-top:auto;
-    margin-bottom:0;
+  /* ---------- Badge — no longer used on mobile; footnote now lives at
+     the bottom of the card instead ---------- */
 
-    font-family:"Avenir Black";
-    font-weight:900;
-
-    font-size:clamp(58px, 16vw, 88px);
-    line-height:0.9;
+  .metric-card-badge{
+    display:none !important;
   }
 
-  .metric-card-label{
-    margin-top:10px;
-    margin-bottom:0;
+  /* ---------- Number + label — absolutely centered on the card,
+     no glass panel behind them ---------- */
 
-    font-family:"Avenir Light";
-    font-weight:700;
+  .metric-card-mobile-panel{
+    position:absolute !important;
+    top:50% !important;
+    left:0 !important;
+    right:0 !important;
+    transform:translateY(-50%) !important;
 
-    font-size:clamp(24px, 7vw, 34px);
-    line-height:1.1;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+
+    padding:0 24px !important;
+    border-radius:0 !important;
+
+    /* glass/transparency effect removed */
+    background:none !important;
+    -webkit-backdrop-filter:none !important;
+    backdrop-filter:none !important;
+    border:none !important;
+    box-shadow:none !important;
   }
 
-  /* Bottom block — auto margin pushes it away from the label,
-     absorbing remaining space, always landing flush at the bottom */
+  .metric-card-top{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+  }
+
+.metric-card-number{
+  margin:0 !important;
+
+  font-family:"Avenir Black" !important;
+  font-weight:900 !important;
+
+  font-size:clamp(75px, 22vw, 120px) !important;
+  line-height:0.88 !important;
+  letter-spacing:-0.04em !important;
+}
+
+
+.metric-card-label{
+  margin:10px 0 0 !important;
+
+  font-family:"Avenir Light" !important;
+  font-weight:700 !important;
+
+ font-size:clamp(34px, 9vw, 50px) !important;
+  line-height:1.05 !important;
+  text-align:center !important;
+}
+
+  /* Description no longer used inside the panel on mobile — the
+     disclaimer text now lives in .metric-card-bottom instead */
+  .metric-card-description{
+    display:none !important;
+  }
+
+  /* ---------- Footnote + disclaimer — bottom center of the card,
+     plain text, no background ---------- */
+
+  .metric-card-bottom{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    text-align:center !important;
+    margin-top:auto !important;   /* pushes this group to the bottom
+                                      of .metric-card-content */
+  }
+
   .metric-card-footnote{
-    margin-top:auto;
-    margin-bottom:0;
+    margin:0 !important;
 
-    font-family:"Avenir Light";
-
-    font-size:14px;
-    line-height:1.3;
-
-    text-align:center;
+    font-family:"Avenir Light" !important;
+    font-weight:600 !important;
+    font-size:13px !important;
+    line-height:1.3 !important;
+    color:#fff !important;
   }
 
   .metric-card-disclaimer{
-    margin-top:8px;
+    margin-top:4px !important;
 
-    font-family:"Avenir Light";
+    font-family:"Avenir Light" !important;
+    font-weight:300 !important;
+    font-size:9px !important;
+    line-height:1.4 !important;
+    color:rgba(255,255,255,0.65) !important;
 
-    font-size:9px;
-    line-height:1.4;
-    opacity:.6;
+    white-space:normal !important;   /* overrides desktop's nowrap/ellipsis
+                                         so it can wrap on small screens */
+    overflow:visible !important;
+    text-overflow:clip !important;
+    max-width:280px !important;
+  }
 
-    text-align:center;
-    white-space:normal;
+  /* ---------- Pagination dots ---------- */
+
+  .results-dots{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:8px !important;
+
+    margin-top:20px !important;
+    padding-bottom:6px !important;
+  }
+
+  .results-dot{
+    appearance:none !important;
+    -webkit-appearance:none !important;
+    border:none !important;
+    padding:0 !important;
+    cursor:pointer !important;
+
+    width:8px !important;
+    height:8px !important;
+    border-radius:999px !important;
+    background:rgba(17,17,17,0.22) !important;
+
+    transition:width 0.3s ease, background-color 0.3s ease, transform 0.2s ease !important;
+  }
+
+  .results-dot.is-active{
+    width:24px !important;
+    background:#111 !important;
+  }
+
+  .results-dot:active{
+    transform:scale(0.9) !important;
   }
 
 }
