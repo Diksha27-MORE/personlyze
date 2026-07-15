@@ -1,0 +1,473 @@
+.industry-landing {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: rgba(21, 21, 21, 0.88);
+  position: relative;
+  overflow-x: hidden;
+}
+.industry-landing__not-found {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  color: rgba(0, 0, 0, 0.88);
+}
+.industry-landing__not-found h1 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+/* ==========================================================================
+   Hero (base — shared with desktop; mobile-specific overrides below)
+   ========================================================================== */
+.industry-hero {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 100px 24px 56px;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.industry-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1;
+}
+.industry-hero__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.industry-hero__title {
+  font-size: 4.5rem;
+  font-weight: 700;
+  font-style: italic;
+  margin-bottom: 20px;
+  line-height: 1.1;
+}
+.industry-hero__description {
+  font-size: 1.15rem;
+  opacity: 0.9;
+  max-width: 640px;
+  line-height: 1.5;
+}
+/* ==========================================================================
+   MOBILE (max-width: 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Compact mobile hero */
+  .industry-landing--mobile .industry-hero {
+    padding: 72px 20px 32px;
+  }
+  .industry-landing--mobile .industry-hero__title {
+    font-size: 2.6rem;
+    margin-bottom: 10px;
+  }
+  .industry-landing--mobile .industry-hero__description {
+    font-size: 0.9rem;
+    line-height: 1.35;
+    max-width: 320px;
+    margin: 0 auto;
+    opacity: 0.88;
+  }
+}
+/* ---------- Mobile: challenge image cards, any number, stacked ----------- */
+.industry-landing--mobile .mobile-challenges {
+  width: 100%;
+  padding: 24px 18px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #f4efe7;
+}
+.mobile-challenge-card {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+  border: none;
+  border-radius: 22px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 22px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  background-color: #ffffff;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  color: #131212;
+  text-align: center;
+}
+.mobile-challenge-card--image {
+  color: #ffffff;
+  min-height: 220px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.22);
+}
+.mobile-challenge-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+.mobile-challenge-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(0, 0, 0, 0.55) 55%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+  z-index: 1;
+}
+.mobile-challenge-card__inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px;
+}
+.mobile-challenge-card__label {
+  font-family: var(--heading);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+.mobile-challenge-card--image .mobile-challenge-card__label {
+  color: rgba(255, 255, 255, 0.88);
+}
+.mobile-challenge-card__problem {
+  font-family: var(--light);
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.005em;
+  max-width: 320px;
+}
+.mobile-challenge-card--blank .mobile-challenge-card__problem {
+  font-size: 1.25rem;
+  color: #131212;
+}
+.mobile-challenge-card--image .mobile-challenge-card__problem {
+  color: #ffffff;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
+}
+/* ---------- Fullscreen Instagram-style overlay --------------------------- */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
+.mobile-overlay__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+}
+.mobile-overlay__sheet {
+  position: fixed;
+  top: 20px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: calc(100vh - 20px);
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+.mobile-overlay__close {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  right: 14px;
+  z-index: 5;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(207, 207, 207, 0.945);
+  color: #000000;
+  font-size: 1.6rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+.mobile-overlay__close:active {
+  transform: scale(0.92);
+}
+.mobile-overlay__track {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.mobile-overlay__track::-webkit-scrollbar {
+  display: none;
+}
+.mobile-overlay__slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 8px 8px 30px;
+  box-sizing: border-box;
+}
+/* ==========================================================================
+   Card (base — shared with desktop; mobile reuses .industry-card and layers
+   .industry-card--mobile on top via the same JSX class list. Duplicated
+   here, not deleted, so the mobile overlay renders identically standalone.
+   ========================================================================== */
+.industry-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: default;
+  color: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background-color: #1a1a1a;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  transition: box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+.industry-card:hover,
+.industry-card:focus-within {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+}
+.industry-card:focus-visible {
+  outline: 2px solid rgba(0, 0, 0, 0.4);
+  outline-offset: 3px;
+}
+.industry-card__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+.industry-card__placeholder-title {
+  font-family: var(--heading);
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  color: #131212;
+}
+.industry-card__detail {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 20px 18px;
+  background: rgba(0, 0, 0, 0.28);
+  overflow-y: auto;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
+  pointer-events: none;
+}
+.industry-card:hover .industry-card__detail,
+.industry-card:focus-within .industry-card__detail {
+  transform: translateY(0%);
+  opacity: 1;
+  pointer-events: auto;
+}
+.industry-card:hover .industry-card__placeholder,
+.industry-card:focus-within .industry-card__placeholder {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.industry-card__detail {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
+}
+.industry-card__detail::-webkit-scrollbar {
+  width: 6px;
+}
+.industry-card__detail::-webkit-scrollbar-track {
+  background: transparent;
+}
+.industry-card__detail::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+}
+/* ---- shared (non-mobile-specific) label/title/text, kept in sync with
+   the desktop rules above for consistency when this file renders standalone */
+.industry-card__detail-label {
+  font-family: "Avenir Regular", var(--body);
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.industry-card__detail-title {
+  font-family: "Avenir Black", var(--heading);
+  font-size: 1.8rem;
+  font-weight: 900;
+  line-height: 1.2;
+  margin: 0 0 14px;
+  flex-shrink: 0;
+}
+.industry-card__detail-text {
+  font-family: "Avenir Regular", var(--body);
+  font-size: 1.6rem;
+  line-height: 1.45;
+  font-weight: 400;
+  opacity: 0.95;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.industry-card__placeholder,
+.industry-card__detail {
+  z-index: 1;
+}
+/* Reuse desktop .industry-card look — mobile overrides sizing + typography */
+.industry-card--mobile {
+  width: 100%;
+  max-width: 520px;
+  height: calc(100vh - 50px);
+  border-radius: 24px;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  background-color: #ffffff;
+}
+/* Compact mobile placeholder face */
+.industry-card--mobile .industry-card__placeholder {
+  padding: 20px;
+}
+.industry-card--mobile .industry-card__placeholder-title {
+  font-size: 1.35rem;
+  line-height: 1.25;
+  font-weight: 800;
+}
+/* ---- CHANGE 2: typography — heading always top, body large & consistent */
+.industry-card--mobile .industry-card__detail {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.42);
+  overflow-y: hidden; /* must fit in one viewport, per spec */
+}
+.industry-card--mobile .industry-card__detail-title {
+  font-family: "Avenir Black", var(--heading);
+  font-size: 1.7rem;
+  font-weight: 900;
+  line-height: 1.15;
+  margin: 0 0 16px;
+  align-self: flex-start;
+  flex-shrink: 0;
+}
+.industry-card--mobile .industry-card__detail-text {
+  font-family: "Avenir Regular", var(--body);
+  font-size: 1.55rem;
+  line-height: 1.4;
+  font-weight: 400;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+/* Tap-to-reveal (mirrors :hover from desktop) */
+.industry-card--mobile.is-revealed .industry-card__detail {
+  transform: translateY(0%);
+  opacity: 1;
+  pointer-events: auto;
+}
+.industry-card--mobile.is-revealed .industry-card__placeholder {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+/* Kill hover-triggered overlay on touch devices */
+@media (hover: none) {
+  .industry-card--mobile:hover .industry-card__detail,
+  .industry-card--mobile:focus-within .industry-card__detail {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .industry-card--mobile.is-revealed .industry-card__detail {
+    transform: translateY(0%);
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+/* Video card: only thumbnail + play icon, no text at all */
+.industry-card--video .industry-card__placeholder,
+.industry-card--video .industry-card__detail {
+  display: none !important;
+}
+.industry-card__play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+/* Pagination dots */
+.mobile-overlay__dots {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 5;
+}
+.mobile-overlay__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.35);
+  transition: all 0.3s ease;
+}
+.mobile-overlay__dot.is-active {
+  background: #fff;
+  transform: scale(1.4);
+}
