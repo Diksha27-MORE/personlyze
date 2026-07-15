@@ -107,6 +107,59 @@ export default function Workspace() {
   return (
     <>
       <section className="workspace-section" ref={sectionRef}>
+        {/* Editorial headline — its own section, in normal flow, above the
+            video. No card, no overlay, no positioning relative to the
+            footage below. Word-level markup (.reveal-word) and reading
+            order are unchanged from the original; only grouped into a
+            primary statement + a right-aligned supporting column. */}
+        <section className="workspace-title">
+          <div className="workspace-heading" ref={headingRef}>
+            <span className="heading-eyebrow">Who we are</span>
+
+            <p className="heading-statement">
+              <span className="reveal-word">We</span>{" "}
+              <span className="reveal-word">are</span>{" "}
+              <span className="reveal-word">your</span>{" "}
+              <span className="reveal-word">strategy-first,</span>{" "}
+              <span className="reveal-word">AI-powered,</span>{" "}
+              <span className="reveal-word">personalization</span>{" "}
+              <span className="reveal-word">partner.</span>
+            </p>
+
+            <p className="heading-support">
+              <span className="reveal-word">We</span>{" "}
+              <span className="reveal-word">build</span>{" "}
+              <span className="reveal-word">and</span>{" "}
+              <span className="reveal-word">scale</span>{" "}
+              <span className="reveal-word">marketing,</span>{" "}
+              <span className="reveal-word">communication</span>{" "}
+              <span className="reveal-word">and</span>{" "}
+              <span className="reveal-word">content</span>{" "}
+              <span className="reveal-word">for</span>{" "}
+              <span className="reveal-word">businesses</span>{" "}
+              <span className="reveal-word">and</span>{" "}
+              <span className="reveal-word">brands</span>{" "}
+              <span className="reveal-word">around</span>{" "}
+              <span className="reveal-word">the</span>{" "}
+              <span className="reveal-word">world.</span>{" "}
+              <span className="reveal-word">From</span>{" "}
+              <span className="reveal-word">customer</span>{" "}
+              <span className="reveal-word">strategy</span>{" "}
+              <span className="reveal-word">to</span>{" "}
+              <span className="reveal-word">production</span>{" "}
+              <span className="reveal-word">to</span>{" "}
+              <span className="reveal-word">deployment—</span>{" "}
+              <span className="reveal-word">we</span>{" "}
+              <span className="reveal-word">run</span>{" "}
+              <span className="reveal-word">the</span>{" "}
+              <span className="reveal-word">entire</span>{" "}
+              <span className="reveal-word">process</span>{" "}
+              <span className="reveal-word">end-to-end.</span>
+            </p>
+          </div>
+        </section>
+
+        {/* Video — untouched: same wrapper, same children, same classes. */}
         <div
           className="workspace-video"
           ref={videoRef}
@@ -114,33 +167,18 @@ export default function Workspace() {
           role="button"
           aria-label="Play platform walkthrough video"
         >
-          {/* Heading now lives inside the video frame, layered on top of
-              the footage — matches the reference composition instead of
-              sitting above the video as a separate block. */}
-          <section className="workspace-title">
-            <h1 className="workspace-heading" ref={headingRef}>
-              <span className="reveal-word">what</span>
-              <span className="heading-space"> </span>
-              <span className="reveal-word">is</span>
-              <span className="heading-space"> </span>
-              <span className="reveal-word reveal-last">
-                <span className="workspace-brand">personlyze</span>
-                <span className="workspace-ai">.ai</span>?
-              </span>
-            </h1>
-          </section>
-<picture>
-  <source
-    media="(max-width: 640px)"
-    srcSet={workspaceMobileImg}
-  />
+          <picture>
+            <source
+              media="(max-width: 640px)"
+              srcSet={workspaceMobileImg}
+            />
 
-  <img
-    src={workspaceImg}
-    alt="Workspace"
-    className="workspace-video-media"
-  />
-</picture>
+            <img
+              src={workspaceImg}
+              alt="Workspace"
+              className="workspace-video-media"
+            />
+          </picture>
 
           <button
             className="play-btn"

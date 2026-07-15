@@ -34,56 +34,60 @@ const industries = [
       "AI-driven engagement for developers and brokers — turning cold leads into site visits, and site visits into signed bookings.",
     challenges: [
       {
-        problem: "Warm walk-ins go cold within days due to slow, generic follow-up.",
+        problem: "Single-digit lead-to-site-visit conversion from digital ads.",
         cards: [
           {
             title: "What this means",
             content:
-              "Unanswered objections about price, layout or possession date kill momentum after the visit and the buyer drifts to another project.",
+              "Real estate brands spend crores on Meta and Google, yet the average lead-to-site-visit conversion sits at 2–4%. Every lead gets the same generic brochure and a follow-up call that arrives 24 hours too late, by which time the prospect has already visited competitor sites.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "Trigger a same-day AI follow-up that directly addresses the buyer's specific objections raised during the visit.",
+              "Trigger a personalised WhatsApp video within 5 minutes of form fill, featuring the prospect's name, the specific locality they enquired about, and a unit type matched to their stated budget.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Answering real concerns while interest is still fresh keeps the buyer engaged and dramatically shortens the path to booking.",
+              "Generic follow-up treats every buyer the same. Personalisation creates immediate emotional relevance, so the prospect feels this message was made for them, not blasted to a list.",
           },
           {
             title: "Expected Outcome",
-            content: "Faster follow-up and higher site-visit-to-booking conversion.",
+            content:
+              "Lead-to-site-visit conversion up to 8–12%, response rate to follow-up up over 60%, and time-to-first-meaningful-engagement down from 24 hours to under 10 minutes.",
           },
         ],
       },
       {
-        problem:
-          "High-intent enquiries from portals are lost to faster competing projects.",
+        problem: "Speed-to-lead failure lets competitors call first.",
         cards: [
           {
             title: "What this means",
             content:
-              "Buyers submit interest on multiple projects at once and go with whichever developer engages first with relevant details.",
+              "The average Indian real estate brand takes 18–36 hours to meaningfully follow up on a digital lead. In that window, the prospect has already spoken to two or three competitors.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI responds in minutes on WhatsApp with the exact configuration, pricing and a one-tap site-visit booking link.",
+              "Deploy an automated personalised video on WhatsApp within 2–5 minutes of form submission, referencing the prospect's name, the project, and the specific configuration they showed interest in.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Speed plus a relevant, low-friction next step captures the buyer before another developer does.",
+              "A personalised video that arrives within minutes, naming the prospect's exact interest, creates a moment of recognition that no generic IVR or bulk SMS can replicate.",
           },
           {
             title: "Expected Outcome",
-            content: "More qualified leads and higher site-visit bookings.",
+            content:
+              "Speed-to-first-engagement down from 18–36 hours to under 5 minutes, lead-to-appointment conversion up 45%, and competitive win rate at top-of-funnel up 30%.",
           },
         ],
       },
+      
+      
+      
     ],
   },
   /* ========================================================================
@@ -99,52 +103,54 @@ const industries = [
       "AI-led engagement for banks, NBFCs and insurers — turning loan and policy enquiries into disbursed, retained customers.",
     challenges: [
       {
-        problem: "RM time is wasted on unqualified loan leads from paid campaigns.",
+        problem: "KYC and onboarding drop-off is massive, especially digital-first.",
         cards: [
           {
             title: "What this means",
             content:
-              "Most calls end before eligibility is even established, driving cost-per-disbursal up and RM productivity down.",
+              "Digital-first BFSI onboarding — KYC completion, account activation, first transaction — sees drop-off rates of 40–60% in India. The process is confusing, clinical, and lacks a human touchpoint to guide a hesitant customer through the steps.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI pre-qualifies income, employment and intent on WhatsApp, then routes only scored, ready leads to RMs.",
+              "Replace generic onboarding emails with a personalised step-by-step WhatsApp video series, each video addressing the next action the customer needs to take, in their language, at their pace.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "RMs start each conversation with a complete profile and high intent, dramatically improving conversion per call.",
+              "A personalised video that names the exact pending step feels like personal coaching. Drop-off happens at the point of confusion, and personalisation removes that confusion.",
           },
           {
             title: "Expected Outcome",
-            content: "More qualified leads and higher disbursal per RM.",
+            content:
+              "KYC completion rate up 45%, onboarding drop-off down 50%, and first-transaction activation within 7 days up 38%.",
           },
         ],
       },
       {
-        problem: "Policy renewals lapse silently, eroding retention and LTV.",
+        problem: "Policy, SIP and loan renewals are approached too late — competitors swoop in.",
         cards: [
           {
             title: "What this means",
             content:
-              "Generic reminders don't surface the customer's specific policy, premium or upgrade options, so renewals slip past due dates.",
+              "Insurance renewals, SIP continuations and loan top-up windows are consistently missed because brands reach out too late, often just 7–14 days before expiry, giving competitors time to approach first with a better offer.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI sends a personalised WhatsApp sequence with the exact premium, benefits and a one-tap renewal link.",
+              "Begin a personalised renewal conversation 90 days before the renewal date, with a video that celebrates the customer's journey, quantifies the value delivered, and frames renewal as the logical next chapter.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Relevance and a frictionless payment path keep customers on-book instead of lapsing.",
+              "A late reminder invites price comparison. An early, personalised value story creates emotional continuity that competitors cannot easily disrupt.",
           },
           {
             title: "Expected Outcome",
-            content: "Improved customer retention and renewal rate.",
+            content:
+              "Renewal conversion at 90-day outreach up 65% versus a 7-day reminder, competitor switch rate at renewal down 40%, and customer lifetime value at 5 years up 30%.",
           },
         ],
       },
@@ -163,53 +169,54 @@ const industries = [
       "AI-powered guest engagement that turns browsers into bookers, and bookers into repeat guests.",
     challenges: [
       {
-        problem:
-          "Most started bookings are abandoned at the payment or rate-comparison step.",
+        problem: "OTA competition erodes direct bookings with better personalisation.",
         cards: [
           {
             title: "What this means",
             content:
-              "Delayed and generic recovery emails lose the booking entirely as guests move on to OTAs or competing hotels.",
+              "Hotels and travel brands lose 15–25% of their revenue to OTA commissions, largely because OTAs remember a guest's last trip and preferences while the brand's own website treats every visitor as a stranger.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "Send a personalised WhatsApp message within 10 minutes with the exact rate, dates and a one-tap rate lock.",
+              "Use past guest data and browsing behaviour to trigger personalised direct-booking video outreach, referencing the guest's last stay and offering something exclusive to direct bookings.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Speed and specificity recapture intent while the trip is still top of mind, recovering bookings that email would miss.",
+              "A personalised video referencing a guest's name and last stay creates a direct emotional connection that no aggregator platform can replicate.",
           },
           {
             title: "Expected Outcome",
-            content: "Reduced booking drop-offs and higher direct conversions.",
+            content:
+              "Direct booking conversion versus OTA referral up 40%, OTA commission savings of 15–22% of revenue, and repeat guest rate up 35%.",
           },
         ],
       },
       {
-        problem: "Repeat-guest revenue is missed because past guests are re-acquired via OTAs.",
+        problem: "Ancillary revenue like spa, dining and transfers is captured too late.",
         cards: [
           {
             title: "What this means",
             content:
-              "Hotels pay commission again to reach guests they already served, instead of bringing them back directly.",
+              "Hotel and resort ancillary revenue is almost entirely captured at check-in, when the guest is already in decision-fatigue mode. The pre-arrival window, when excitement is highest, is largely wasted.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI reactivates past guests on WhatsApp with a tailored offer for their preferred room type and season.",
+              "Send a personalised pre-arrival video 3–5 days before check-in, featuring add-ons curated for the guest's travel profile, whether couple, family or solo traveller.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Personal, relevant outreach beats generic OTA listings and rebuilds a direct guest relationship.",
+              "A personalised offer tied to a specific occasion, with visible scarcity, creates urgency and relevance that a generic upgrade email cannot.",
           },
           {
             title: "Expected Outcome",
-            content: "Higher repeat bookings and better guest retention.",
+            content:
+              "Pre-arrival ancillary revenue per booking up 65%, spa and dining upsell conversion up 45%, and total revenue per guest up 20%.",
           },
         ],
       },
@@ -228,52 +235,54 @@ const industries = [
       "AI-driven patient engagement that improves appointment adherence, reduces no-shows, and keeps patients on their care path.",
     challenges: [
       {
-        problem: "No-shows directly cost clinics scheduled revenue every day.",
+        problem: "Patient adherence drops sharply after the first purchase.",
         cards: [
           {
             title: "What this means",
             content:
-              "A single reminder is easy to forget, especially for routine consults, and the slot stays empty without a chance to refill.",
+              "Across pharma and wellness categories, 40–60% of patients stop taking a prescribed or purchased treatment within the first 30 days, not because the product stops working, but because the brand stops communicating meaningfully after the first transaction.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI confirmation and reminder sequence on WhatsApp with one-tap reschedule and a waitlist auto-fill.",
+              "Deploy a personalised adherence video series at Day 3, 7, 14 and 30, each one acknowledging where the patient is in their journey and what to expect next, delivered on WhatsApp in their preferred language.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Multiple light, well-timed touches catch patients before they forget and let the clinic recover empty slots in real time.",
+              "A personalised video that names the patient's exact stage creates a sense of guided progression, making patients feel they're on a journey with a companion, not taking a product alone.",
           },
           {
             title: "Expected Outcome",
-            content: "Higher appointment bookings and fewer no-shows.",
+            content:
+              "30-day adherence rate up 45%, second-purchase or refill rate up 38%, and brand NPS among adherent patients up 25 points.",
           },
         ],
       },
       {
-        problem: "Patients drop off their treatment plan after the first consultation.",
+        problem: "Prescription refill rates are low — patients switch brands or skip doses.",
         cards: [
           {
             title: "What this means",
             content:
-              "Without proactive nudges, patients skip follow-up visits and prescribed tests, hurting outcomes and clinic revenue.",
+              "Generic refill reminders such as SMS blasts and app notifications have very low open and action rates, resulting in patients who run out of medication, skip doses, or switch brands at the pharmacy.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI runs a personalised care-path journey on WhatsApp with reminders, education and easy re-booking.",
+              "Trigger a personalised refill video at the predicted Day 22–25 of a 30-day supply, with a direct reorder link and a brief message that references the patient's progress.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Timely, relevant guidance keeps patients engaged with their treatment instead of falling out of the funnel.",
+              "A personalised message that celebrates consistency and removes friction makes the refill feel like a natural next step rather than another ignored notification.",
           },
           {
             title: "Expected Outcome",
-            content: "Improved adherence and better patient retention.",
+            content:
+              "Refill rate at Day 25 up 50%, brand loyalty at the 6-month mark up 35%, and patient lifetime value up 40%.",
           },
         ],
       },
@@ -292,52 +301,54 @@ const industries = [
       "AI-powered commerce engagement that recovers lost carts, personalises offers, and turns one-time buyers into repeat customers.",
     challenges: [
       {
-        problem: "The majority of online carts are abandoned at or near checkout.",
+        problem: "Cart abandonment sits above 70% — the biggest revenue leak in ecommerce.",
         cards: [
           {
             title: "What this means",
             content:
-              "Slow, generic recovery emails miss the high-intent window and the sale is lost to a competitor or marketplace.",
+              "An average of 70–75% of ecommerce carts are abandoned before checkout. Brands respond with generic discount emails sent 24 hours later, by which time the impulse that drove the browsing session has evaporated.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI sends a WhatsApp nudge within 15 minutes showing the exact cart, available stock and a one-tap checkout link.",
+              "Trigger a personalised WhatsApp video within 20–30 minutes of abandonment, featuring the exact product left in cart and a time-sensitive, value-led reason to return that isn't just a coupon.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "High visibility plus relevance recaptures intent before it fades and consistently outperforms email recovery.",
+              "A personalised message that explains why a product genuinely fits the shopper creates a reason to return based on value, not discount, protecting margin.",
           },
           {
             title: "Expected Outcome",
-            content: "Recovered carts and higher checkout conversion.",
+            content:
+              "Cart recovery rate up from 3–5% to 12–18%, revenue recovered per 1,000 abandoned carts up 3x, and discount dependency in recovery down 40%.",
           },
         ],
       },
       {
-        problem: "First-time buyers rarely come back for a second purchase.",
+        problem: "First purchase doesn't convert to a second — lifetime value never builds.",
         cards: [
           {
             title: "What this means",
             content:
-              "Batch newsletters ignore what the buyer actually purchased, so repeat-purchase windows are missed entirely.",
+              "The most expensive customer in ecommerce is the one who buys once and never returns, yet most D2C brands invest almost nothing in the 48-hour post-purchase window when customers are most emotionally connected to the brand.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI recommends the next-best product on WhatsApp based on past purchase, category and replenishment cycle.",
+              "Send a personalised 'what to try next' video within 48 hours of delivery, based on exactly what the customer bought, their browsing history and their profile, framed as a genuine recommendation.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Right product, right time, right channel drives repeat orders that generic campaigns don't.",
+              "A recommendation that explains specifically why the next product fits creates a human connection that an algorithmic 'you might also like' grid cannot.",
           },
           {
             title: "Expected Outcome",
-            content: "Higher repeat rate and increased customer LTV.",
+            content:
+              "First-to-second purchase conversion up from 15% to 35%, 90-day LTV up 55%, and open rate on post-purchase personalised video up 4x versus generic.",
           },
         ],
       },
@@ -356,52 +367,54 @@ const industries = [
       "AI-driven engagement for dealerships and service centers — from first enquiry to test drive to lifetime service retention.",
     challenges: [
       {
-        problem: "Online enquiries rarely turn into actual test drives at the showroom.",
+        problem: "Showroom walk-ins are declining, and digital leads convert slowly.",
         cards: [
           {
             title: "What this means",
             content:
-              "Slow callbacks lose buyers to faster dealers — even those representing competing brands.",
+              "Automotive showroom walk-ins have declined 30–40% since 2019, shifting consideration online. Yet most dealerships follow up on digital leads with a call from an unknown number, 24–48 hours later, referencing nothing the prospect actually looked at.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI responds within minutes with model details, EMI options and a direct test-drive booking link.",
+              "Trigger a personalised video on WhatsApp within 5 minutes of a test drive enquiry or configurator submission, featuring the exact model, colour and variant the prospect configured.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Speed wins the buyer regardless of brand loyalty and lifts test-drive show rate significantly.",
+              "A personalised video that arrives fast and names the prospect's exact chosen model is the difference between a lead and a conversation — the dealer who feels most personal wins, not just whoever calls first.",
           },
           {
             title: "Expected Outcome",
-            content: "Higher test-drive show rate and more qualified leads.",
+            content:
+              "Digital lead-to-test-drive conversion up 50%, time-to-engagement down from 36 hours to under 10 minutes, and competitive conquest rate at test drive stage up 35%.",
           },
         ],
       },
       {
-        problem: "Service customers churn to unauthorised garages after the free-service window.",
+        problem: "First service visits are missed, and customers go to local garages instead.",
         cards: [
           {
             title: "What this means",
             content:
-              "Generic service reminders don't convey value, so owners default to cheaper local options and dealer service revenue drops.",
+              "An estimated 35–45% of new car owners miss their first scheduled service, choosing independent garages instead, primarily because the brand's service reminder is generic and easy to ignore.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI sends personalised service reminders with due-date, cost estimate and a one-tap slot booking on WhatsApp.",
+              "Trigger a personalised service reminder video at the exact mileage or time threshold, referencing the customer's name, model and registration number, two weeks before service is due.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Clear value plus zero-friction booking keeps customers within the dealer network for the vehicle's lifetime.",
+              "A personalised reminder that explains exactly what will be checked and how the car will feel afterward creates a reason to come in that a local garage simply cannot match.",
           },
           {
             title: "Expected Outcome",
-            content: "Improved service retention and higher workshop revenue.",
+            content:
+              "First service visit rate at authorised centres up 40%, annual service revenue retention up 35%, and service satisfaction score up 22 points.",
           },
         ],
       },
@@ -420,52 +433,54 @@ const industries = [
       "AI-driven engagement across the funnel — from demo request to trial activation to expansion revenue.",
     challenges: [
       {
-        problem: "A meaningful share of booked demos turn into no-shows.",
+        problem: "Cold outreach via email and LinkedIn has sub-2% response rates.",
         cards: [
           {
             title: "What this means",
             content:
-              "Generic reminders don't reconnect the prospect to the actual problem they wanted solved, so the call drops in priority.",
+              "B2B sales teams send thousands of cold emails and LinkedIn messages monthly and get responses from fewer than 2% of recipients, because the message is generic — the same pitch sent to every prospect regardless of who they are.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI sends context-specific reminders referencing the prospect's use case, role and pain point before the call.",
+              "Replace text-based cold outreach with a personalised 60-second video featuring the prospect's name, their company, and a specific observation about their current challenge, delivered via LinkedIn DM or WhatsApp.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Reminding the buyer of their own problem — not your product — meaningfully lifts show-up rate.",
+              "A personalised video that shows clear homework on the prospect's specific situation creates a 'they actually looked me up' moment that stops the scroll and invites a response.",
           },
           {
             title: "Expected Outcome",
-            content: "Increased demo attendance and more qualified pipeline.",
+            content:
+              "Cold outreach response rate up from under 2% to 12–18%, meeting booking rate up 4x versus text email, and sales cycle length down 25%.",
           },
         ],
       },
       {
-        problem: "Trial users churn before hitting the product's value moment.",
+        problem: "SaaS onboarding completion is low, and customers churn before getting value.",
         cards: [
           {
             title: "What this means",
             content:
-              "One-size-fits-all onboarding emails don't address where each trial user actually got stuck, so activation stalls.",
+              "SaaS products see 40–60% of new customers never complete onboarding — they sign up, get confused or overwhelmed, and quietly stop logging in, often before the CSM even notices.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI nudges each user at the exact onboarding step they dropped at, across email, WhatsApp and in-app.",
+              "Deploy a role-based personalised onboarding video series, triggered by actual in-product behaviour, where each role — admin, end user, decision-maker — gets content matched to their specific moment in the journey.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Targeted, contextual nudges unblock the specific friction point and consistently lift activation.",
+              "A video that names the exact step a user stalled at removes friction at the precise point it occurs, rather than treating every user identically.",
           },
           {
             title: "Expected Outcome",
-            content: "Higher trial-to-paid conversion and better activation.",
+            content:
+              "Onboarding completion rate up 50%, time-to-first-value down from 21 days to 7 days, and 90-day churn rate down 40%.",
           },
         ],
       },
@@ -484,52 +499,54 @@ const industries = [
       "AI-powered growth engagement built for speed — turning sign-ups into activated users and early adopters into advocates.",
     challenges: [
       {
-        problem: "A large share of new sign-ups never return after the first session.",
+        problem: "Most free trials expire unused — PLG conversion is weak.",
         cards: [
           {
             title: "What this means",
             content:
-              "Users churn before reaching the product's value moment, so paid acquisition spend is effectively wasted.",
+              "Product-led growth relies on trial conversion, but the average SaaS free trial sees 40–60% of users never completing activation. Users sign up out of curiosity, hit a friction point, and quietly abandon.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI nudges the exact onboarding step each user dropped at, across email, WhatsApp and in-app.",
+              "Deploy a personalised activation video series, triggered by in-product behaviour, that speaks to each user's role and addresses the exact step where they stalled, within hours of the stall.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Addressing the real drop-off point — not a generic Day 2 email — drives meaningful return and activation.",
+              "A video matched to a user's role and specific sticking point removes friction at the moment it matters, instead of a generic onboarding sequence that ignores context.",
           },
           {
             title: "Expected Outcome",
-            content: "Higher activation and reduced first-session drop-off.",
+            content:
+              "Trial-to-paid conversion up from 15% to 32%, time-to-activation down 50%, and support ticket volume during trial down 35%.",
           },
         ],
       },
       {
-        problem: "Activated users don't discover the features that drive retention.",
+        problem: "Churn at month 3–6 is the valley of death for SaaS and tech products.",
         cards: [
           {
             title: "What this means",
             content:
-              "Power features stay hidden behind menus, so users never reach the depth of value that makes them stick.",
+              "The period between month 3 and month 6 is where SaaS churn is highest, after initial enthusiasm fades and before long-term habits form. Customers are quietly underutilising rather than loudly unhappy, and brands often don't notice until the cancellation notice arrives.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI surfaces the right next feature for each user based on behaviour, role and usage pattern.",
+              "Deploy usage-milestone and behaviour-triggered personalised videos at month 3 and month 5 from the named CSM, celebrating progress and surfacing the one unused feature that would most improve outcomes.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Contextual feature nudges deepen product usage and directly improve long-term retention.",
+              "A video that names a specific milestone and a specific missing feature creates momentum at the exact point retention is most at risk.",
           },
           {
             title: "Expected Outcome",
-            content: "Better engagement and stronger user retention.",
+            content:
+              "Month 3–6 churn rate down 45%, feature adoption at month 3 intervention up 52%, and 12-month retention rate up 30%.",
           },
         ],
       },
@@ -548,53 +565,54 @@ const industries = [
       "AI-powered styling and engagement that turns browsers into buyers and one-time purchases into a wardrobe relationship.",
     challenges: [
       {
-        problem:
-          "Fashion cart abandonment is driven mostly by fit and styling doubt, not price.",
+        problem: "First purchase doesn't lead to a second — the brand is forgotten between seasons.",
         cards: [
           {
             title: "What this means",
             content:
-              "Generic discount codes don't solve the real concern, so the cart stays abandoned despite the offer.",
+              "Fashion brands invest heavily in acquiring first-time buyers but see only 15–20% convert to a second purchase, because the two-week post-delivery window, when customers are most open to the brand, is largely ignored.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "An AI stylist addresses fit, styling and occasion questions directly on WhatsApp with curated alternatives.",
+              "Send a personalised 'style continuation' video 10–14 days after delivery, suggesting how to wear the piece for an upcoming occasion and extending the conversation forward.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Solving the real hesitation converts far better than a discount and protects margin at the same time.",
+              "Continuing the style conversation, rather than just requesting a review, builds the habit of looking to the brand for guidance, which is the foundation of fashion loyalty.",
           },
           {
             title: "Expected Outcome",
-            content: "Recovered carts with protected margin.",
+            content:
+              "First-to-second purchase conversion up from 18% to 38%, brand engagement in the 30-day post-purchase window up 60%, and customer LTV at 12 months up 50%.",
           },
         ],
       },
       {
-        problem: "Returns are high because customers pick the wrong size or style.",
+        problem: "Browse-to-buy conversion is very low — customers look but don't commit.",
         cards: [
           {
             title: "What this means",
             content:
-              "Bracketing behaviour and wrong-fit orders inflate reverse logistics costs and destroy contribution margin.",
+              "Fashion ecommerce browse-to-buy conversion averages just 1–3%. Customers add items to wishlists and leave without purchasing, not because they didn't want the product, but because nothing nudged them to commit at the right moment.",
           },
           {
             title: "Personlyze Intervention",
             content:
-              "AI recommends the right size and style before checkout using purchase history and body-fit signals.",
+              "Trigger a personalised video within 30 minutes of a wishlist add or extended browse, styled for the customer's size and occasion signals, delivered on WhatsApp to feel like a friend's recommendation.",
           },
           { title: "Video" },
           {
             title: "Why this works",
             content:
-              "Getting the fit right pre-purchase directly cuts returns and lifts net revenue per order.",
+              "A video that styles the saved item in multiple ways for the customer's specific look creates curiosity and a concrete reason to click through, unlike a repeat retargeting ad.",
           },
           {
             title: "Expected Outcome",
-            content: "Lower return rate and higher net contribution.",
+            content:
+              "Wishlist-to-purchase conversion up from 4% to 14%, average session-to-sale time down 35%, and return rate on personalised-recommendation purchases down 20%.",
           },
         ],
       },

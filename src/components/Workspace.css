@@ -1,78 +1,126 @@
 /* ─────────────────────────────────────────────
    WORKSPACE HEADING
+   Editorial, not a card. The headline is its own
+   section, in normal document flow, above the
+   video — no background fill, no border, no
+   shadow, no blur, no radius. Hierarchy comes
+   entirely from scale, alignment and a single
+   hairline rule. Signature: an asymmetric grid —
+   a very large primary statement on the left, a
+   quiet supporting line held to a narrow column
+   on the right, aligned to the statement's own
+   baseline rather than boxed beside it.
 ───────────────────────────────────────────── */
-
-.workspace-title{
-display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-     padding-top: 65px;
-    padding-bottom: 60px;
-     padding:40px 12px 30px;
+.workspace-title {
+  width: 100%;
+ padding: 20px 4% 48px;
 }
-.workspace-heading{
-    margin:0;
 
-    display:inline-flex;
-    align-items:baseline;
-    justify-content:center;
-    flex-wrap:wrap;
+.workspace-heading {
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  column-gap: clamp(32px, 5vw, 88px);
+  align-items: end;
+  text-align: left;
+}
 
-    text-align:center;
+/* Small caps utility label, set against a full-width hairline — the
+   structural device that stands in for a container border, without
+   drawing a box around the content. Not a reveal-word: it's a static
+   label, not part of the scroll-reveal copy. */
+.heading-eyebrow {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--body, "Helvetica Neue", Arial, sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #9a9a9a;
+  margin: 0 0 clamp(28px, 4vw, 52px);
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.1);
+}
 
-    font-family:'Avenir Black', var(--heading) !important;
-    font-weight:900 !important;
+.heading-eyebrow::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: #d10000;
+  flex-shrink: 0;
+}
 
-    font-size:clamp(58px,7vw,102px);
+/* Primary statement — the one thing a reader takes away. Large enough to
+   read like a masthead line, not a paragraph. */
+.heading-statement {
+  grid-column: 1;
+  margin: 0;
+  font-size: clamp(34px, 4.6vw, 76px);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+}
 
-    line-height:0.95;
-    letter-spacing:-0.055em;
+/* Supporting copy — held to a narrow column, separated from the statement
+   by a single vertical hairline (no box, no fill) and optically aligned
+   to the statement's last line via align-items:end on the grid. */
+.heading-support {
+  grid-column: 2;
+  margin: 0;
+  padding-left: clamp(24px, 2.4vw, 36px);
+  padding-bottom: 0.28em;
+  border-left: 1px solid rgba(17, 17, 17, 0.12);
+  font-size: clamp(15px, 1.05vw, 17px);
+  line-height: 1.65;
+  letter-spacing: -0.005em;
+  opacity: 0.56;
+}
 
-    color:#111;
+.reveal-word {
+  display: inline;
+}
+
+.heading-space {
+  display: inline;
+  white-space: pre;
+  color: #111;
 }
 
 /* Force Avenir Black on every span inside the heading, overriding any
    global index.css rule that swaps <span> elements to a light font.
    (The global rule itself is untouched — this only wins inside .workspace-heading.) */
 .workspace-heading,
-.workspace-heading span{
-    font-family:'Avenir Black', var(--heading) !important;
-    font-weight:900 !important;
-    font-style:normal !important;
+.workspace-heading span {
+  font-family: "Avenir Black", var(--heading) !important;
+  font-weight: 900 !important;
+  font-style: normal !important;
 }
 
 /* Individual reveal units — GSAP drives ONLY the `color` property here.
    display:inline (not inline-block) keeps word spacing/kerning identical
    to plain text — no blur, no opacity, no transform, ever. */
-.reveal-word{
-    display:inline;
-    color:#CFCFCF;
-}
-
-/* Literal space characters between reveal-word spans. Kept as their own
-   span (rather than raw whitespace between JSX elements) so spacing is
-   never collapsed by JSX whitespace-trimming, while staying unaffected
-   by the color animation. */
-.heading-space{
-    display:inline;
-    white-space:pre;
-    color:#111; /* spaces are invisible either way; keeps font rule simple */
+.reveal-word {
+  display: inline;
+  color: #cfcfcf;
 }
 
 /* personlyze */
-.workspace-brand{
-    color:inherit;
-    letter-spacing:-0.055em;
+.workspace-brand {
+  color: inherit;
+  letter-spacing: -0.055em;
 }
 
 /* .ai — starts light grey like every other word, and is animated to red
    (not black) by GSAP. No color !important here so the inline style GSAP
    sets can win; font rules stay forced via the block above. */
-.workspace-ai{
-    color:#CFCFCF;
-    letter-spacing:-0.055em;
-    margin-left:2px;
+.workspace-ai {
+  color: #cfcfcf;
+  letter-spacing: -0.055em;
+  margin-left: 2px;
 }
 /* ── Full-width hero video ── */
 .workspace-video {
@@ -215,9 +263,15 @@ display: flex;
   .workspace-section {
     padding: 0 0 60px;
   }
+  .workspace-title {
+    padding: 64px 5% 48px;
+  }
   .workspace-heading {
-    top: 32px;
-    font-size: clamp(15px, 2.2vw, 19px);
+    grid-template-columns: 1.4fr 1fr;
+    column-gap: 36px;
+  }
+  .heading-statement {
+    font-size: clamp(28px, 4.6vw, 44px);
   }
   .workspace-video::before {
     height: 130px;
@@ -230,29 +284,50 @@ display: flex;
 
 /* ===============================
    MOBILE
+   Not a shrunk desktop grid: single column, the
+   statement reads as a short editorial headline
+   with real line breaks, and the supporting copy
+   drops below with a top hairline instead of a
+   left one — same device, rotated for a narrow
+   viewport rather than scaled down.
 ================================= */
 
 @media (max-width:640px){
 
   .workspace-title{
-    padding:10px 16px 14px !important; /* top | left-right | bottom */
-    margin:0;
-    display:flex;
-    justify-content:center;
-    align-items:center;
+    padding: 48px 20px 36px;
   }
 
   .workspace-heading{
-    margin:0;
-    font-size:clamp(36px,10vw,56px);
-    line-height:1;
-    letter-spacing:-1px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    flex-wrap:nowrap;
-    white-space:nowrap;
-    text-align:center;
+    grid-template-columns: 1fr;
+    row-gap: 26px;
+    align-items: start;
+  }
+
+  .heading-eyebrow{
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+  }
+
+  .heading-statement{
+    grid-column: 1;
+    font-size: clamp(30px, 9vw, 40px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .heading-support{
+    grid-column: 1;
+    border-left: none;
+    border-top: 1px solid rgba(17, 17, 17, 0.12);
+    padding-left: 0;
+    padding-top: 20px;
+    padding-bottom: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    opacity: 0.6;
   }
 
   .workspace-brand{

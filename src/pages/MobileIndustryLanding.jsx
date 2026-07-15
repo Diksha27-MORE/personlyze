@@ -1,14 +1,18 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { gsap } from "gsap";
-import "./IndustryLanding.css";
+import "./MobileIndustryLanding.css";
 
 /* --------------------------------------------------------------------------
- * Card photos (desktop) — unchanged
+ * Image lookups (shared prefix map for both card photos and problem photos)
  * -------------------------------------------------------------------------- */
 const cardPhotos = {
   ...import.meta.glob("../card-photos/*.jpg", { eager: true, import: "default" }),
   ...import.meta.glob("../card-photos/*.png", { eager: true, import: "default" }),
 };
+
+/* Only needed when an industry's image-file prefix differs from its slug.
+ * Anything not listed falls back to using the slug itself as the prefix,
+ * so new industries work automatically as long as filenames match the slug. */
 const IMAGE_PREFIX_BY_SLUG = {
   "real-estate": "real",
   bfsi: "bfsi",
@@ -21,32 +25,21 @@ const IMAGE_PREFIX_BY_SLUG = {
   tech: "tech",
   fashion: "fashion",
 };
+
+function getPrefix(slug) {
+  return IMAGE_PREFIX_BY_SLUG[slug] || slug;
+}
+
 function getCardImage(slug, cardNumber) {
-  const prefix = IMAGE_PREFIX_BY_SLUG[slug];
+  const prefix = getPrefix(slug);
   if (!prefix) return null;
   const key = `../card-photos/${prefix}-card-${cardNumber}.jpg`;
   return cardPhotos[key] ?? null;
 }
-/* --------------------------------------------------------------------------
- * Problem photos (mobile challenge cards)
- * File naming: {prefix}-problem1.png, {prefix}-problem2.png
- * Falls back gracefully (returns null) if the image doesn't exist.
- * -------------------------------------------------------------------------- */
-const PROBLEM_PREFIX_BY_SLUG = {
-  "real-estate": "real",
-  bfsi: "bfsi",
-  travel: "travel",
-  health: "health",
-  retail: "retail",
-  automotive: "automotive",
-  saas: "saas",
-  b2b: "saas",
-  tech: "tech",
-  fashion: "fashion",
-};
+
 function getProblemImage(slug, challengeNumber) {
   try {
-    const prefix = PROBLEM_PREFIX_BY_SLUG[slug];
+    const prefix = getPrefix(slug);
     if (!prefix) return null;
     const png = `../card-photos/${prefix}-problem${challengeNumber}.png`;
     const jpg = `../card-photos/${prefix}-problem${challengeNumber}.jpg`;
@@ -55,6 +48,33 @@ function getProblemImage(slug, challengeNumber) {
     return null;
   }
 }
+
+/* For each challenge, how many cards came before it across all prior
+ * challenges — gives the correct global image number regardless of how many
+ * challenges exist or how many cards are in each one. */
+function getChallengeCardOffsets(challenges) {
+  const offsets = [];
+  let running = 0;
+  for (const challenge of challenges) {
+    offsets.push(running);
+    running += Array.isArray(challenge?.cards) ? challenge.cards.length : 0;
+  }
+  return offsets;
+}
+
+/* A card is the "Video" card if the data marks it explicitly. Legacy
+ * fallback: a challenge with exactly 5 cards treats the 3rd (index 2) as
+ * video, matching the original fixed 5-card layout. */
+function isVideoCard(card, cardIndexInChallenge, totalCardsInChallenge) {
+  if (!card) return false;
+  const type = (card.type || card.cardType || "").toString().toLowerCase();
+  if (type === "video") return true;
+  if (card.videoUrl || card.video) return true;
+  if ((card.title || "").toLowerCase().includes("video")) return true;
+  if (totalCardsInChallenge === 5 && cardIndexInChallenge === 2) return true;
+  return false;
+}
+
 /* ==========================================================================
  * MOBILE-ONLY COMPONENTS
  * ========================================================================== */
@@ -63,25 +83,25 @@ function MobileIndustryLanding({
   image,
   heroTitle,
   heroDescription,
-  challenges,   // [{ problem, cards: [5] }, { problem, cards: [5] }]
+  challenges, // any number of { problem, cards: [...] }
 }) {
   const [openChallengeIndex, setOpenChallengeIndex] = useState(null);
   const cardRefs = useRef({});
-  // Build a safe 2-item challenges array.
+
+  // Any number of challenges, each with any number of cards. Only falls
+  // back to a single placeholder challenge if the data is missing/invalid.
   const safeChallenges =
     Array.isArray(challenges) && challenges.length > 0
-      ? challenges.slice(0, 2)
-      : [
-          { problem: "Challenge 1", cards: [] },
-          { problem: "Challenge 2", cards: [] },
-        ];
-  while (safeChallenges.length < 2) {
-    safeChallenges.push({ problem: `Challenge ${safeChallenges.length + 1}`, cards: [] });
-  }
+      ? challenges
+      : [{ problem: "Challenge 1", cards: [] }];
+
+  const challengeCardOffsets = getChallengeCardOffsets(safeChallenges);
+
   const handleOpen = (i) => setOpenChallengeIndex(i);
   const handleClose = () => setOpenChallengeIndex(null);
   const selectedChallenge =
     openChallengeIndex !== null ? safeChallenges[openChallengeIndex] : null;
+
   return (
     <div className="industry-landing industry-landing--mobile">
       {/* Hero */}
@@ -89,12 +109,13 @@ function MobileIndustryLanding({
         <div className="industry-hero__overlay" />
         <div className="industry-hero__content">
           <h1 className={`industry-hero__title industry-hero__title--${slug}`}>
-  {heroTitle}
-</h1>
+            {heroTitle}
+          </h1>
           <p className="industry-hero__description">{heroDescription}</p>
         </div>
       </div>
-      {/* Two Challenge cards */}
+
+      {/* Challenge cards — any number, stacked vertically */}
       <div className="mobile-challenges">
         {safeChallenges.map((challenge, i) => {
           const n = i + 1;
@@ -122,11 +143,13 @@ function MobileIndustryLanding({
           );
         })}
       </div>
+
       {selectedChallenge && (
         <MobileChallengeOverlay
           slug={slug}
           challengeNumber={openChallengeIndex + 1}
           cards={selectedChallenge.cards}
+          cardNumberOffset={challengeCardOffsets[openChallengeIndex]}
           originEl={cardRefs.current[openChallengeIndex + 1]}
           onClose={handleClose}
         />
@@ -134,15 +157,23 @@ function MobileIndustryLanding({
     </div>
   );
 }
+
 /* --------------------------------------------------------------------------
  * Fullscreen "Instagram-style" overlay with GSAP open/close
  * -------------------------------------------------------------------------- */
-function MobileChallengeOverlay({ slug, challengeNumber, cards, originEl, onClose }) {
+function MobileChallengeOverlay({
+  slug,
+  cards,
+  cardNumberOffset,
+  originEl,
+  onClose,
+}) {
   const scrimRef = useRef(null);
   const sheetRef = useRef(null);
   const trackRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [revealedIndex, setRevealedIndex] = useState(null);
+
   /* Open animation from origin card */
   useLayoutEffect(() => {
     const scrim = scrimRef.current;
@@ -172,6 +203,7 @@ function MobileChallengeOverlay({ slug, challengeNumber, cards, originEl, onClos
     });
     return () => ctx.revert();
   }, [originEl]);
+
   /* Close animation (reverse) */
   const runClose = () => {
     const scrim = scrimRef.current;
@@ -195,6 +227,7 @@ function MobileChallengeOverlay({ slug, challengeNumber, cards, originEl, onClos
       0
     ).to(scrim, { autoAlpha: 0, duration: 0.3, ease: "power2.in" }, 0.05);
   };
+
   /* Swipe pagination tracking */
   const handleScroll = () => {
     const t = trackRef.current;
@@ -202,6 +235,7 @@ function MobileChallengeOverlay({ slug, challengeNumber, cards, originEl, onClos
     const idx = Math.round(t.scrollLeft / t.clientWidth);
     if (idx !== activeIndex) setActiveIndex(idx);
   };
+
   /* Lock body scroll while open */
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -210,8 +244,7 @@ function MobileChallengeOverlay({ slug, challengeNumber, cards, originEl, onClos
       document.body.style.overflow = prev;
     };
   }, []);
-  // The Video card is always at index 2 (3rd card) in the 5-card flow.
-  const VIDEO_INDEX = 2;
+
   return (
     <div className="mobile-overlay" role="dialog" aria-modal="true">
       <div ref={scrimRef} className="mobile-overlay__scrim" onClick={runClose} />
@@ -225,18 +258,20 @@ function MobileChallengeOverlay({ slug, challengeNumber, cards, originEl, onClos
           ×
         </button>
         <div ref={trackRef} className="mobile-overlay__track" onScroll={handleScroll}>
-          {cards.map((card, i) => (
-            <div className="mobile-overlay__slide" key={i}>
-              <MobileIndustryCard
-                card={card}
-                index={i}
-                backgroundImage={getCardImage(slug, i + 1)}
-                isVideo={i === VIDEO_INDEX}
-                revealed={revealedIndex === i}
-                onTap={() => setRevealedIndex((cur) => (cur === i ? null : i))}
-              />
-            </div>
-          ))}
+          {cards.map((card, i) => {
+            const cardNumber = cardNumberOffset + i + 1;
+            return (
+              <div className="mobile-overlay__slide" key={i}>
+                <MobileIndustryCard
+                  card={card}
+                  backgroundImage={getCardImage(slug, cardNumber)}
+                  isVideo={isVideoCard(card, i, cards.length)}
+                  revealed={revealedIndex === i}
+                  onTap={() => setRevealedIndex((cur) => (cur === i ? null : i))}
+                />
+              </div>
+            );
+          })}
         </div>
         <div className="mobile-overlay__dots">
           {cards.map((c, i) => (
@@ -257,6 +292,7 @@ function MobileChallengeOverlay({ slug, challengeNumber, cards, originEl, onClos
     </div>
   );
 }
+
 /* --------------------------------------------------------------------------
  * Mobile card — reuses desktop card design; tap-to-reveal instead of hover
  * -------------------------------------------------------------------------- */
@@ -312,4 +348,5 @@ function MobileIndustryCard({ card, backgroundImage, isVideo, revealed, onTap })
     </div>
   );
 }
+
 export default MobileIndustryLanding;

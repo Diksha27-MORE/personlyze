@@ -3,13 +3,18 @@ import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
 import industries from "../data/industries";
 import MobileIndustryLanding from "./MobileIndustryLanding";
-import "./IndustryLandingDesktop.css";
+import "./IndustryLanding.css";
 
 const cardPhotos = {
   ...import.meta.glob("../card-photos/*.jpg", { eager: true, import: "default" }),
   ...import.meta.glob("../card-photos/*.png", { eager: true, import: "default" }),
 };
 
+/* Only needed when an industry's image-file prefix differs from its slug
+ * (e.g. slug "real-estate" -> files named "real-card-1.jpg"). Any industry
+ * NOT listed here automatically falls back to using its own slug as the
+ * prefix, so brand-new industries work with zero code changes as long as
+ * their image files are named `${slug}-card-${n}.jpg` / `${slug}-problem${n}.png`. */
 const IMAGE_PREFIX_BY_SLUG = {
   "real-estate": "real",
   bfsi: "bfsi",
@@ -23,36 +28,35 @@ const IMAGE_PREFIX_BY_SLUG = {
   fashion: "fashion",
 };
 
+function getPrefix(slug) {
+  return IMAGE_PREFIX_BY_SLUG[slug] || slug;
+}
+
 function getCardImage(slug, cardNumber) {
-  const prefix = IMAGE_PREFIX_BY_SLUG[slug];
+  const prefix = getPrefix(slug);
   if (!prefix) return null;
   const key = `../card-photos/${prefix}-card-${cardNumber}.jpg`;
   return cardPhotos[key] ?? null;
 }
 
-/* Large hero image for each of the two Step-1 challenge cards.
- * NOTE: `industries.js` wasn't available while making this change, so this
- * mirrors the existing getCardImage() convention against a new
- * `problem-photos` folder. If you already have a getProblemImage() helper
- * exported from your data file, swap this out for that import — everything
- * else in this file is unaffected. Missing images fall back to a clean
- * placeholder fill (see .industry-challenge-card__media in the CSS), never
- * invented artwork. */
+/* Large hero image for each Step-1 challenge card. Works for any number of
+ * challenges — challengeNumber is just that challenge's 1-based position. */
 function getProblemImage(slug, challengeNumber) {
   try {
-    const prefix = IMAGE_PREFIX_BY_SLUG[slug];
+    const prefix = getPrefix(slug);
     if (!prefix) return null;
-
     const png = `../card-photos/${prefix}-problem${challengeNumber}.png`;
     const jpg = `../card-photos/${prefix}-problem${challengeNumber}.jpg`;
-
     return cardPhotos[png] ?? cardPhotos[jpg] ?? null;
   } catch {
     return null;
   }
 }
 
-/* Fixed labels for the five cards inside a challenge, in order. */
+/* Default labels applied in order to a challenge's cards. A card can always
+ * override this with an explicit `card.label` field in the data — that takes
+ * priority. Challenges with more cards than there are default labels simply
+ * get no label on the extra cards (no guessing). */
 const CARD_LABELS = [
   "What This Means",
   "Personlyze Intervention",
@@ -61,21 +65,43 @@ const CARD_LABELS = [
   "Expected Outcome",
 ];
 
-/* A card is treated as the "Video" card either because the data marks it
- * explicitly, or — falling back — because of its position (3rd of 5). */
-function isVideoCard(card, cardIndexInChallenge) {
+function getCardLabel(card, indexInChallenge) {
+  if (card && card.label) return card.label;
+  return CARD_LABELS[indexInChallenge] ?? null;
+}
+
+/* A card is treated as the "Video" card if the data says so explicitly
+ * (type/videoUrl/video/title). As a legacy fallback — for data that hasn't
+ * been updated to mark video cards explicitly — a challenge with exactly
+ * 5 cards still treats the 3rd card (index 2) as video, matching the
+ * original fixed 5-card layout. New/variable-length challenges should just
+ * mark their video card explicitly in the data. */
+function isVideoCard(card, cardIndexInChallenge, totalCardsInChallenge) {
   if (!card) return false;
   const type = (card.type || card.cardType || "").toString().toLowerCase();
   if (type === "video") return true;
   if (card.videoUrl || card.video) return true;
   if ((card.title || "").toLowerCase().includes("video")) return true;
-  return cardIndexInChallenge === 2;
+  if (totalCardsInChallenge === 5 && cardIndexInChallenge === 2) return true;
+  return false;
 }
 
-/* Carousel shows exactly 3 of the 5 detail cards at a time.
- * Valid window start positions are 0, 1, 2 (cards [0,1,2] / [1,2,3] / [2,3,4]). */
-const CAROUSEL_MAX_INDEX = 2;
-const CAROUSEL_GAP = 24;
+/* Computes, for each challenge, how many cards came before it across all
+ * prior challenges. challengeCardOffsets[i] + cardIndexInChallenge + 1 gives
+ * the correct *global* image number for that card, however many challenges
+ * or cards-per-challenge exist. */
+function getChallengeCardOffsets(challenges) {
+  const offsets = [];
+  let running = 0;
+  for (const challenge of challenges) {
+    offsets.push(running);
+    running += Array.isArray(challenge?.cards) ? challenge.cards.length : 0;
+  }
+  return offsets;
+}
+
+/* Number of detail cards visible at once in the carousel viewport. */
+const VISIBLE_CARDS_IN_CAROUSEL = 3;
 
 /* -------------------------------------------------------------------------- */
 /*  Mobile detection                                                          */
@@ -174,14 +200,16 @@ export default function IndustryLanding() {
   }, [stage, activeChallengeIndex, isMobile, industry]);
 
   /* Slide the carousel track whenever the window position changes. Measures
-   * the real card width each time so it stays correct at any viewport size. */
+   * the real card width each time so it stays correct at any viewport size
+   * and any number of cards. */
   useLayoutEffect(() => {
     if (isMobile || !industry || stage !== "detail") return;
     const track = carouselTrackRef.current;
     const firstCard = detailCardRefs.current[0];
     if (!track || !firstCard) return;
     const cardWidth = firstCard.getBoundingClientRect().width;
-    const distance = (cardWidth + CAROUSEL_GAP) * carouselIndex;
+    const gap = 24;
+    const distance = (cardWidth + gap) * carouselIndex;
     gsap.to(track, { x: -distance, duration: 0.65, ease: "power3.inOut" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [carouselIndex, stage, activeChallengeIndex, isMobile, industry]);
@@ -195,7 +223,8 @@ export default function IndustryLanding() {
       const firstCard = detailCardRefs.current[0];
       if (!track || !firstCard) return;
       const cardWidth = firstCard.getBoundingClientRect().width;
-      gsap.set(track, { x: -(cardWidth + CAROUSEL_GAP) * carouselIndex });
+      const gap = 24;
+      gsap.set(track, { x: -(cardWidth + gap) * carouselIndex });
     }
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -210,6 +239,9 @@ export default function IndustryLanding() {
   }
 
   const { heroTitle, heroDescription, challenges, image } = industry;
+
+  /* Works for any number of challenges, each with any number of cards. */
+  const challengeCardOffsets = getChallengeCardOffsets(challenges);
 
   /* ====================================================================== */
   /*  MOBILE BRANCH — untouched                                            */
@@ -322,13 +354,19 @@ export default function IndustryLanding() {
     setCarouselIndex((i) => Math.max(0, i - 1));
   }
 
-  function handleCarouselNext() {
+  function handleCarouselNext(maxIndex) {
     if (isTransitioning) return;
-    setCarouselIndex((i) => Math.min(CAROUSEL_MAX_INDEX, i + 1));
+    setCarouselIndex((i) => Math.min(maxIndex, i + 1));
   }
 
   const activeChallenge =
     activeChallengeIndex !== null ? challenges[activeChallengeIndex] : null;
+
+  /* Carousel bounds are computed from the *actual* number of cards in the
+   * active challenge — works whether a challenge has 3, 5, 8, or any other
+   * number of cards. */
+  const activeCardsCount = activeChallenge?.cards?.length ?? 0;
+  const carouselMaxIndex = Math.max(0, activeCardsCount - VISIBLE_CARDS_IN_CAROUSEL);
 
   return (
     <div className="industry-landing" style={{ backgroundImage: `url(${image})` }}>
@@ -357,18 +395,14 @@ export default function IndustryLanding() {
                     challengeCardRefs.current[index] = el;
                   }}
                 >
-const bgImage = getProblemImage(slug, index + 1);
-
-<div
-  className="industry-challenge-card__media"
-  style={
-    bgImage
-      ? {
-          backgroundImage: `url(${bgImage})`,
-        }
-      : undefined
-  }
-/>
+                  <div
+                    className="industry-challenge-card__media"
+                    style={
+                      bgImage
+                        ? { backgroundImage: `url(${bgImage})` }
+                        : undefined
+                    }
+                  />
                   <div className="industry-challenge-card__overlay" />
                   <div className="industry-challenge-card__inner">
                     <span className="industry-challenge-card__label">
@@ -419,7 +453,8 @@ const bgImage = getProblemImage(slug, index + 1);
               <div className="industry-carousel__viewport" ref={carouselViewportRef}>
                 <div className="industry-carousel__track" ref={carouselTrackRef}>
                   {activeChallenge.cards.map((card, cardIndex) => {
-                    const cardNumber = activeChallengeIndex * 5 + cardIndex + 1;
+                    const cardNumber =
+                      challengeCardOffsets[activeChallengeIndex] + cardIndex + 1;
                     return (
                       <div
                         className="industry-carousel__slot"
@@ -431,8 +466,8 @@ const bgImage = getProblemImage(slug, index + 1);
                         <IndustryCard
                           card={card}
                           backgroundImage={getCardImage(slug, cardNumber)}
-                          label={CARD_LABELS[cardIndex]}
-                          isVideo={isVideoCard(card, cardIndex)}
+                          label={getCardLabel(card, cardIndex)}
+                          isVideo={isVideoCard(card, cardIndex, activeCardsCount)}
                         />
                       </div>
                     );
@@ -443,8 +478,8 @@ const bgImage = getProblemImage(slug, index + 1);
               <button
                 type="button"
                 className="industry-carousel__arrow industry-carousel__arrow--right"
-                onClick={handleCarouselNext}
-                disabled={carouselIndex === CAROUSEL_MAX_INDEX}
+                onClick={() => handleCarouselNext(carouselMaxIndex)}
+                disabled={carouselIndex === carouselMaxIndex}
                 aria-label="Show next card"
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -460,7 +495,7 @@ const bgImage = getProblemImage(slug, index + 1);
             </div>
 
             <div className="industry-carousel__dots">
-              {[0, 1, 2].map((dotIndex) => (
+              {Array.from({ length: carouselMaxIndex + 1 }).map((_, dotIndex) => (
                 <button
                   type="button"
                   key={dotIndex}
@@ -480,8 +515,7 @@ const bgImage = getProblemImage(slug, index + 1);
 }
 
 /* ========================================================================== */
-/*  DESKTOP CARD (hover-driven overlay, plus optional video face) —          */
-/*  logic unchanged, presentation upgraded via CSS only.                     */
+/*  DESKTOP CARD (hover-driven overlay, plus optional video face)           */
 /* ========================================================================== */
 function IndustryCard({ card, backgroundImage, label, isVideo }) {
   return (
@@ -511,7 +545,14 @@ function IndustryCard({ card, backgroundImage, label, isVideo }) {
         <span className="industry-card__placeholder-title">{card.title}</span>
       </div>
       <div className="industry-card__detail">
-        {label && <span className="industry-card__detail-label">{label}</span>}
+        {/* The label slot is always rendered (even if empty) so the title
+            sits at the exact same vertical position on every card. */}
+        <span
+          className="industry-card__detail-label"
+          style={{ visibility: label ? "visible" : "hidden" }}
+        >
+          {label || "\u00A0"}
+        </span>
         <h3 className="industry-card__detail-title">{card.title}</h3>
         <p className="industry-card__detail-text">{card.content}</p>
       </div>

@@ -39,7 +39,7 @@
 .industry-hero__overlay {
   position: absolute;
   inset: 0;
-   background: transparent;
+  background: transparent;
   z-index: 1;
 }
 .industry-hero__content {
@@ -78,7 +78,11 @@
   display: none;
 }
 /* ==========================================================================
-   Step 1 — Challenge selection, two large immersive cards (DESKTOP)
+   Step 1 — Challenge selection cards (DESKTOP)
+   Auto-fit so ANY number of challenges lays out correctly: 2 side-by-side
+   at wide widths (same look as before), wrapping into additional rows
+   automatically as more challenges are added to the data — no code or CSS
+   changes needed when a 3rd, 4th, etc. challenge is added.
    ========================================================================== */
 .industry-challenges-grid {
   position: relative;
@@ -87,7 +91,7 @@
   max-width: 1320px;
   padding: 0 32px;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
   gap: 40px;
 }
 .industry-challenge-card {
@@ -118,9 +122,8 @@
   outline-offset: 4px;
 }
 /* Separate media layer so the image can parallax-zoom on hover independently
- * from the card's own lift/scale — reads as far more premium than a single
- * flat background-image. When no image exists yet, this is a quiet neutral
- * fill (a real placeholder, never invented artwork). */
+ * from the card's own lift/scale. When no image exists yet, this is a quiet
+ * neutral fill — a real placeholder, never invented artwork. */
 .industry-challenge-card__media {
   position: absolute;
   inset: 0;
@@ -187,6 +190,9 @@
 }
 /* ==========================================================================
    Step 2 — Challenge detail view: header + sliding carousel (DESKTOP)
+   The carousel component itself makes no assumption about card count; the
+   viewport always shows 3 slots, and JS clamps how far it can slide based
+   on the real number of cards in the active challenge.
    ========================================================================== */
 .industry-detail {
   position: relative;
@@ -213,12 +219,12 @@
   align-items: center;
   gap: 10px;
 
-  padding: 14px 24px;      /* Bigger button */
-  font-size: 1rem;         /* Bigger text */
+  padding: 14px 24px;
+  font-size: 1rem;
   font-weight: 600;
 
-  background: #000;        /* Black background */
-  color: #fff;             /* White text */
+  background: #000;
+  color: #fff;
   border: none;
   border-radius: 999px;
 
@@ -325,11 +331,10 @@
   background: rgba(19, 18, 18, 0.5);
 }
 /* ==========================================================================
-   Card (DESKTOP baseline — unchanged structurally)
+   Card (DESKTOP baseline — structurally unchanged)
    Note: These base .industry-card rules are shared with the mobile
-   stylesheet, since MobileIndustryLanding.jsx reuses the same base classes
-   and layers .industry-card--mobile on top of them. Duplicated here (not
-   deleted) to preserve identical desktop rendering.
+   stylesheet, since MobileIndustryLanding.css duplicates them so the mobile
+   overlay renders identically standalone.
    ========================================================================== */
 .industry-card {
   position: relative;
@@ -410,19 +415,9 @@
   background: rgba(255, 255, 255, 0.5);
   border-radius: 4px;
 }
-.industry-card__detail-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 12px;
-  flex-shrink: 0;
-}
-.industry-card__detail-block {
-  margin-bottom: 14px;
-}
-.industry-card__detail-block:last-child {
-  margin-bottom: 4px;
-}
+/* ---- CHANGE 2: typography — heading always top, body large & consistent */
 .industry-card__detail-label {
+  font-family: "Avenir Regular", var(--body);
   display: inline-block;
   font-size: 0.65rem;
   font-weight: 700;
@@ -430,13 +425,28 @@
   letter-spacing: 0.08em;
   padding: 3px 10px;
   border-radius: 999px;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
   background: rgba(255, 255, 255, 0.18);
+  align-self: flex-start;
+  flex-shrink: 0;
+}
+.industry-card__detail-title {
+  font-family: "Avenir Black", var(--heading);
+  font-size: 1.75rem;
+  font-weight: 900;
+  line-height: 1.2;
+  margin: 0 0 14px;
+  flex-shrink: 0;
 }
 .industry-card__detail-text {
-  font-size: 1rem;
-  line-height: 1.55;
+  font-family: "Avenir Regular", var(--body);
+  font-size: 1.35rem;
+  line-height: 1.5;
+  font-weight: 400;
   opacity: 0.95;
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 .industry-card__placeholder,
 .industry-card__detail {
@@ -464,9 +474,8 @@
 }
 /* ==========================================================================
    Desktop-only fine-tuning for narrower desktop widths.
-   Columns never collapse here — always 2 challenge cards side by side and
-   the carousel always shows exactly 3 of 5 cards — only spacing/type scale
-   down slightly.
+   Any number of challenges/cards continues to work here — only
+   spacing/type scale down slightly, layout rules are unchanged.
    ========================================================================== */
 @media (max-width: 1100px) and (min-width: 769px) {
   .industry-challenges-grid {
@@ -498,9 +507,9 @@
     font-size: 1.1rem;
   }
   .industry-card__detail-title {
-    font-size: 1.05rem;
+    font-size: 1.45rem;
   }
   .industry-card__detail-text {
-    font-size: 0.85rem;
+    font-size: 1.1rem;
   }
 }

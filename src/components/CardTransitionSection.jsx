@@ -12,15 +12,32 @@ const CARD_IMAGES = [strategicImg, creativeImg, aiImg];
 
 gsap.registerPlugin(ScrollTrigger);
 
+// ── Live viewport metrics ─────────────────────────────────────────
+// FIX: every layout constant below used to read window.innerWidth /
+// window.innerHeight directly. That's the root cause of the empty gap in
+// Screenshot 2: on many mobile browsers window.innerHeight does NOT match
+// the CSS `100svh` box that `.cts-sticky` (and therefore the fullscreen
+// hero card) is actually sized to — it depends on things like whether the
+// address bar is currently shown/collapsed, and that can differ device to
+// device even at the same CSS width. `vp` is kept in sync with the
+// *actual rendered size* of `.cts-sticky` (see `syncViewportMetrics`
+// inside the component), so HERO_H() etc. always match the real on-screen
+// box, on every device — not just the one the design was built on.
+const vp = {
+  w: typeof window !== "undefined" ? window.innerWidth  : 390,
+  h: typeof window !== "undefined" ? window.innerHeight : 700,
+};
+
 // ── Layout constants (responsive) ───────────────────────────────
-const isMobile = () => window.innerWidth <= 640;
+const isMobile = () => vp.w <= 640;
 
 // CHANGED: on mobile the hero card is now fullscreen (100vw x 100svh).
-// window.innerHeight is used as the JS-side proxy for 100svh since GSAP
-// needs a concrete pixel value (the CSS side still uses `100svh` for the
-// sticky wrapper itself, see .cts-sticky in the CSS file).
-const HERO_W  = () => isMobile() ? window.innerWidth  : 780;
-const HERO_H  = () => isMobile() ? window.innerHeight : 830;
+// vp.h/vp.w (synced to the real `.cts-sticky` box, see above) are used as
+// the JS-side proxy for 100svh/100vw since GSAP needs a concrete pixel
+// value (the CSS side still uses `100svh` for the sticky wrapper itself,
+// see .cts-sticky in the CSS file).
+const HERO_W  = () => isMobile() ? vp.w : 780;
+const HERO_H  = () => isMobile() ? vp.h : 830;
 // CHANGED: mobile hero border radius reduced to ~0 ("almost all radius removed").
 // Kept at 2px instead of a hard 0 to avoid a hairline aliasing edge on the image.
 const HERO_BR = () => isMobile() ? 2 : 20;
@@ -33,15 +50,15 @@ const THUMB_W  = () => isMobile() ? 46 : 58;
 const THUMB_H  = () => Math.round(THUMB_W() / (780 / 830));
 const THUMB_BR = () => isMobile() ? 10 : 12;
 
-const heroX = () => Math.round((window.innerWidth - HERO_W()) / 2)
+const heroX = () => Math.round((vp.w - HERO_W()) / 2)
 // CHANGED: mobile hero now starts flush at the very top (0) instead of an
 // 8vh offset, since it fills the whole screen edge-to-edge.
 const heroY = () => isMobile()
   ? 0
-  : Math.round((window.innerHeight - HERO_H()) / 2);
+  : Math.round((vp.h - HERO_H()) / 2);
 
-const thumbX = () => Math.round((window.innerWidth - THUMB_W()) / 2);
-const thumbY = () => Math.round(window.innerHeight * (isMobile() ? 0.82 : 0.72));
+const thumbX = () => Math.round((vp.w - THUMB_W()) / 2);
+const thumbY = () => Math.round(vp.h * (isMobile() ? 0.82 : 0.72));
 
 const TL_X = () => isMobile() ? 16 : heroX() - 200;
 const TL_Y = () => isMobile() ? 16 : 40;
@@ -51,7 +68,7 @@ const DESC_GAP = 60;
 // CHANGED: these two are only used by the desktop DESC_X/DESC_Y branches now.
 // Mobile has its own dedicated bottom-anchored constants below.
 const MOBILE_DESC_GAP = () =>
-  Math.max(72, Math.round(window.innerHeight * 0.09));
+  Math.max(72, Math.round(vp.h * 0.09));
 
 const DESC_W_DESKTOP = 320;
 
@@ -83,14 +100,14 @@ const DESC_X_RIGHT = () => {
 // CHANGED: on mobile, description now anchors near the BOTTOM of the
 // fullscreen hero card (over the gradient) instead of below the hero.
 const DESC_Y = () => isMobile()
-  ? window.innerHeight - MOBILE_DESC_BLOCK_H - MOBILE_DESC_BOTTOM_PAD
+  ? vp.h - MOBILE_DESC_BLOCK_H - MOBILE_DESC_BOTTOM_PAD
   : heroY() + Math.round(HERO_H() * 0.30);
 
 const BR_X = () => isMobile()
-  ? window.innerWidth - SMALL_W() - 16
+  ? vp.w - SMALL_W() - 16
   : heroX() + HERO_W() + DESC_GAP + 35;
 const BR_Y = () => isMobile()
-  ? window.innerHeight - SMALL_H() - 24
+  ? vp.h - SMALL_H() - 24
   : DESC_Y() + 450;
 
 // NOTE: previewOpacity() is already 0 on mobile, so the top-left "history"
@@ -204,6 +221,17 @@ export default function CardTransitionSection() {
     const E_INOUT = "power3.inOut";
 
     const ctx = gsap.context(() => {
+      // FIX: reads the ACTUAL rendered size of `.cts-sticky` (which is
+      // always 100vw x 100svh via CSS) and syncs it into `vp` (module
+      // scope, above). Every layout constant then derives from this real
+      // box instead of window.innerWidth/innerHeight, which is what
+      // eliminates the device-dependent empty space.
+      const syncViewportMetrics = () => {
+        const rect = stickyRef.current?.getBoundingClientRect();
+        vp.w = rect && rect.width  > 0 ? rect.width  : window.innerWidth;
+        vp.h = rect && rect.height > 0 ? rect.height : window.innerHeight;
+      };
+
       const renderTyped = (cardIdx, p) => {
         const [l0, l1] = lineRefs[cardIdx];
         if (!l0.current || !l1.current) return;
@@ -215,6 +243,8 @@ export default function CardTransitionSection() {
       };
 
       const applyInitialState = () => {
+        syncViewportMetrics();
+
         gsap.set(headlineRef.current, { opacity: 1, y: 0 });
 
         gsap.set(cardRefs[0].current, {
@@ -399,19 +429,33 @@ export default function CardTransitionSection() {
 
       ScrollTrigger.addEventListener("refreshInit", applyInitialState);
 
-      let lastWidth = window.innerWidth;
+      // FIX: previously this only re-checked window.innerWidth, so on
+      // mobile browsers where the address bar shows/hides — which changes
+      // window.innerHeight but not the width — this never fired, and the
+      // hero card's JS-computed height went stale relative to the actual
+      // `.cts-sticky` (100svh) box. That drift is what produced the
+      // leftover empty space in Screenshot 2. Now both dimensions of the
+      // ACTUAL rendered box are compared, and visualViewport is also
+      // watched (iOS Safari fires viewport changes there without always
+      // firing a window `resize`).
+      let lastW = vp.w;
+      let lastH = vp.h;
       const handleResize = () => {
-        if (window.innerWidth === lastWidth) return;
-        lastWidth = window.innerWidth;
+        syncViewportMetrics();
+        if (vp.w === lastW && vp.h === lastH) return;
+        lastW = vp.w;
+        lastH = vp.h;
         ScrollTrigger.refresh();
       };
       window.addEventListener("resize", handleResize);
       window.addEventListener("orientationchange", handleResize);
+      window.visualViewport?.addEventListener("resize", handleResize);
 
       return () => {
         ScrollTrigger.removeEventListener("refreshInit", applyInitialState);
         window.removeEventListener("resize", handleResize);
         window.removeEventListener("orientationchange", handleResize);
+        window.visualViewport?.removeEventListener("resize", handleResize);
       };
     }, sectionRef);
 
