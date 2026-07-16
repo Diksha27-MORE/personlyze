@@ -4,6 +4,123 @@ import backgroundVideo from "../assets/hero-video.mp4";
 import mobileHeroVideo from "../assets/hero-mobile.mp4";
 import LogoAnimation from "../assets/Logo animation new.webm";
 
+const NAV_ITEMS = [
+  { label: "Who We Are", id: "who-we-are" },
+  { label: "Why Personlyze AI", id: "why-personlyze" },
+  { label: "What We Do", id: "what-we-do" },
+  { label: "Solutions", id: "solutions" },
+  { label: "Connect With Us", id: "contact" },
+];
+
+function NavMenu() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Lock body scroll while the menu is open
+  useEffect(() => {
+    if (isOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+      document.body.dataset.scrollY = String(scrollY);
+    } else {
+      const scrollY = document.body.dataset.scrollY || "0";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      window.scrollTo(0, parseInt(scrollY, 10));
+    }
+
+    return () => {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+    };
+  }, [isOpen]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleNavClick = (id) => {
+    setIsOpen(false);
+    // Wait for the panel to start closing before scrolling so the
+    // transition feels smooth rather than an abrupt cut.
+    setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 250);
+  };
+
+  return (
+    <>
+      {/* Hamburger trigger button */}
+      <button
+        className={`nav-hamburger-btn ${isOpen ? "is-open" : ""}`}
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-label={isOpen ? "Close menu" : "Open menu"}
+        aria-expanded={isOpen}
+      >
+        <span className="nav-hamburger-line" />
+        <span className="nav-hamburger-line" />
+        <span className="nav-hamburger-line" />
+      </button>
+
+      {/* Dark overlay */}
+      <div
+        className={`nav-overlay ${isOpen ? "is-visible" : ""}`}
+        onClick={() => setIsOpen(false)}
+        aria-hidden={!isOpen}
+      />
+
+      {/* Slide-in panel */}
+      <nav
+        className={`nav-panel ${isOpen ? "is-open" : ""}`}
+        aria-hidden={!isOpen}
+      >
+        <button
+          className="nav-panel-close"
+          onClick={() => setIsOpen(false)}
+          aria-label="Close menu"
+        >
+          &times;
+        </button>
+
+        <ul className="nav-panel-list">
+          {NAV_ITEMS.map((item, index) => (
+            <li
+              key={item.id}
+              className="nav-panel-item"
+              style={{ transitionDelay: isOpen ? `${0.08 * index + 0.15}s` : "0s" }}
+            >
+              <button
+                className="nav-panel-link"
+                onClick={() => handleNavClick(item.id)}
+              >
+                <span className="nav-panel-link__index">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="nav-panel-link__label">{item.label}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <div className="nav-panel-footer">
+          <span className="nav-panel-footer__brand">personlyze.ai</span>
+        </div>
+      </nav>
+    </>
+  );
+}
+
 function Hero() {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -48,6 +165,9 @@ function Hero() {
       </video>
 
       <div className="overlay"></div>
+
+      {/* Premium hamburger nav — floats above all Hero content */}
+      <NavMenu />
 
       <div className="hero-center">
 

@@ -6,10 +6,7 @@ function Industries() {
   return (
     <section className="industries">
       <div className="industries-header">
-        <h2>What's your industry?</h2>
-        <p>
-          We'll show you the exact problems Personlyze solves for your category.
-        </p>
+        <h2>Personalization for every business!</h2>
       </div>
 
       <DynamicFrameLayout />

@@ -1,84 +1,73 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+.industries{
+  width:100%;
+  min-height:100vh;
 
-.industries {
-  width: 100%;
-  min-height: 100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  background:#edeae2;
+  text-align:center;
 
-  background: #edeae2;
-
-  text-align: center;
-  padding: 120px 24px;
+  /* Slight top & bottom spacing */
+  padding:40px 24px 60px;
 }
 
-
-/* =========================
-   HEADER BLOCK
-========================= */
-
-.industries-header {
-  max-width: 1100px;
-  margin-bottom: 80px;
+.industries-header{
+  max-width:1100px;
+  margin:0 0 60px;
 }
 
+.industries-header h2{
+  margin:0;
 
-/* =========================
-   BIG HERO HEADING
-========================= */
+  font-family:"Avenir Black";
+  font-weight:900;
 
-.industries-header h2 {
-  margin: 0;
+  /* SAME SIZE */
+  font-size:clamp(45px,7vw,10px)!important;
 
-  font-family: "Avenir Black";
-  font-size: clamp(58px, 7vw, 102px);
+  line-height:1.04;
+  letter-spacing:-0.03em;
 
-  font-weight: 900;
-  line-height: 0.95;
-  letter-spacing: -0.055em;
-
-  color: #111;
+  color:#111;
 }
 
+.industries-header p{
+  margin-top:18px;
 
-/* =========================
-   SUB TEXT
-========================= */
+  font-family:"Avenir Light";
+  font-size:clamp(18px,1.5vw,22px);
 
-.industries-header p {
-  margin-top: 24px;
+  line-height:1.6;
+  color:#111;
+  opacity:.85;
 
-  font-family: "Avenir Light";
-
-  font-size: clamp(18px, 1.5vw, 22px);
-
-  font-weight: 300;
-  line-height: 1.6;
-
-  color: #111;
-  opacity: 0.85;
-
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width:700px;
+  margin-left:auto;
+  margin-right:auto;
 }
 
+@media (max-width:768px){
 
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 768px) {
-
-  .industries-header h2 {
-    font-size: 48px;
+  .industries{
+    padding:20px 20px 60px;
   }
 
-  .industries-header p {
-    font-size: 16px;
+  .industries-header{
+    margin-bottom:40px;
+  }
+
+  .industries-header h2{
+    font-size:clamp(45px,7vw,10px)!important;
+    line-height:1.04;
+    letter-spacing:-0.03em;
+  }
+
+  .industries-header p{
+    margin-top:16px;
+    font-size:16px;
   }
 
 }

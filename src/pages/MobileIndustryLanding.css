@@ -21,6 +21,51 @@
   font-size: 2rem;
   font-weight: 700;
 }
+/* ---------- "Back to Industries" button — pinned to the hero video's
+   top-left corner. It's positioned relative to .industry-hero (not the
+   viewport), so it scrolls away together with the hero. ------------------- */
+.industry-back-button {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: 16px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: 999px;
+  padding: 9px 16px 9px 12px;
+  background: #ffffff;
+  color: #131212;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
+}
+.industry-back-button:active {
+  transform: scale(0.96);
+}
+.industry-back-button__arrow {
+  font-size: 1.1rem;
+  line-height: 1;
+  color: #131212;
+}
+.industry-back-button__label {
+  font-family: var(--body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: #131212;
+}
+@media (max-width: 380px) {
+  .industry-back-button__label {
+    display: none;
+  }
+  .industry-back-button {
+    padding: 10px;
+  }
+}
 /* ==========================================================================
    Hero (base — shared with desktop; mobile-specific overrides below)
    ========================================================================== */
@@ -32,9 +77,16 @@
   text-align: center;
   padding: 100px 24px 56px;
   position: relative;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  overflow: hidden;
+}
+.industry-hero__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
 }
 .industry-hero__overlay {
   position: absolute;
@@ -243,6 +295,35 @@
   padding: 8px 8px 30px;
   box-sizing: border-box;
 }
+/* ---------- Previous / Next navigation ------------------------------------ */
+.mobile-overlay__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(207, 207, 207, 0.85);
+  color: #000000;
+  font-size: 1.6rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+.mobile-overlay__nav:active {
+  transform: translateY(-50%) scale(0.92);
+}
+.mobile-overlay__nav--prev {
+  left: 10px;
+}
+.mobile-overlay__nav--next {
+  right: 10px;
+}
 /* ==========================================================================
    Card (base — shared with desktop; mobile reuses .industry-card and layers
    .industry-card--mobile on top via the same JSX class list. Duplicated
@@ -363,33 +444,37 @@
 .industry-card__detail {
   z-index: 1;
 }
-/* Reuse desktop .industry-card look — mobile overrides sizing + typography */
+/* Reuse desktop .industry-card look — mobile overrides sizing + typography.
+   Mobile cards show their full detail (background, overlay, title,
+   description) immediately — there is no placeholder / reveal step. */
 .industry-card--mobile {
   width: 100%;
   max-width: 520px;
   height: calc(100vh - 50px);
   border-radius: 24px;
   overflow: hidden;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
   background-color: #ffffff;
 }
-/* Compact mobile placeholder face */
-.industry-card--mobile .industry-card__placeholder {
-  padding: 20px;
+.industry-card--mobile .industry-card__bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+  z-index: 1;
 }
-.industry-card--mobile .industry-card__placeholder-title {
-  font-size: 1.35rem;
-  line-height: 1.25;
-  font-weight: 800;
-}
-/* ---- CHANGE 2: typography — heading always top, body large & consistent */
+/* ---- Detail is always visible on mobile: heading always top, body large
+   and consistent, must fit within one viewport (no scroll). ---- */
 .industry-card--mobile .industry-card__detail {
+  position: absolute;
+  inset: 0;
   padding: 24px;
   display: flex;
   flex-direction: column;
-  background: rgba(0, 0, 0, 0.42);
-  overflow-y: hidden; /* must fit in one viewport, per spec */
+  background: transparent;
+  overflow-y: hidden;
+  transform: translateY(0%);
+  opacity: 1;
+  pointer-events: auto;
+  transition: none;
 }
 .industry-card--mobile .industry-card__detail-title {
   font-family: "Avenir Black", var(--heading);
@@ -409,32 +494,7 @@
   display: flex;
   align-items: center;
 }
-/* Tap-to-reveal (mirrors :hover from desktop) */
-.industry-card--mobile.is-revealed .industry-card__detail {
-  transform: translateY(0%);
-  opacity: 1;
-  pointer-events: auto;
-}
-.industry-card--mobile.is-revealed .industry-card__placeholder {
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-/* Kill hover-triggered overlay on touch devices */
-@media (hover: none) {
-  .industry-card--mobile:hover .industry-card__detail,
-  .industry-card--mobile:focus-within .industry-card__detail {
-    transform: translateY(100%);
-    opacity: 0;
-    pointer-events: none;
-  }
-  .industry-card--mobile.is-revealed .industry-card__detail {
-    transform: translateY(0%);
-    opacity: 1;
-    pointer-events: auto;
-  }
-}
 /* Video card: only thumbnail + play icon, no text at all */
-.industry-card--video .industry-card__placeholder,
 .industry-card--video .industry-card__detail {
   display: none !important;
 }

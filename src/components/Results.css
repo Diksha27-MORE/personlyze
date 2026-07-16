@@ -19,19 +19,17 @@
 }
 .results-heading{
     margin:0;
-
     display:inline-flex;
     align-items:baseline;
     justify-content:center;
-
     text-align:center;
 
     font-family:var(--heading);
+    font-weight:900;
 
-    font-size:clamp(58px,7vw,102px);
-
-    line-height:0.95;
-    letter-spacing:-0.055em;
+    font-size:clamp(34px,4.6vw,76px);
+    line-height:1.04;
+    letter-spacing:-0.03em;
 
     color:#111;
 }
@@ -49,7 +47,7 @@
     color:#d10000;
 
     margin-left:2px;
-    letter-spacing:-0.055em;
+    letter-spacing:-0.03em;
 }
 
 /* ── Cards pin wrapper ─────────────────────────────────────────────────────
@@ -241,6 +239,7 @@
     padding:0 !important;
     margin-top:-24px !important; /* smaller than desktop's -60px since mobile already sits closer to the top */
     margin-bottom:0 !important;
+    padding-bottom:0 !important;
     background:#edeae2 !important;
   }
 
@@ -261,8 +260,8 @@
     align-items:baseline !important;
     justify-content:center !important;
 
-    font-size:clamp(45px, 9vw, 48px) !important;
-    line-height:1 !important;
+    font-size:clamp(45px,7vw,10px)!important;
+    line-height:1.04 !important;
     letter-spacing:-0.03em !important;
 
     white-space:nowrap !important;
@@ -283,8 +282,10 @@
 
   .results-cards-pin{
     height:auto !important;
+    min-height:0 !important;
     display:block !important;
     padding:0 !important;
+    margin:0 !important;
   }
 
   /* This is now the actual horizontal scroll container — native CSS
@@ -481,8 +482,8 @@
     justify-content:center !important;
     gap:8px !important;
 
-    margin-top:20px !important;
-    padding-bottom:6px !important;
+    margin:12px 0 0 !important;
+    padding-bottom:0 !important;
   }
 
   .results-dot{

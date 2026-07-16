@@ -114,8 +114,6 @@ export default function Workspace() {
             primary statement + a right-aligned supporting column. */}
         <section className="workspace-title">
           <div className="workspace-heading" ref={headingRef}>
-            <span className="heading-eyebrow">Who we are</span>
-
             <p className="heading-statement">
               <span className="reveal-word">We</span>{" "}
               <span className="reveal-word">are</span>{" "}

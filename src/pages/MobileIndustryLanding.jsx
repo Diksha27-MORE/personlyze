@@ -1,6 +1,16 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { gsap } from "gsap";
 import "./MobileIndustryLanding.css";
+
+import realEstateVideo from "../assets/real-estate.mp4";
+import bfsiVideo from "../assets/bfsi.mp4";
+import travelVideo from "../assets/travel.mp4";
+import healthVideo from "../assets/health.mp4";
+import retailVideo from "../assets/Retail.mp4";
+import automotiveVideo from "../assets/automotive.mp4";
+import b2bVideo from "../assets/b2b.mp4";
+import fashionVideo from "../assets/fashion.mp4";
 
 /* --------------------------------------------------------------------------
  * Image lookups (shared prefix map for both card photos and problem photos)
@@ -24,6 +34,19 @@ const IMAGE_PREFIX_BY_SLUG = {
   b2b: "saas",
   tech: "tech",
   fashion: "fashion",
+};
+
+/* Hero background video per industry slug. */
+const HERO_VIDEO_BY_SLUG = {
+  "real-estate": realEstateVideo,
+  bfsi: bfsiVideo,
+  travel: travelVideo,
+  health: healthVideo,
+  retail: retailVideo,
+  automotive: automotiveVideo,
+  b2b: b2bVideo,
+  saas: b2bVideo,
+  fashion: fashionVideo,
 };
 
 function getPrefix(slug) {
@@ -80,13 +103,17 @@ function isVideoCard(card, cardIndexInChallenge, totalCardsInChallenge) {
  * ========================================================================== */
 function MobileIndustryLanding({
   slug,
-  image,
+  image, // used as the hero video's poster frame while it loads
+  video, // optional explicit override for the hero video source
   heroTitle,
   heroDescription,
   challenges, // any number of { problem, cards: [...] }
 }) {
+  const navigate = useNavigate();
   const [openChallengeIndex, setOpenChallengeIndex] = useState(null);
   const cardRefs = useRef({});
+
+  const heroVideo = video || HERO_VIDEO_BY_SLUG[slug] || null;
 
   // Any number of challenges, each with any number of cards. Only falls
   // back to a single placeholder challenge if the data is missing/invalid.
@@ -102,10 +129,40 @@ function MobileIndustryLanding({
   const selectedChallenge =
     openChallengeIndex !== null ? safeChallenges[openChallengeIndex] : null;
 
+  /* Navigate home and tell the homepage which section to scroll to once it
+   * mounts. The homepage reads this from location.state (see #solutions'
+   * useEffect in App.jsx) — no manual DOM polling needed here. */
+  const handleBackToIndustries = () => {
+    navigate("/", { state: { scrollTo: "solutions" } });
+  };
+
   return (
     <div className="industry-landing industry-landing--mobile">
       {/* Hero */}
-      <div className="industry-hero" style={{ backgroundImage: `url(${image})` }}>
+      <div className="industry-hero">
+        <button
+          type="button"
+          className="industry-back-button"
+          onClick={handleBackToIndustries}
+        >
+          <span className="industry-back-button__arrow" aria-hidden="true">
+            ←
+          </span>
+          <span className="industry-back-button__label">Back to Industries</span>
+        </button>
+
+        {heroVideo && (
+          <video
+            className="industry-hero__video"
+            src={heroVideo}
+            poster={image}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+          />
+        )}
         <div className="industry-hero__overlay" />
         <div className="industry-hero__content">
           <h1 className={`industry-hero__title industry-hero__title--${slug}`}>
@@ -147,7 +204,6 @@ function MobileIndustryLanding({
       {selectedChallenge && (
         <MobileChallengeOverlay
           slug={slug}
-          challengeNumber={openChallengeIndex + 1}
           cards={selectedChallenge.cards}
           cardNumberOffset={challengeCardOffsets[openChallengeIndex]}
           originEl={cardRefs.current[openChallengeIndex + 1]}
@@ -159,20 +215,15 @@ function MobileIndustryLanding({
 }
 
 /* --------------------------------------------------------------------------
- * Fullscreen "Instagram-style" overlay with GSAP open/close
+ * Fullscreen "Instagram-style" overlay with GSAP open/close.
+ * Every slide shows its full image + title + description immediately —
+ * there is no intermediate preview state.
  * -------------------------------------------------------------------------- */
-function MobileChallengeOverlay({
-  slug,
-  cards,
-  cardNumberOffset,
-  originEl,
-  onClose,
-}) {
+function MobileChallengeOverlay({ slug, cards, cardNumberOffset, originEl, onClose }) {
   const scrimRef = useRef(null);
   const sheetRef = useRef(null);
   const trackRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [revealedIndex, setRevealedIndex] = useState(null);
 
   /* Open animation from origin card */
   useLayoutEffect(() => {
@@ -236,6 +287,16 @@ function MobileChallengeOverlay({
     if (idx !== activeIndex) setActiveIndex(idx);
   };
 
+  const goToSlide = (i) => {
+    const t = trackRef.current;
+    if (!t) return;
+    const clamped = Math.max(0, Math.min(i, cards.length - 1));
+    t.scrollTo({ left: clamped * t.clientWidth, behavior: "smooth" });
+  };
+
+  const handlePrev = () => goToSlide(activeIndex - 1);
+  const handleNext = () => goToSlide(activeIndex + 1);
+
   /* Lock body scroll while open */
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -257,6 +318,7 @@ function MobileChallengeOverlay({
         >
           ×
         </button>
+
         <div ref={trackRef} className="mobile-overlay__track" onScroll={handleScroll}>
           {cards.map((card, i) => {
             const cardNumber = cardNumberOffset + i + 1;
@@ -266,25 +328,40 @@ function MobileChallengeOverlay({
                   card={card}
                   backgroundImage={getCardImage(slug, cardNumber)}
                   isVideo={isVideoCard(card, i, cards.length)}
-                  revealed={revealedIndex === i}
-                  onTap={() => setRevealedIndex((cur) => (cur === i ? null : i))}
                 />
               </div>
             );
           })}
         </div>
+
+        {activeIndex > 0 && (
+          <button
+            type="button"
+            className="mobile-overlay__nav mobile-overlay__nav--prev"
+            onClick={handlePrev}
+            aria-label="Previous"
+          >
+            ‹
+          </button>
+        )}
+        {activeIndex < cards.length - 1 && (
+          <button
+            type="button"
+            className="mobile-overlay__nav mobile-overlay__nav--next"
+            onClick={handleNext}
+            aria-label="Next"
+          >
+            ›
+          </button>
+        )}
+
         <div className="mobile-overlay__dots">
-          {cards.map((c, i) => (
+          {cards.map((_, i) => (
             <button
               key={i}
               type="button"
               className={`mobile-overlay__dot ${i === activeIndex ? "is-active" : ""}`}
-              onClick={() => {
-                trackRef.current?.scrollTo({
-                  left: i * trackRef.current.clientWidth,
-                  behavior: "smooth",
-                });
-              }}
+              onClick={() => goToSlide(i)}
             />
           ))}
         </div>
@@ -294,15 +371,16 @@ function MobileChallengeOverlay({
 }
 
 /* --------------------------------------------------------------------------
- * Mobile card — reuses desktop card design; tap-to-reveal instead of hover
+ * Mobile card — reuses desktop card design. Background image/video, dark
+ * overlay, title, and full description are all visible immediately; there
+ * is no preview/reveal step.
  * -------------------------------------------------------------------------- */
-function MobileIndustryCard({ card, backgroundImage, isVideo, revealed, onTap }) {
+function MobileIndustryCard({ card, backgroundImage, isVideo }) {
   // Video card: only thumbnail + play icon. No title / description ever.
   if (isVideo) {
     return (
       <div
         className="industry-card industry-card--mobile industry-card--video"
-        onClick={onTap}
         style={
           backgroundImage
             ? {
@@ -323,10 +401,10 @@ function MobileIndustryCard({ card, backgroundImage, isVideo, revealed, onTap })
       </div>
     );
   }
+
   return (
     <div
-      className={`industry-card industry-card--mobile ${revealed ? "is-revealed" : ""}`}
-      onClick={onTap}
+      className="industry-card industry-card--mobile"
       style={
         backgroundImage
           ? {
@@ -338,9 +416,6 @@ function MobileIndustryCard({ card, backgroundImage, isVideo, revealed, onTap })
       }
     >
       <div className="industry-card__bg-overlay" />
-      <div className="industry-card__placeholder">
-        <span className="industry-card__placeholder-title">{card.title}</span>
-      </div>
       <div className="industry-card__detail">
         <h3 className="industry-card__detail-title">{card.title}</h3>
         <p className="industry-card__detail-text">{card.content}</p>

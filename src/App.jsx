@@ -44,30 +44,30 @@ function App() {
         path="/"
         element={
           <div ref={containerRef} className="app">
-            <section className="panel hero">
-              <Hero />
-            </section>
+  <section id="hero" className="panel hero">
+    <Hero />
+  </section>
 
-            <section className="panel">
-              <Workspace />
-            </section>
+  <section id="who-we-are" className="panel">
+    <Workspace />
+  </section>
 
-            <section className="panel">
-              <Results />
-            </section>
+  <section id="why-personlyze" className="panel">
+    <Results />
+  </section>
 
-            <section className="panel large">
-              <CardTransitionSection />
-            </section>
+  <section id="what-we-do" className="panel large">
+    <CardTransitionSection />
+  </section>
 
-            <section className="panel">
-              <Industries />
-            </section>
-            
-            <section className="panel">
-              <Footer/>
-            </section>
-          </div>
+  <section id="solutions" className="panel">
+    <Industries />
+  </section>
+
+  <section id="contact" className="panel">
+    <Footer />
+  </section>
+</div>
         }
       />
 
