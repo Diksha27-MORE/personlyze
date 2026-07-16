@@ -285,7 +285,7 @@ export default function MobileCardTransitionSection() {
 
   text-align: center;
 
-  font-family: "Avenir Black", sans-serif;
+  font-family: "Avenir Black";
   font-weight: 900;
 
   font-size:clamp(45px,7vw,10px)!important;
@@ -334,13 +334,13 @@ export default function MobileCardTransitionSection() {
           padding-top: 2.5rem;
         }
 
-        .mcts-card__num {
-          font-size: 0.95rem;
-          font-weight: 600;
-          letter-spacing: 0.08em;
-          opacity: 0.85;
-        }
-
+.mcts-card__num {
+  font-family: "Avenir Black";
+  font-size: 28px;   /* yaha size increase karo */
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  opacity: 0.9;
+}
         .mcts-card__title {
           margin: 0;
           font-size: clamp(2rem, 9vw, 3.25rem);

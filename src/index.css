@@ -172,7 +172,6 @@ select{
 /* Body */
 
 p,
-span,
 li{
 
   font-family:var(--light);

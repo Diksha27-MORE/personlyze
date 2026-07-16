@@ -81,6 +81,81 @@
 }
 
 /* ===============================
+   HEADLINE — sits above the personlyze.ai logo
+=================================*/
+.hero-headline {
+  position: absolute;
+  top: 15%;
+  left: calc(50% + 46px);
+  z-index: 6;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+
+  max-width: 620px;
+}
+
+/* Thin red vertical line — animates top to bottom first */
+.hero-headline__line {
+  width: 2px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 2px;
+
+  background: linear-gradient(180deg, #ff4d4d 0%, #d10000 100%);
+  box-shadow: 0 0 10px rgba(209, 0, 0, 0.55);
+
+  transform: scaleY(0);
+  transform-origin: top;
+
+  animation: headlineLineGrow 0.5s cubic-bezier(.22,1,.36,1) forwards;
+  animation-delay: 0.2s;
+}
+
+@keyframes headlineLineGrow {
+  0% { transform: scaleY(0); }
+  100% { transform: scaleY(1); }
+}
+
+/* Text — reveals with fade + slide, after the line finishes */
+.hero-headline__text {
+  font-family: "Avenir Black";
+  font-weight: normal;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  font-family: var(--heading);
+  font-size: 19px;
+  letter-spacing: -0.2px;
+  line-height: 1.2;
+  color: #fff;
+  text-align: left;
+
+  white-space: nowrap;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+
+  opacity: 0;
+  transform: translateX(-16px);
+
+  animation: headlineTextReveal 0.7s cubic-bezier(.22,1,.36,1) forwards;
+  animation-delay: 0.68s;
+}
+
+@keyframes headlineTextReveal {
+  0% {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ===============================
    PERSONLYZE
 =================================*/
 .hero-brand {
@@ -138,7 +213,7 @@
 
 .strategy {
   font-family: var(--regular);
-  font-size: 50px;
+  font-size: 54px;
   font-weight: 900 !important;
   color: #d10000;
   letter-spacing: -1px;
@@ -159,7 +234,7 @@
 
 .personalization {
   font-family: var(--regular);
-  font-size: 50px;
+  font-size: 54px;
   font-weight: 900 !important;
   color: #fff;
   letter-spacing: -1px;
@@ -310,10 +385,26 @@
 
 .strategy,
 .personalization{
-    font-size:24px;
+    font-size:34px;
+}
+
+.hero-headline{
+top:90px;
+    left:20px;
+
+}
+
+.hero-headline__line{
+    height:16px;
+}
+
+.hero-headline__text{
+    font-size:13px;
+    white-space:nowrap;
 }
 
 }
+
 /* ======================================================
    MOBILE HERO (Replace ALL old mobile media queries)
 ====================================================== */
@@ -421,7 +512,7 @@
     padding:0;
     top:0;
     left:0;
-    font-size:17px;
+    font-size:34px;
     line-height:1;
   }
 
@@ -447,13 +538,26 @@
 
   .strategy,
   .personalization{
-    font-size:16px;
+    font-size:28px;
   }
 
   .hero-demo-btn{
     bottom:28px;
     padding:12px 28px;
     font-size:14px;
+  }
+
+  .hero-headline{
+    top: 20px;
+    left: 18px;
+  
+
+  .hero-headline__text{
+    font-size:16
+  }
+
+  .hero-headline__line{
+    height:14px;
   }
 
 }
@@ -534,23 +638,7 @@
   width: 22px;
 }
 
-/* Morph into an "X" when open */
-.nav-hamburger-btn.is-open .nav-hamburger-line {
-  width: 22px;
-}
 
-.nav-hamburger-btn.is-open .nav-hamburger-line:nth-child(1) {
-  transform: translateY(8px) rotate(45deg);
-}
-
-.nav-hamburger-btn.is-open .nav-hamburger-line:nth-child(2) {
-  opacity: 0;
-  transform: scaleX(0);
-}
-
-.nav-hamburger-btn.is-open .nav-hamburger-line:nth-child(3) {
-  transform: translateY(-8px) rotate(-45deg);
-}
 
 /* ---------- Dark overlay ---------- */
 .nav-overlay {
@@ -730,14 +818,42 @@
     padding: 88px 32px 40px;
   }
 
-  .nav-panel-close {
-    top: 20px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-  }
+ .nav-panel-close {
+  position: absolute;
+  top: 32px;
+  right: 40px;
+}
 
   .nav-panel-link__label {
     font-size: 24px;
   }
+}
+.nav-hamburger-btn.is-open {
+  opacity: 0;
+  pointer-events: none;
+}
+/* FINAL HERO HEADLINE POSITION FIX */
+.hero-headline {
+  top: 120px !important;
+  left: 40px !important;
+  transform: none !important;
+  justify-content: flex-start !important;
+}
+
+.hero-headline__text {
+  font-size: 10px !important;
+}
+
+/* Mobile headline fix */
+@media (max-width:768px){
+  .hero-headline {
+    top: 80px !important;
+    left: 20px !important;
+    max-width: 90% !important;
+  }
+
+  .hero-headline__text {
+    font-size: 15px !important;
+  }
+}
 }

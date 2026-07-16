@@ -140,9 +140,9 @@ function Hero() {
   }, []);
 
   const handleBookDemo = () => {
-    const section = document.getElementById("demo");
+    const section = document.getElementById("who-we-are");
     if (section) {
-      section.scrollIntoView({ behavior: "smooth" });
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -169,6 +169,14 @@ function Hero() {
       {/* Premium hamburger nav — floats above all Hero content */}
       <NavMenu />
 
+      {/* Headline — sits above the personlyze.ai logo, left aligned, one line */}
+      <div className="hero-headline">
+        <span className="hero-headline__line" aria-hidden="true" />
+        <span className="hero-headline__text">
+          The future of marketing is not loud. Its human.
+        </span>
+      </div>
+
       <div className="hero-center">
 
         {/* Logo */}
@@ -185,6 +193,7 @@ function Hero() {
         </div>
 
         {/* Text */}
+        
         <div className="hero-right">
           <h1 className="hero-brand">
             <span className="brand-name">personlyze</span>
@@ -197,6 +206,7 @@ function Hero() {
             <span className="personalization">personalization</span>
           </div>
         </div>
+          
 
         {/* Button */}
         <button

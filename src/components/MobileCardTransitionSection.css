@@ -1,6 +1,7 @@
 /* Mobile-only styles for CardTransitionSection. Fully isolated under
    .mobile-cts. Uses 100svh via CSS + a JS-set --cts-vh fallback that
    matches the actual rendered container height (Android URL bar safe). */
+   
 .mobile-cts *,
 .mobile-cts *::before,
 .mobile-cts *::after {
@@ -15,6 +16,7 @@
   display: block;
   padding: 0;
 }
+
 /* Heading — matches Workspace typography exactly (Avenir Black, pure black,
    left aligned, same left padding of 4%). */
 .mobile-cts__heading {
@@ -106,10 +108,10 @@
   z-index: 3;
 }
 .mobile-cts__num {
-  font-family: "Avenir Light", sans-serif;
-  font-size: 14px;
+  font-family: "Avenir Black";
+  font-size: 16px;
   font-weight: 600;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.84em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.72);
 }
@@ -145,7 +147,7 @@
   letter-spacing: -0.01em;
 }
 .mobile-cts__body {
-  font-family: "Avenir Light", sans-serif;
+  font-family: "Avenir Black", sans-serif;
   font-size: 14.5px;
   font-weight: 300;
   line-height: 1.55;
@@ -170,4 +172,7 @@
 .mobile-cts__dot--active {
   background: #fff;
   transform: scale(1.35);
+}
+.mcts-card__title {
+  font-family: var(--heading) !important;
 }

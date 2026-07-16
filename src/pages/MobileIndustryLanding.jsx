@@ -15,6 +15,7 @@ import fashionVideo from "../assets/fashion.mp4";
 /* --------------------------------------------------------------------------
  * Image lookups (shared prefix map for both card photos and problem photos)
  * -------------------------------------------------------------------------- */
+
 const cardPhotos = {
   ...import.meta.glob("../card-photos/*.jpg", { eager: true, import: "default" }),
   ...import.meta.glob("../card-photos/*.png", { eager: true, import: "default" }),
@@ -129,13 +130,9 @@ function MobileIndustryLanding({
   const selectedChallenge =
     openChallengeIndex !== null ? safeChallenges[openChallengeIndex] : null;
 
-  /* Navigate home and tell the homepage which section to scroll to once it
-   * mounts. The homepage reads this from location.state (see #solutions'
-   * useEffect in App.jsx) — no manual DOM polling needed here. */
-  const handleBackToIndustries = () => {
-    navigate("/", { state: { scrollTo: "solutions" } });
-  };
-
+const handleBackToIndustries = () => {
+  navigate("/#solutions");
+};
   return (
     <div className="industry-landing industry-landing--mobile">
       {/* Hero */}
