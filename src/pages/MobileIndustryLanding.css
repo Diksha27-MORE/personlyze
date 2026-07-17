@@ -511,7 +511,7 @@
 .mobile-overlay__dots {
   position: absolute;
   left: 50%;
-  bottom: 16px;
+  bottom: 70px;
   transform: translateX(-50%);
   display: flex;
   gap: 8px;
