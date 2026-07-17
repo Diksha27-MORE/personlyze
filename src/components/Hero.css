@@ -471,6 +471,13 @@ top:90px;
     width:100%;
     margin:0;
     padding:0;
+    /* line-height:0 removes any inherited line-height whitespace around
+       the video's inline box. This is what causes the gap to appear
+       differently between `npm run dev` and a production build — the
+       video is a replaced inline element sitting on a text baseline,
+       and how much space that reserves below it depends on inherited
+       font metrics that can shift with CSS bundling/minification. */
+    line-height:0;
   }
 
   .hero-logo-video{
@@ -486,6 +493,14 @@ top:90px;
     margin:0;
     padding:0;
     transform:none;
+    /* display:block + vertical-align:top take the video out of inline
+       baseline flow entirely, so it no longer reserves the extra
+       "descender" whitespace below it. This is the actual fix for the
+       dev-vs-deployed gap: inline replaced elements (video/img) get
+       baseline spacing that varies with build/minification order,
+       block-level ones don't. */
+    display:block;
+    vertical-align:top;
   }
 
   /* ---------- TEXT ---------- */
@@ -496,7 +511,11 @@ top:90px;
     flex-direction:column;
     align-items:center;
     justify-content:center;
-    margin-top:8px;      /* Small gap after logo */
+    /* Reduced/negative so the text sits tight against the logo now that
+       the video's inline baseline whitespace has been removed above.
+       Adjust this single value if you want more or less breathing room
+       — tagline/button spacing below is untouched and stays consistent. */
+    margin-top:-8px;
     padding:0;
     transform:none;
     text-align:center;
