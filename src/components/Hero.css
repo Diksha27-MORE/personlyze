@@ -474,11 +474,15 @@ top:90px;
   }
 
   .hero-logo-video{
-    /* Reduced from 500px (which exceeded most phone screens and pushed
-       everything below it further down the page) back to a size that
-       fits comfortably above the fold. */
-    width:280px;
-    max-width:80vw;
+    /* Sized by HEIGHT (not width) so the video keeps its native aspect
+       ratio with no cropping/stretching, while occupying roughly the
+       top half of the mobile hero (~45-50% of viewport height).
+       max-width is a safety fallback for unusually wide aspect ratios
+       on narrow phones. */
+    width: auto;
+    height: 48svh;
+    max-width: 92vw;
+    max-height: 48svh;
     margin:0;
     padding:0;
     transform:none;
@@ -569,7 +573,12 @@ top:90px;
   }
 
   .hero-logo-video{
-    width:220px;
+    /* Slightly reduced from the base mobile size to keep smaller phones
+       balanced, still height-driven to preserve aspect ratio. */
+    height:44svh;
+    max-height:44svh;
+    width:auto;
+    max-width:92vw;
   }
 
 }
@@ -581,7 +590,12 @@ top:90px;
 @media (max-width:768px) and (max-height:700px){
 
   .hero-logo-video{
-    width:200px;
+    /* Still height-driven for aspect-ratio safety, but scaled down
+       further since the viewport itself is short. */
+    height:34svh;
+    max-height:34svh;
+    width:auto;
+    max-width:80vw;
   }
 
   .hero-right{
