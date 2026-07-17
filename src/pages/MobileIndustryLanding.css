@@ -21,9 +21,6 @@
   font-size: 2rem;
   font-weight: 700;
 }
-/* ---------- "Back to Industries" button — pinned to the hero video's
-   top-left corner. It's positioned relative to .industry-hero (not the
-   viewport), so it scrolls away together with the hero. ------------------- */
 .industry-back-button {
   position: absolute;
   top: max(16px, env(safe-area-inset-top));
@@ -66,9 +63,6 @@
     padding: 10px;
   }
 }
-/* ==========================================================================
-   Hero (base — shared with desktop; mobile-specific overrides below)
-   ========================================================================== */
 .industry-hero {
   width: 100%;
   display: flex;
@@ -114,11 +108,7 @@
   max-width: 640px;
   line-height: 1.5;
 }
-/* ==========================================================================
-   MOBILE (max-width: 768px)
-   ========================================================================== */
 @media (max-width: 768px) {
-  /* Compact mobile hero */
   .industry-landing--mobile .industry-hero {
     padding: 72px 20px 32px;
   }
@@ -134,7 +124,6 @@
     opacity: 0.88;
   }
 }
-/* ---------- Mobile: challenge image cards, any number, stacked ----------- */
 .industry-landing--mobile .mobile-challenges {
   width: 100%;
   padding: 24px 18px 48px;
@@ -220,7 +209,6 @@
   color: #ffffff;
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
 }
-/* ---------- Fullscreen Instagram-style overlay --------------------------- */
 .mobile-overlay {
   position: fixed;
   inset: 0;
@@ -295,7 +283,6 @@
   padding: 8px 8px 30px;
   box-sizing: border-box;
 }
-/* ---------- Previous / Next navigation ------------------------------------ */
 .mobile-overlay__nav {
   position: absolute;
   top: 50%;
@@ -324,11 +311,6 @@
 .mobile-overlay__nav--next {
   right: 10px;
 }
-/* ==========================================================================
-   Card (base — shared with desktop; mobile reuses .industry-card and layers
-   .industry-card--mobile on top via the same JSX class list. Duplicated
-   here, not deleted, so the mobile overlay renders identically standalone.
-   ========================================================================== */
 .industry-card {
   position: relative;
   width: 100%;
@@ -408,8 +390,6 @@
   background: rgba(255, 255, 255, 0.5);
   border-radius: 4px;
 }
-/* ---- shared (non-mobile-specific) label/title/text, kept in sync with
-   the desktop rules above for consistency when this file renders standalone */
 .industry-card__detail-label {
   font-family: "Avenir Regular", var(--body);
   display: inline-block;
@@ -444,13 +424,10 @@
 .industry-card__detail {
   z-index: 1;
 }
-/* Reuse desktop .industry-card look — mobile overrides sizing + typography.
-   Mobile cards show their full detail (background, overlay, title,
-   description) immediately — there is no placeholder / reveal step. */
 .industry-card--mobile {
   width: 100%;
   max-width: 520px;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 50px);
   border-radius: 24px;
   overflow: hidden;
   background-color: #ffffff;
@@ -461,8 +438,6 @@
   background: rgba(0, 0, 0, 0.42);
   z-index: 1;
 }
-/* ---- Detail is always visible on mobile: heading always top, body large
-   and consistent, must fit within one viewport (no scroll). ---- */
 .industry-card--mobile .industry-card__detail {
   position: absolute;
   inset: 0;
@@ -494,7 +469,6 @@
   display: flex;
   align-items: center;
 }
-/* Video card: only thumbnail + play icon, no text at all */
 .industry-card--video .industry-card__detail {
   display: none !important;
 }
@@ -507,11 +481,10 @@
   z-index: 2;
   pointer-events: none;
 }
-/* Pagination dots */
 .mobile-overlay__dots {
   position: absolute;
   left: 50%;
-  bottom: 70px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   display: flex;
   gap: 8px;
