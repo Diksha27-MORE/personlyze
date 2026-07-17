@@ -209,6 +209,25 @@
   color: #ffffff;
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
 }
+
+/* ==========================================================================
+ * OVERLAY / CAROUSEL
+ *
+ * PRODUCTION MOBILE FIX:
+ * The sheet and each card used `100vh`, which on real mobile browsers is
+ * the viewport height WITHOUT the address bar (largest possible viewport).
+ * On a real phone with the address bar visible, the sheet was taller than
+ * the visible area, and the dots — positioned at the sheet's bottom —
+ * ended up below the visible viewport, hidden by the address bar / home
+ * indicator. Desktop mobile emulators don't have a real address bar, so
+ * the bug never shows up in `npm run dev`.
+ *
+ * Fix: size the sheet and card to `100dvh` (dynamic viewport height, which
+ * shrinks when the address bar is visible) with `100vh` as fallback, pin
+ * the dots to the actual visible viewport with `position: fixed`, and
+ * respect `env(safe-area-inset-bottom)` for the iOS home indicator. Card
+ * height is reduced enough to guarantee dots clearance on every phone.
+ * ========================================================================== */
 .mobile-overlay {
   position: fixed;
   inset: 0;
@@ -230,7 +249,9 @@
   right: 0;
   bottom: 0;
   width: 100%;
+  /* Fallback for older browsers, then dvh for real mobile. */
   height: calc(100vh - 20px);
+  height: calc(100dvh - 20px);
   background: transparent;
   display: flex;
   flex-direction: column;
@@ -267,6 +288,10 @@
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  /* Reserve room at the bottom of the track for the dots + safe area,
+     so the card never overlaps the dots on any device. */
+  padding-bottom: calc(44px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
 }
 .mobile-overlay__track::-webkit-scrollbar {
   display: none;
@@ -280,11 +305,11 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 8px 8px 30px;
+  padding: 8px 8px 8px;
   box-sizing: border-box;
 }
 .mobile-overlay__nav {
-  position: absolute;
+  position: fixed;
   top: 50%;
   transform: translateY(-50%);
   z-index: 5;
@@ -427,7 +452,9 @@
 .industry-card--mobile {
   width: 100%;
   max-width: 520px;
-  height: calc(100vh - 50px);
+  /* Fill the slide (which already reserves space for dots + safe area
+     via the track's padding-bottom), instead of measuring 100vh directly. */
+  height: 100%;
   border-radius: 24px;
   overflow: hidden;
   background-color: #ffffff;
@@ -481,14 +508,23 @@
   z-index: 2;
   pointer-events: none;
 }
+
+/* Pin dots to the real visible viewport, not to the (too-tall) sheet.
+   `position: fixed` + `bottom: env(safe-area-inset-bottom)` keeps them
+   above the iOS home indicator and always inside the visible area,
+   even while the address bar is showing. */
 .mobile-overlay__dots {
-  position: absolute;
+  position: fixed;
   left: 50%;
-  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   display: flex;
   gap: 8px;
-  z-index: 5;
+  z-index: 10;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(6px);
 }
 .mobile-overlay__dot {
   width: 7px;
@@ -497,7 +533,7 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.55);
   transition: all 0.3s ease;
 }
 .mobile-overlay__dot.is-active {
