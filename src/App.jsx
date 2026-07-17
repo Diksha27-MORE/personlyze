@@ -35,6 +35,22 @@ function HomePage() {
     No opacity toggling, no hidden state, no black flash — the page
     stays mounted and visible the entire time. We just make sure the
     very first paint after navigation already lands in the right place.
+
+    PRODUCTION FIX:
+    In dev, all modules/assets are already in memory, so the target
+    section is present and laid out within a single animation frame.
+    In a deployed build, JS chunks, web fonts, and images can still be
+    loading when this effect first runs, so `#solutions` may not exist
+    yet (or may not have its final offsetTop) on the very next frame.
+    A single requestAnimationFrame retry isn't reliably enough time in
+    that case, so the scroll silently no-ops and the user is left on
+    the Hero section — i.e. it looks like "Back to Industries" sent
+    them to Home instead of Industries.
+
+    Fix: poll with requestAnimationFrame until the element exists AND
+    its offsetTop has stabilized across two consecutive frames (i.e.
+    layout has settled), then scroll. Bounded by a max attempt count
+    so it can't loop forever if something is truly missing.
   */
   useLayoutEffect(() => {
 
@@ -42,37 +58,55 @@ function HomePage() {
 
     isRestoringScroll.current = true;
 
-    const scrollToSolutions = () => {
+    let rafId = null;
+    let attempts = 0;
+    let lastOffsetTop = null;
+
+    const MAX_ATTEMPTS = 90; // ~1.5s at 60fps ceiling, plenty for chunk/font load
+
+    const attemptScroll = () => {
+
+      attempts += 1;
 
       const section = document.getElementById("solutions");
 
       if (section) {
+
+        const currentOffsetTop = section.offsetTop;
+        const stable = lastOffsetTop === currentOffsetTop;
+
         // "auto" = instant, no animation, no flash
         window.scrollTo({
-          top: section.offsetTop,
+          top: currentOffsetTop,
           left: 0,
           behavior: "auto",
         });
+
+        if (stable || attempts >= MAX_ATTEMPTS) {
+          isRestoringScroll.current = false;
+          return;
+        }
+
+        lastOffsetTop = currentOffsetTop;
+
+      } else if (attempts >= MAX_ATTEMPTS) {
+        // Gave up — element genuinely never appeared.
+        isRestoringScroll.current = false;
+        return;
       }
+
+      rafId = requestAnimationFrame(attemptScroll);
 
     };
 
     // Runs synchronously, before the browser paints this commit.
     // This is what actually kills the flash — by the time the user
-    // sees anything, we're already scrolled to the right spot.
-    scrollToSolutions();
-
-    // Safety net: if fonts/images haven't finished laying out yet,
-    // offsetTop can be slightly off. Re-check on the next frame.
-    // Because the page is already visible and roughly in the right
-    // place, any correction here is a tiny nudge, not a blank flash.
-    const rafId = requestAnimationFrame(() => {
-      scrollToSolutions();
-      isRestoringScroll.current = false;
-    });
+    // sees anything, we're already scrolled to the right spot (or as
+    // close as we can get before the polling loop settles).
+    attemptScroll();
 
     return () => {
-      cancelAnimationFrame(rafId);
+      if (rafId !== null) cancelAnimationFrame(rafId);
       isRestoringScroll.current = false;
     };
 

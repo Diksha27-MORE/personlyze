@@ -226,7 +226,21 @@ function MobileChallengeOverlay({ slug, cards, cardNumberOffset, originEl, onClo
   useLayoutEffect(() => {
     const scrim = scrimRef.current;
     const sheet = sheetRef.current;
+    const track = trackRef.current;
     if (!sheet || !scrim) return;
+
+    // Force a synchronous layout flush of the scroll-snap track BEFORE GSAP
+    // applies any transform to its ancestor (the sheet). Each slide is
+    // `flex: 0 0 100%` inside `.mobile-overlay__track` (overflow-x: auto +
+    // scroll-snap-type: x mandatory). On first mount, mobile WebKit/Chrome
+    // can compute those slide widths while the sheet is mid-transform,
+    // collapsing every slide to ~0 width — the cards are in the DOM but
+    // never painted. Reading offsetWidth here forces the browser to resolve
+    // layout at the track's real (untransformed) size first, which fixes
+    // the "cards missing on first open, fine on reopen" symptom without
+    // touching the animation, timing, or design in any way.
+    if (track) void track.offsetWidth;
+
     const ctx = gsap.context(() => {
       const originRect = originEl?.getBoundingClientRect();
       const vw = window.innerWidth;
@@ -293,6 +307,22 @@ function MobileChallengeOverlay({ slug, cards, cardNumberOffset, originEl, onClo
 
   const handlePrev = () => goToSlide(activeIndex - 1);
   const handleNext = () => goToSlide(activeIndex + 1);
+
+  /* Auto-advance: Card 1 -> 2 -> ... -> last -> Card 1, every 5s.
+   * Reuses goToSlide() (same fn used by the next arrow / dots) so the
+   * scroll animation is identical to a manual advance.
+   * Restarts whenever activeIndex changes (manual prev/next/dot/swipe all
+   * update activeIndex via handleScroll), which resets the 5s timer.
+   * Cleared on unmount, i.e. when the challenge overlay is closed. */
+  useEffect(() => {
+    if (!cards || cards.length <= 1) return undefined;
+
+    const timer = setTimeout(() => {
+      goToSlide((activeIndex + 1) % cards.length);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [activeIndex, cards.length]);
 
   /* Lock body scroll while open */
   useEffect(() => {

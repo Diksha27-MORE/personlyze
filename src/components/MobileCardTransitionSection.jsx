@@ -336,14 +336,14 @@ export default function MobileCardTransitionSection() {
 
 .mcts-card__num {
   font-family: "Avenir Black";
-  font-size: 28px;   /* yaha size increase karo */
+  font-size: 30px;   /* yaha size increase karo */
   font-weight: 900;
   letter-spacing: 0.12em;
   opacity: 0.9;
 }
         .mcts-card__title {
           margin: 0;
-          font-size: clamp(2rem, 9vw, 3.25rem);
+          font-size: clamp(2.8rem, 10vw, 3.25rem);
           font-weight: 800;
           line-height: 1.05;
           letter-spacing: -0.02em;

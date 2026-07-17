@@ -414,7 +414,13 @@ top:90px;
   .hero{
     position:relative;
     width:100%;
+    /* Fallback for browsers without dvh/svh support */
     height:100vh;
+    /* Small Viewport Height: excludes the mobile browser's address bar
+       (unlike 100vh, which can be taller than what's actually visible
+       until the user scrolls). This is what keeps the "Know More"
+       button inside the first screen on load, with no scroll needed. */
+    height:100svh;
     overflow:hidden;
     display:flex;
     justify-content:center;
@@ -450,7 +456,10 @@ top:90px;
     justify-content:center;
     align-items:center;
 
-    padding:0 20px;
+    /* Extra bottom padding reserves room for the absolutely-positioned
+       button so tagline text never gets crowded against it on shorter
+       screens. */
+    padding:0 20px 90px;
   }
 
   /* ---------- LOGO ---------- */
@@ -465,8 +474,11 @@ top:90px;
   }
 
   .hero-logo-video{
-  width:500px;      /* 190px -> 280px */
-    max-width:100vw;
+    /* Reduced from 500px (which exceeded most phone screens and pushed
+       everything below it further down the page) back to a size that
+       fits comfortably above the fold. */
+    width:280px;
+    max-width:80vw;
     margin:0;
     padding:0;
     transform:none;
@@ -532,10 +544,6 @@ top:90px;
 
 @media (max-width:480px){
 
-
-
-
-
   .strategy,
   .personalization{
     font-size:28px;
@@ -550,14 +558,43 @@ top:90px;
   .hero-headline{
     top: 20px;
     left: 18px;
-  
+  }
 
   .hero-headline__text{
-    font-size:16
+    font-size:16px;
   }
 
   .hero-headline__line{
     height:14px;
+  }
+
+  .hero-logo-video{
+    width:220px;
+  }
+
+}
+
+/* Extra safeguard for short mobile viewports (e.g. phones in landscape,
+   or small-height devices) so the logo + text stack never pushes the
+   "Know More" button out of view. Scoped to mobile widths only, so
+   desktop/tablet are unaffected. */
+@media (max-width:768px) and (max-height:700px){
+
+  .hero-logo-video{
+    width:200px;
+  }
+
+  .hero-right{
+    margin-top:4px;
+  }
+
+  .hero-tagline{
+    margin-top:2px;
+  }
+
+  .hero-demo-btn{
+    bottom:16px;
+    padding:12px 30px;
   }
 
 }
@@ -855,5 +892,4 @@ top:90px;
   .hero-headline__text {
     font-size: 15px !important;
   }
-}
 }
