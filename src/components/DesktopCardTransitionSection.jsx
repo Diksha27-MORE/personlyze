@@ -62,34 +62,54 @@ const SECTION_HEIGHT = "700vh";
 const CARDS = [
   {
     num: "01",
-    label: "STRATEGY",
-    bottom:
-      "Because everything in business must begin with strategy.\nAnd everything in strategy must begin with the consumer.",
+    title: "STRATEGY",
     desc: [
-      { heading: "Build Consumer Personas", body: "Bringing the customer alive through rich customer profiles that go beyond demographics—capturing motivations, behaviours, anxieties and aspirations." },
-      { heading: "Craft Consumer Decision Journeys", body: "Mapping every touchpoint, trigger and barrier from discovery to purchase, so you know exactly what to say, when to say it and where it matters most." },
-      { heading: "Identify High-Impact Personalization Opportunities", body: "Finding the moments where personalization creates the biggest impact on conversion, loyalty and advocacy, helping prioritize creative, budget and technology investments." },
+      {
+        heading: "Build Consumer Personas",
+        body: "Bringing the customer alive through rich profiles that go beyond demographics by capturing motivations, behaviours, anxieties and aspirations.",
+      },
+      {
+        heading: "Craft Consumer Decision Journeys",
+        body: "Mapping every touchpoint, trigger and barrier from discovery to purchase so that you know exactly what to say, when to say it and where it matters the most.",
+      },
+      {
+        heading: "Identify High-Impact Personalization Opportunities",
+        body: "Finding the moments where personalization creates the biggest impact on conversion, loyalty and advocacy and helps in prioritizing creative, budget and technology investments.",
+      },
     ],
   },
+
   {
     num: "02",
-    label: "DESIGN",
-    bottom:
-      "Strategy tells us what to say. Creative shows us how to say it.\nSo that it's relevant, grabs attention, and makes us do something..",
+    title: "DESIGN",
     desc: [
-      { heading: "Create Content Frameworks", body: "Design the narrative, script, tone of voice, visual language and storytelling structure that makes every personalized video feel authentic and memorable." },
-      { heading: "Produce Video Assets", body: "End-to-end production—from planning and filming to editing—creating premium video assets that are both brand-ready and AI-ready for personalization." },
+      {
+        heading: "Create Content Frameworks",
+        body: "Design the narrative, script, tone of voice, visual language and storytelling structure that makes every personalized video feel authentic and memorable.",
+      },
+      {
+        heading: "Produce Video Assets",
+        body: "End-to-end production from planning and filming to editing in order to create premium video assets that are both brand-ready and AI-ready for personalization.",
+      },
     ],
   },
+
   {
     num: "03",
-    label: "ARTIFICIAL\nINTELLIGENCE",
-    bottom:
-      "Personalized videos, at a scale no human team could achieve alone.\nTo get you millions of conversations, happening simultaneously.",
+    title: "ARTIFICIAL\nINTELLIGENCE",
     desc: [
-      { heading: "Create Hyper-Personalized Videos", body: "Using customer data, our AI creates a unique video for every individual while keeping your brand story consistent across every interaction." },
-      { heading: "Deploy to Marketing Channels", body: "Automatically deliver personalized videos across your existing marketing platforms, ensuring every customer receives the right message at the right moment." },
-      { heading: "Measure, Review & Calibrate", body: "Continuously monitor performance, optimize campaigns and improve results in real time, making every future interaction smarter than the last." },
+      {
+        heading: "Create Hyper-Personalized Videos",
+        body: "Using customer data, our AI creates a unique video for every individual while keeping your brand story consistent across every interaction.",
+      },
+      {
+        heading: "Deploy to Marketing Channels",
+        body: "Automatically deliver personalized videos across your existing marketing platforms, ensuring every customer receives the right message at the right moment.",
+      },
+      {
+        heading: "Measure, Review & Calibrate",
+        body: "Continuously monitor performance, optimize campaigns and improve results in real time - making every future interaction smarter than the last.",
+      },
     ],
   },
 ];

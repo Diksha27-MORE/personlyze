@@ -163,6 +163,105 @@
   transform: scale(0.98);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
+
+/* --------------------------------------------------------------------------
+ * GLASS ARROW INDICATOR
+ *
+ * A quiet "this opens" affordance: a small glassmorphic circle sitting
+ * below the problem copy, with a hairline arrow inside. No text, no
+ * tutorial-style callout — just a refined, softly-floating glass chip
+ * that reads as a native product detail (Apple/Linear/Vercel register),
+ * not a UI hint. The glow lives on its own pseudo-element so it can
+ * pulse independently of the float, without the box-shadow interpolation
+ * fighting the transform. Each card staggers its motion slightly via
+ * `--card-index` (set inline per card) so the row never moves in lockstep.
+ * -------------------------------------------------------------------------- */
+.mobile-challenge-card__indicator {
+  position: relative;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  margin-top: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.06);
+  animation: glass-indicator-float 4.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  animation-delay: calc(var(--card-index, 0) * 260ms);
+  pointer-events: none;
+}
+.mobile-challenge-card__indicator::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.32) 0%,
+    rgba(255, 255, 255, 0) 72%
+  );
+  filter: blur(5px);
+  z-index: -1;
+  animation: glass-indicator-glow 4.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  animation-delay: calc(var(--card-index, 0) * 260ms);
+}
+.mobile-challenge-card__indicator-icon {
+  width: 13px;
+  height: 13px;
+  color: #ffffff;
+  opacity: 0.92;
+}
+.mobile-challenge-card--blank .mobile-challenge-card__indicator {
+  background: rgba(19, 18, 18, 0.04);
+  border: 1px solid rgba(19, 18, 18, 0.14);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.03);
+}
+.mobile-challenge-card--blank .mobile-challenge-card__indicator::before {
+  background: radial-gradient(
+    circle,
+    rgba(19, 18, 18, 0.1) 0%,
+    rgba(19, 18, 18, 0) 72%
+  );
+}
+.mobile-challenge-card--blank .mobile-challenge-card__indicator-icon {
+  color: #131212;
+  opacity: 0.7;
+}
+
+@keyframes glass-indicator-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes glass-indicator-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-challenge-card__indicator,
+  .mobile-challenge-card__indicator::before {
+    animation: none;
+  }
+}
 .mobile-challenge-card__overlay {
   position: absolute;
   inset: 0;

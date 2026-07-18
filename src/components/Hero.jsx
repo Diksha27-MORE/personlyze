@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
-import "./Hero.css";
+import { useState, useEffect, useRef } from "react";
+import "./Hero.desktop.css";
+import "./Hero.mobile.css";
 import backgroundVideo from "../assets/hero-video.mp4";
 import mobileHeroVideo from "../assets/hero-mobile.mp4";
 import LogoAnimation from "../assets/Logo animation new.webm";
+import logoStatic from "../assets/logo.png";
 
 const NAV_ITEMS = [
   { label: "Who We Are", id: "who-we-are" },
@@ -12,7 +14,12 @@ const NAV_ITEMS = [
   { label: "Connect With Us", id: "contact" },
 ];
 
-function NavMenu() {
+function getIsMobile() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(max-width: 768px)").matches;
+}
+
+function NavMenu({ revealed }) {
   const [isOpen, setIsOpen] = useState(false);
 
   // Lock body scroll while the menu is open
@@ -30,7 +37,6 @@ function NavMenu() {
       document.body.style.width = "";
       window.scrollTo(0, parseInt(scrollY, 10));
     }
-
     return () => {
       document.body.style.position = "";
       document.body.style.top = "";
@@ -49,8 +55,6 @@ function NavMenu() {
 
   const handleNavClick = (id) => {
     setIsOpen(false);
-    // Wait for the panel to start closing before scrolling so the
-    // transition feels smooth rather than an abrupt cut.
     setTimeout(() => {
       document.getElementById(id)?.scrollIntoView({
         behavior: "smooth",
@@ -63,7 +67,7 @@ function NavMenu() {
     <>
       {/* Hamburger trigger button */}
       <button
-        className={`nav-hamburger-btn ${isOpen ? "is-open" : ""}`}
+        className={`nav-hamburger-btn reveal-item ${revealed ? "is-revealed" : ""} ${isOpen ? "is-open" : ""}`}
         onClick={() => setIsOpen((prev) => !prev)}
         aria-label={isOpen ? "Close menu" : "Open menu"}
         aria-expanded={isOpen}
@@ -92,7 +96,6 @@ function NavMenu() {
         >
           &times;
         </button>
-
         <ul className="nav-panel-list">
           {NAV_ITEMS.map((item, index) => (
             <li
@@ -112,7 +115,6 @@ function NavMenu() {
             </li>
           ))}
         </ul>
-
         <div className="nav-panel-footer">
           <span className="nav-panel-footer__brand">personlyze.ai</span>
         </div>
@@ -122,36 +124,68 @@ function NavMenu() {
 }
 
 function Hero() {
-  const [isMobile, setIsMobile] = useState(false);
+  // Resolve synchronously so the correct source is picked before first paint —
+  // avoids ever mounting the desktop video on a mobile device.
+  const [isMobile, setIsMobile] = useState(getIsMobile);
+  const [showIntro, setShowIntro] = useState(true);
+  const [introStep, setIntroStep] = useState(0); // 0 hidden, 1 first line, 2 both, 3 fading out
+  const [revealed, setRevealed] = useState(false);
+  const videoRef = useRef(null);
 
   useEffect(() => {
-    const checkScreen = () => {
-      setIsMobile(window.matchMedia("(max-width: 768px)").matches);
-    };
-
-    checkScreen(); // Run once on page load
-
     const mediaQuery = window.matchMedia("(max-width: 768px)");
+    const checkScreen = () => setIsMobile(mediaQuery.matches);
+    checkScreen();
     mediaQuery.addEventListener("change", checkScreen);
+    return () => mediaQuery.removeEventListener("change", checkScreen);
+  }, []);
+
+  // Ensure the <video> element actually reloads when the source changes
+  // (mobile <-> desktop), since updating a <source> src alone won't do it.
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.load();
+      videoRef.current.play().catch(() => {});
+    }
+  }, [isMobile]);
+
+  // Intro cinematic sequence
+  // 1) "The future of marketing is not loud." holds ~3s
+  // 2) "It's human." appears, both lines hold together ~1.5s
+  // 3) Smooth fade out
+  // 4) Hero content reveals only after the fade completes
+  useEffect(() => {
+    const LINE1_APPEAR = 100;     // line 1 fades in
+    const LINE1_HOLD = 3000;      // line 1 holds alone for ~3s
+    const BOTH_HOLD = 1500;       // both lines hold together for ~1.5s
+    const FADE_OUT = 800;         // smooth fade out duration
+
+    const t1 = setTimeout(() => setIntroStep(1), LINE1_APPEAR);
+    const t2 = setTimeout(() => setIntroStep(2), LINE1_APPEAR + LINE1_HOLD);
+    const t3 = setTimeout(
+      () => setIntroStep(3),
+      LINE1_APPEAR + LINE1_HOLD + BOTH_HOLD
+    );
+    const t4 = setTimeout(() => {
+      setShowIntro(false);
+      setRevealed(true);
+    }, LINE1_APPEAR + LINE1_HOLD + BOTH_HOLD + FADE_OUT);
 
     return () => {
-      mediaQuery.removeEventListener("change", checkScreen);
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4);
     };
   }, []);
 
   const handleBookDemo = () => {
     const section = document.getElementById("who-we-are");
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
-    <section className="hero">
-
-      {/* Background Video */}
+    <section className={`hero ${revealed ? "is-revealed" : "is-intro"}`}>
+      {/* Background Video — mobile gets hero-mobile.mp4 only, desktop gets hero-video.mp4 only */}
       <video
-        key={isMobile ? "mobile" : "desktop"}
+        ref={videoRef}
         className="hero-video"
         autoPlay
         muted
@@ -163,60 +197,66 @@ function Hero() {
           type="video/mp4"
         />
       </video>
-
       <div className="overlay"></div>
 
-      {/* Premium hamburger nav — floats above all Hero content */}
-      <NavMenu />
+      {/* Cinematic intro overlay */}
+      {showIntro && (
+        <div className={`hero-intro step-${introStep}`}>
+          <div className="hero-intro__inner">
+            <p className="hero-intro__line hero-intro__line--1">
+              The future of marketing<br />is not loud.
+            </p>
+            <p className="hero-intro__line hero-intro__line--2">
+              It's human.
+            </p>
+          </div>
+        </div>
+      )}
 
-      {/* Headline — sits above the personlyze.ai logo, left aligned, one line */}
-      <div className="hero-headline">
-        <span className="hero-headline__line" aria-hidden="true" />
-        <span className="hero-headline__text">
-          The future of marketing is not loud. Its human.
-        </span>
-      </div>
+      {/* Premium hamburger nav */}
+      <NavMenu revealed={revealed} />
 
       <div className="hero-center">
-
-        {/* Logo */}
-        <div className="hero-left">
-          <video
-            className="hero-logo-video"
-            autoPlay
-            loop
-            muted
-            playsInline
-          >
-            <source src={LogoAnimation} type="video/webm" />
-          </video>
+        {/* Logo — static image on mobile, animated webm on desktop only */}
+        <div className={`hero-left reveal-item ${revealed ? "is-revealed" : ""}`}>
+          {isMobile ? (
+            <img
+              className="hero-logo-image"
+              src={logoStatic}
+              alt="personlyze.ai logo"
+            />
+          ) : (
+            <video
+              className="hero-logo-video"
+              autoPlay
+              loop
+              muted
+              playsInline
+            >
+              <source src={LogoAnimation} type="video/webm" />
+            </video>
+          )}
         </div>
-
         {/* Text */}
-        
-        <div className="hero-right">
+        <div className={`hero-right reveal-item ${revealed ? "is-revealed" : ""}`}>
           <h1 className="hero-brand">
             <span className="brand-name">personlyze</span>
             <span className="brand-dot">.</span>
             <span className="brand-ai">ai</span>
           </h1>
-
           <div className="hero-tagline">
             <span className="strategy">strategy-first</span>
             <span className="personalization">personalization</span>
           </div>
         </div>
-          
-
         {/* Button */}
         <button
-          className="hero-demo-btn"
+          className={`hero-demo-btn reveal-item ${revealed ? "is-revealed" : ""}`}
           onClick={handleBookDemo}
         >
           <span className="hero-demo-btn__label">Know More</span>
           <span className="hero-demo-btn__arrow">↓</span>
         </button>
-
       </div>
     </section>
   );

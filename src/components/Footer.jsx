@@ -5,16 +5,13 @@ export default function Footer() {
   const handleBookDemo = () => {
     const phone = "919819104471";
 
-    const message = encodeURIComponent(`Hi Personlyze Team,
-
-I'd like to book a demo of Personlyze.
+    const message = encodeURIComponent(` Hi, I'd like to book a demo of Personlyze AI for my business. 
+Details below.
 
 Name:
 Company:
 Website:
-Email:
-
-Looking forward to connecting!`);
+Email`);
 
     window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
   };

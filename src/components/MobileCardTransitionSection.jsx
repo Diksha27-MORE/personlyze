@@ -2,6 +2,8 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+import "./MobileCardTransitionSection.css";
+
 import strategicImg from "../assets/Strategic.png";
 import creativeImg from "../assets/Creative.png";
 import aiImg from "../assets/AI.png";
@@ -19,18 +21,19 @@ const CARDS = [
     desc: [
       {
         heading: "Build Consumer Personas",
-        body: "Bringing the customer alive through rich customer profiles that go beyond demographics—capturing motivations, behaviours, anxieties and aspirations.",
+        body: "Bringing the customer alive through rich profiles that go beyond demographics by capturing motivations, behaviours, anxieties and aspirations.",
       },
       {
         heading: "Craft Consumer Decision Journeys",
-        body: "Mapping every touchpoint, trigger and barrier from discovery to purchase, so you know exactly what to say, when to say it and where it matters most.",
+        body: "Mapping every touchpoint, trigger and barrier from discovery to purchase so that you know exactly what to say, when to say it and where it matters the most.",
       },
       {
         heading: "Identify High-Impact Personalization Opportunities",
-        body: "Finding the moments where personalization creates the biggest impact on conversion, loyalty and advocacy, helping prioritize creative, budget and technology investments.",
+        body: "Finding the moments where personalization creates the biggest impact on conversion, loyalty and advocacy and helps in prioritizing creative, budget and technology investments.",
       },
     ],
   },
+
   {
     num: "02",
     title: "DESIGN",
@@ -41,10 +44,11 @@ const CARDS = [
       },
       {
         heading: "Produce Video Assets",
-        body: "End-to-end production—from planning and filming to editing—creating premium video assets that are both brand-ready and AI-ready for personalization.",
+        body: "End-to-end production from planning and filming to editing in order to create premium video assets that are both brand-ready and AI-ready for personalization.",
       },
     ],
   },
+
   {
     num: "03",
     title: "ARTIFICIAL\nINTELLIGENCE",
@@ -59,7 +63,7 @@ const CARDS = [
       },
       {
         heading: "Measure, Review & Calibrate",
-        body: "Continuously monitor performance, optimize campaigns and improve results in real time, making every future interaction smarter than the last.",
+        body: "Continuously monitor performance, optimize campaigns and improve results in real time - making every future interaction smarter than the last.",
       },
     ],
   },
@@ -76,6 +80,13 @@ const perCardScroll = (c) => 0.45 + c.desc.length * 0.35 + 0.2;// in "screens"
 // (≈2% of one viewport height), that's roughly 15px on an 800px-tall
 // viewport — a quick, smooth nudge, not a dedicated intro screen.
 const HEADLINE_EXIT_SCREENS = 0.01;
+// Small bottom preview shown for the first card before any scrolling
+// happens — a rounded square peeking up from the bottom, image only, no
+// text. These are the only new visual values introduced; everything else
+// (typography, spacing, other cards) is untouched.
+const PREVIEW_SIZE = 96; // px, square
+const PREVIEW_BOTTOM = 160; // px from the bottom edge — raised closer to the heading
+const PREVIEW_RADIUS = 20; // px corner rounding
 const totalScreens =
   HEADLINE_EXIT_SCREENS + CARDS.reduce((a, c) => a + perCardScroll(c), 0);
 const SECTION_HEIGHT = `${Math.round(totalScreens * 100)}vh`;
@@ -121,11 +132,32 @@ export default function MobileCardTransitionSection() {
 
         cardRefs.current.forEach((el, i) => {
           if (!el) return;
-          gsap.set(el, {
-            opacity: 0,
-            y: 40,
-            zIndex: 10 + i,
-          });
+          if (i === 0) {
+            // First card starts as a small rounded-square preview of just
+            // the background image, sitting near the bottom of the screen
+            // — no text/number visible yet. top stays 'auto' throughout so
+            // it never fights with the explicit bottom/height values.
+            gsap.set(el, {
+              opacity: 1,
+              top: "auto",
+              right: "auto",
+              left: "50%",
+              xPercent: -50,
+              bottom: PREVIEW_BOTTOM,
+              width: PREVIEW_SIZE,
+              height: PREVIEW_SIZE,
+              borderRadius: PREVIEW_RADIUS,
+              zIndex: 10 + i,
+            });
+            const topEl = el.querySelector(".mcts-card__top");
+            if (topEl) gsap.set(topEl, { opacity: 0 });
+          } else {
+            gsap.set(el, {
+              opacity: 0,
+              y: 40,
+              zIndex: 10 + i,
+            });
+          }
         });
 
         descWrapRefs.current.forEach((el) => {
@@ -174,15 +206,62 @@ export default function MobileCardTransitionSection() {
         const descWrap = descWrapRefs.current[i];
         const sections = descSectionRefs.current[i] || [];
 
+        // The first card starts already visible as a small preview (set in
+        // applyInitial above), so there's nothing to fade in from blank —
+        // it just needs to scale up to fullscreen within the first ~20-30px
+        // of scroll. Later cards keep their original fade-in pace
+        // (unchanged).
+        const heroInDuration = i === 0 ? 0.06 : 0.55;
+        const descInDelay = i === 0 ? 0.02 : 0.2;
+
         // Hero card in
         if (cardEl) {
-          tl.to(cardEl, { opacity: 1, y: 0, duration: 0.55, ease: E_OUT }, t);
+          if (i === 0) {
+            // Expand the small square preview into the fullscreen card.
+            tl.to(
+              cardEl,
+              {
+                left: 0,
+                xPercent: 0,
+                bottom: 0,
+                width: "100%",
+                height: "100%",
+                borderRadius: 0,
+                duration: heroInDuration,
+                ease: E_OUT,
+              },
+              t
+            );
+            // Reveal the number/title only once the card is basically
+            // fullscreen — showing it at thumbnail size would be
+            // unreadable, and the reference image shows the preview as
+            // image-only with no text.
+            const topEl = cardEl.querySelector(".mcts-card__top");
+            if (topEl) {
+              tl.to(
+                topEl,
+                { opacity: 1, duration: 0.2, ease: E_OUT },
+                t + heroInDuration * 0.6
+              );
+            }
+          } else {
+            tl.to(
+              cardEl,
+              { opacity: 1, y: 0, duration: heroInDuration, ease: E_OUT },
+              t
+            );
+          }
         }
         if (descWrap) {
-          tl.to(descWrap, { opacity: 1, duration: 0.4 }, t + 0.2);
+          tl.to(descWrap, { opacity: 1, duration: 0.4 }, t + descInDelay);
         }
 
-        const heroInEnd = t + 0.6;
+        // For card 0 this now tracks the actual (short) entrance duration
+        // instead of a fixed 0.6 — that fixed offset was the source of the
+        // dead scroll: the card would finish popping in almost instantly,
+        // then the timeline would idle until the old 0.6 mark before the
+        // description text was allowed to start. Other cards are untouched.
+        const heroInEnd = i === 0 ? t + heroInDuration + 0.03 : t + 0.6;
 
         // Cycle description sections (crossfade in place)
         const perSec = 0.8;
@@ -252,146 +331,11 @@ export default function MobileCardTransitionSection() {
   }, []);
 
   return (
-<section
-  ref={sectionRef}
-  className="mcts-section"
-  style={{ height: SECTION_HEIGHT }}
->
-      <style>{`
-        .mcts-section {
-          position: relative;
-          width: 100%;
-          background: #EDEAE2;
-        }
-
-        .mcts-sticky {
-          position: relative;
-          width: 100%;
-          height: 100vh;
-          height: calc(var(--mcts-vh, 1vh) * 100);
-          height: 100dvh;
-          overflow: hidden;
-          background: #EDEAE2;
-        }
-
-.mcts-headline {
-  position: absolute;
-  top: 22px;
-  left: 0;
-  right: 0;
-
-  width: 100%;
-  margin: 0;
-
-  text-align: center;
-
-  font-family: "Avenir Black";
-  font-weight: 900;
-
-  font-size:clamp(45px,7vw,10px)!important;
-  line-height: 0.95;
-  letter-spacing: -0.035em;
-
-  color: #111;
-
-  z-index: 100;
-}
-
-        .mcts-card {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          padding: env(safe-area-inset-top, 1.5rem) 1.25rem
-            env(safe-area-inset-bottom, 1.5rem) 1.25rem;
-          box-sizing: border-box;
-          color: #fff;
-        }
-
-        .mcts-card::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            180deg,
-            rgba(0, 0, 0, 0.15) 0%,
-            rgba(0, 0, 0, 0.35) 55%,
-            rgba(0, 0, 0, 0.75) 100%
-          );
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        .mcts-card__top {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-          padding-top: 2.5rem;
-        }
-
-.mcts-card__num {
-  font-family: "Avenir Black";
-  font-size: 30px;   /* yaha size increase karo */
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  opacity: 0.9;
-}
-        .mcts-card__title {
-          margin: 0;
-          font-size: clamp(2.8rem, 10vw, 3.25rem);
-          font-weight: 800;
-          line-height: 1.05;
-          letter-spacing: -0.02em;
-        }
-
-        .mcts-card__title-line {
-          display: block;
-        }
-
-        .mcts-desc {
-          position: relative;
-          z-index: 1;
-          width: 100%;
-          padding-bottom: 1.5rem;
-        }
-
-        .mcts-desc__stack {
-          position: relative;
-          min-height: 8.5rem;
-        }
-
-        .mcts-desc__section {
-          position: absolute;
-          left: 0;
-          right: 0;
-          bottom: 0;
-        }
-
-        .mcts-desc__heading {
-          margin: 0 0 0.5rem 0;
-          font-size: clamp(1.05rem, 4.5vw, 1.35rem);
-          font-weight: 700;
-        }
-
-        .mcts-desc__body {
-          margin: 0;
-          font-size: clamp(0.9rem, 3.6vw, 1rem);
-          line-height: 1.5;
-          opacity: 0.92;
-        }
-
-        @supports not (height: 100dvh) {
-          .mcts-sticky {
-            height: calc(var(--mcts-vh, 1vh) * 100);
-          }
-        }
-      `}</style>
-
+    <section
+      ref={sectionRef}
+      className="mcts-section"
+      style={{ height: SECTION_HEIGHT }}
+    >
       <div ref={stickyRef} className="mcts-sticky">
         <h1 ref={headlineRef} className="mcts-headline">
           What we do

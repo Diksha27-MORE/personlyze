@@ -6,7 +6,7 @@ function Industries() {
   return (
     <section className="industries">
       <div className="industries-header">
-        <h2>Personalization for every business!</h2>
+        <h2>Personalization for Every Business!</h2>
       </div>
 
       <DynamicFrameLayout />

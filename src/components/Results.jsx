@@ -196,7 +196,7 @@ const totalTravel = stripWidth - effectiveWidth;
 
 <div className="results-heading-block">
   <h2 className="results-heading">
-    why <span className="results-brand">personlyze</span><span className="results-ai">.ai</span>
+    Why <span className="results-brand">personlyze</span><span className="results-ai">.ai</span>
   </h2>
 </div>
 

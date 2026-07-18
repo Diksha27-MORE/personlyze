@@ -99,6 +99,34 @@ function isVideoCard(card, cardIndexInChallenge, totalCardsInChallenge) {
   return false;
 }
 
+/* --------------------------------------------------------------------------
+ * GlassArrowIcon
+ *
+ * Purely decorative (aria-hidden) minimal arrow rendered inside the glass
+ * circle indicator. All floating/breathing motion, blur, and glow live in
+ * CSS via `.mobile-challenge-card__indicator`; this just draws the glyph.
+ * -------------------------------------------------------------------------- */
+function GlassArrowIcon() {
+  return (
+    <svg
+      className="mobile-challenge-card__indicator-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d="M8 16 16 8M16 8H9.5M16 8V14.5"
+        stroke="currentColor"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 /* ==========================================================================
  * MOBILE-ONLY COMPONENTS
  * ========================================================================== */
@@ -184,13 +212,19 @@ const handleBackToIndustries = () => {
               }`}
               onClick={() => handleOpen(i)}
               type="button"
-              style={hasImage ? { backgroundImage: `url(${bg})` } : undefined}
+              style={{
+                ...(hasImage ? { backgroundImage: `url(${bg})` } : {}),
+                "--card-index": i,
+              }}
             >
               {hasImage && <span className="mobile-challenge-card__overlay" />}
               <span className="mobile-challenge-card__inner">
-                <span className="mobile-challenge-card__label">Challenge</span>
+                <span className="mobile-challenge-card__label">Challenge {n}</span>
                 <span className="mobile-challenge-card__problem">
                   {challenge.problem}
+                </span>
+                <span className="mobile-challenge-card__indicator">
+                  <GlassArrowIcon />
                 </span>
               </span>
             </button>
