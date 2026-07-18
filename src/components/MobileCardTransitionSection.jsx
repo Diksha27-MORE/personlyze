@@ -356,7 +356,7 @@ export default function MobileCardTransitionSection() {
             <div className="mcts-card__top">
               <span className="mcts-card__num">{card.num}</span>
               <h2 className="mcts-card__title">
-                {card.title.split("\n").map((l, li) => (
+               {(card.title || "").split("\n").map((l, li) => (
                   <span key={li} className="mcts-card__title-line">
                     {l}
                   </span>
