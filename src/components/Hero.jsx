@@ -2,9 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import "./Hero.desktop.css";
 import "./Hero.mobile.css";
 import backgroundVideo from "../assets/hero-video.mp4";
-import mobileHeroVideo from "../assets/hero-mobile.mp4";
+//import mobileHeroVideo from "../assets/hero-mobile.mp4";
 import LogoAnimation from "../assets/Logo animation new.webm";
 import logoStatic from "../assets/logo.png";
+
+const mobileHeroVideo =
+  "https://res.cloudinary.com/t4s8m2hn/video/upload/v1784388112/hero-mobile_ewaryl.mp4";
 
 const NAV_ITEMS = [
   { label: "Who We Are", id: "who-we-are" },
