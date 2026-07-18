@@ -113,7 +113,7 @@ const CARDS = [
     ],
   },
 ];
-const CARD_LINES = CARDS.map((c) => c.bottom.split("\n"));
+const CARD_LINES = CARDS.map((c) => (c.title || "").split("\n"));
 const sideForIndex = (si) => (si % 2 === 0 ? "left" : "right");
 export default function DesktopCardTransitionSection() {
   const sectionRef = useRef(null);
@@ -336,13 +336,13 @@ export default function DesktopCardTransitionSection() {
             <div className="cts-card__topleft">
               <span className="cts-card__num">{card.num}</span>
               <div ref={labelRefs[i]} className="cts-card__label">
-                {card.label.split("\n").map((line, li) => (
+                {(card.title || "").split("\n").map((line, li) => (
                   <span key={li} className="cts-card__label-line">{line}</span>
                 ))}
               </div>
             </div>
             <h2 ref={titleRefs[i]} className="cts-card__title">
-              {card.bottom.split("\n").map((line, li) => (
+              {(card.title || "").split("\n").map((line, li) => (
                 <span
                   key={li}
                   ref={lineRefs[i][li]}
