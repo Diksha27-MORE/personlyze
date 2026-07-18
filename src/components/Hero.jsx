@@ -7,7 +7,7 @@ import LogoAnimation from "../assets/Logo animation new.webm";
 import logoStatic from "../assets/logo.png";
 
 const mobileHeroVideo =
- "https://res.cloudinary.com/t4s8m2hn/video/upload/w_720,q_auto,f_auto,fl_faststart/hero-mobile_ewaryl.mp4"
+  "https://res.cloudinary.com/t4s8m2hn/video/upload/v1784388112/hero-mobile_ewaryl.mp4";
 
 const NAV_ITEMS = [
   { label: "Who We Are", id: "who-we-are" },
