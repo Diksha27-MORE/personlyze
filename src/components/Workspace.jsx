@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./Workspace.css";
 import workspaceImg from "../assets/workspace.png";
-import workspaceMobileImg from "../assets/workspace-mobile.jpg";
+import workspaceMobileImg from "../assets/workspace-mobile.png";
 
 gsap.registerPlugin(ScrollTrigger);
 
