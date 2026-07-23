@@ -19,6 +19,7 @@ function hasIntroPlayed() {
   }
 }
 function markIntroPlayed() {
+  if (typeof window === "undefined") return;
   try {
     window.sessionStorage.setItem(INTRO_PLAYED_KEY, "1");
   } catch {}
@@ -137,23 +138,34 @@ function NavMenu({ revealed }) {
 }
 
 function Hero() {
+  // --- Device detection (deterministic on mount) ---------------------------
+  // Initial render: assume desktop on SSR, correct value on CSR.
   const [isMobile, setIsMobile] = useState(getIsMobile);
   const isMobileRef = useRef(isMobile);
 
-  // If the intro already played this session, skip it entirely on mount.
-  const alreadyPlayed = hasIntroPlayed();
-
-  // Desktop cinematic intro (UNCHANGED behavior on first load)
-  const [showIntro, setShowIntro] = useState(!alreadyPlayed);
+  // --- Intro state ---------------------------------------------------------
+  // IMPORTANT: do NOT read sessionStorage during initial state.
+  // That produces SSR/CSR mismatches and race conditions with the intro
+  // effects. We initialize to "playing" and correct it in a mount effect
+  // BEFORE any timer effect runs (both are useEffect so ordering is stable).
+  const [introDecided, setIntroDecided] = useState(false);
+  const [showIntro, setShowIntro] = useState(false);
+  const [showMobileIntro, setShowMobileIntro] = useState(false);
   const [introStep, setIntroStep] = useState(0);
-
-  // Mobile split-screen intro
-  const [showMobileIntro, setShowMobileIntro] = useState(!alreadyPlayed);
   const [mobileIntroStep, setMobileIntroStep] = useState(0);
+  const [revealed, setRevealed] = useState(false);
 
-  const [revealed, setRevealed] = useState(alreadyPlayed);
+  // Guards against StrictMode double-invoke and cross-branch double start.
+  const didStartRef = useRef(false);
   const videoRef = useRef(null);
+  const currentVideoSrcRef = useRef(null);
 
+  // Keep isMobile ref in sync (used only by non-timer callbacks).
+  useEffect(() => {
+    isMobileRef.current = isMobile;
+  }, [isMobile]);
+
+  // Track viewport changes.
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 768px)");
     const checkScreen = () => setIsMobile(mediaQuery.matches);
@@ -162,70 +174,107 @@ function Hero() {
     return () => mediaQuery.removeEventListener("change", checkScreen);
   }, []);
 
+  // Decide, exactly once on mount, whether the intro should play this session.
+  // Runs before the timer effects observe `introDecided`, so timers won't
+  // start with the wrong intent.
   useEffect(() => {
-    isMobileRef.current = isMobile;
-  }, [isMobile]);
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.load();
-      videoRef.current.play().catch(() => {});
+    const played = hasIntroPlayed();
+    if (played) {
+      setShowIntro(false);
+      setShowMobileIntro(false);
+      setRevealed(true);
+    } else {
+      // Show the correct branch for the current viewport ONLY.
+      const mobile = getIsMobile();
+      setShowIntro(!mobile);
+      setShowMobileIntro(mobile);
+      setRevealed(false);
     }
-  }, [isMobile]);
+    setIntroDecided(true);
+  }, []);
 
-  // Desktop intro cinematic sequence (UNCHANGED)
+  // Video (re)load — only when the source actually changes, and never while
+  // the intro is running (prevents re-render churn during the intro).
   useEffect(() => {
-    if (isMobileRef.current) return;
-    if (alreadyPlayed) return; // skip on remount
+    if (!introDecided) return;
+    if (!revealed) return; // wait until intro is done to touch the video
+    const el = videoRef.current;
+    if (!el) return;
+    const nextSrc = isMobile ? mobileHeroVideo : backgroundVideo;
+    if (currentVideoSrcRef.current === nextSrc) return;
+    currentVideoSrcRef.current = nextSrc;
+    try {
+      el.load();
+      el.play().catch(() => {});
+    } catch {}
+  }, [isMobile, introDecided, revealed]);
+
+  // Desktop intro sequence.
+  useEffect(() => {
+    if (!introDecided) return;
+    if (!showIntro) return;
+    if (didStartRef.current) return;
+    didStartRef.current = true;
+
+    // Mark as played immediately so a route change mid-intro still
+    // suppresses replay on return.
+    markIntroPlayed();
 
     const LINE1_APPEAR = 100;
     const LINE1_HOLD = 3000;
     const BOTH_HOLD = 1500;
     const FADE_OUT = 800;
 
-    const t1 = setTimeout(() => setIntroStep(1), LINE1_APPEAR);
-    const t2 = setTimeout(() => setIntroStep(2), LINE1_APPEAR + LINE1_HOLD);
-    const t3 = setTimeout(
-      () => setIntroStep(3),
-      LINE1_APPEAR + LINE1_HOLD + BOTH_HOLD
-    );
-    const t4 = setTimeout(() => {
-      setShowIntro(false);
-      setRevealed(true);
-      markIntroPlayed();
-    }, LINE1_APPEAR + LINE1_HOLD + BOTH_HOLD + FADE_OUT);
+    const timers = [
+      setTimeout(() => setIntroStep(1), LINE1_APPEAR),
+      setTimeout(() => setIntroStep(2), LINE1_APPEAR + LINE1_HOLD),
+      setTimeout(
+        () => setIntroStep(3),
+        LINE1_APPEAR + LINE1_HOLD + BOTH_HOLD,
+      ),
+      setTimeout(() => {
+        setShowIntro(false);
+        setRevealed(true);
+      }, LINE1_APPEAR + LINE1_HOLD + BOTH_HOLD + FADE_OUT),
+    ];
 
     return () => {
-      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4);
+      timers.forEach(clearTimeout);
+      // Do NOT reset didStartRef — StrictMode remount must not restart.
     };
-  }, [alreadyPlayed]);
+  }, [introDecided, showIntro]);
 
-  // Mobile split-screen intro sequence
+  // Mobile intro sequence.
   useEffect(() => {
-    if (!isMobileRef.current) return;
-    if (alreadyPlayed) return; // skip on remount
+    if (!introDecided) return;
+    if (!showMobileIntro) return;
+    if (didStartRef.current) return;
+    didStartRef.current = true;
+
+    markIntroPlayed();
 
     const TOP_APPEAR = 100;
     const TOP_HOLD = 3000;
     const BOTTOM_HOLD = 2000;
     const FADE_OUT = 900;
 
-    const t1 = setTimeout(() => setMobileIntroStep(1), TOP_APPEAR);
-    const t2 = setTimeout(() => setMobileIntroStep(2), TOP_APPEAR + TOP_HOLD);
-    const t3 = setTimeout(
-      () => setMobileIntroStep(3),
-      TOP_APPEAR + TOP_HOLD + BOTTOM_HOLD
-    );
-    const t4 = setTimeout(() => {
-      setShowMobileIntro(false);
-      setRevealed(true);
-      markIntroPlayed();
-    }, TOP_APPEAR + TOP_HOLD + BOTTOM_HOLD + FADE_OUT);
+    const timers = [
+      setTimeout(() => setMobileIntroStep(1), TOP_APPEAR),
+      setTimeout(() => setMobileIntroStep(2), TOP_APPEAR + TOP_HOLD),
+      setTimeout(
+        () => setMobileIntroStep(3),
+        TOP_APPEAR + TOP_HOLD + BOTTOM_HOLD,
+      ),
+      setTimeout(() => {
+        setShowMobileIntro(false);
+        setRevealed(true);
+      }, TOP_APPEAR + TOP_HOLD + BOTTOM_HOLD + FADE_OUT),
+    ];
 
     return () => {
-      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4);
+      timers.forEach(clearTimeout);
     };
-  }, [alreadyPlayed]);
+  }, [introDecided, showMobileIntro]);
 
   const handleBookDemo = () => {
     const section = document.getElementById("who-we-are");
@@ -239,7 +288,11 @@ function Hero() {
       <video
         ref={videoRef}
         className={`hero-video ${videoHiddenForMobileIntro ? "is-preloading" : "is-ready"}`}
-        autoPlay muted loop playsInline preload="auto"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
       >
         <source src={isMobile ? mobileHeroVideo : backgroundVideo} type="video/mp4" />
       </video>
