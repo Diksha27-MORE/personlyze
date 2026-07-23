@@ -72,3 +72,22 @@
   }
 
 }
+.industries-hint{
+  margin-top:16px;
+
+  font-family:"Avenir Regular";
+  font-size:clamp(13px,1.1vw,16px);
+  font-weight:400;
+
+  color:#666;
+  letter-spacing:0.02em;
+
+  text-align:center;
+}
+
+@media (max-width:768px){
+  .industries-hint{
+    margin-top:12px;
+    font-size:13px;
+  }
+}

@@ -73,6 +73,23 @@ function getProblemImage(slug, challengeNumber) {
   }
 }
 
+/* Dedicated background photo for the CTA slide, following the same
+ * `{prefix}-...` naming convention as the other card/problem photos
+ * (e.g. "real-cta.jpg"). Optional — if a given industry doesn't have one
+ * yet, the caller falls back to the hero image so the slide still gets
+ * the same full-bleed photo treatment as every other card. */
+function getCtaImage(slug) {
+  try {
+    const prefix = getPrefix(slug);
+    if (!prefix) return null;
+    const png = `../card-photos/${prefix}-cta.png`;
+    const jpg = `../card-photos/${prefix}-cta.jpg`;
+    return cardPhotos[png] ?? cardPhotos[jpg] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /* For each challenge, how many cards came before it across all prior
  * challenges — gives the correct global image number regardless of how many
  * challenges exist or how many cards are in each one. */
@@ -125,6 +142,24 @@ function GlassArrowIcon() {
       />
     </svg>
   );
+}
+
+/* --------------------------------------------------------------------------
+ * Book a Demo — WhatsApp handoff.
+ * Identical behavior to the Footer's handleBookDemo(), reused here so the
+ * CTA card (6th slide) opens the same WhatsApp pre-filled message.
+ * -------------------------------------------------------------------------- */
+function handleBookDemo() {
+  const phone = "919819104471";
+  const message = encodeURIComponent(
+    `Hi, I'd like to book a demo of Personlyze AI for my business.
+Details below.
+Name:
+Company:
+Website:
+Email:`
+  );
+  window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
 }
 
 /* ==========================================================================
@@ -239,6 +274,7 @@ const handleBackToIndustries = () => {
           cardNumberOffset={challengeCardOffsets[openChallengeIndex]}
           originEl={cardRefs.current[openChallengeIndex + 1]}
           onClose={handleClose}
+          fallbackImage={image}
         />
       )}
     </div>
@@ -249,12 +285,33 @@ const handleBackToIndustries = () => {
  * Fullscreen "Instagram-style" overlay with GSAP open/close.
  * Every slide shows its full image + title + description immediately —
  * there is no intermediate preview state.
+ *
+ * A 6th synthetic "Book a Demo" CTA slide is always appended after the real
+ * cards (`cards` from data stays untouched — the CTA is not part of the
+ * data model). `totalSlides = cards.length + 1` drives dots / prev-next /
+ * auto-advance / swipe clamping so the CTA participates in the exact same
+ * scroll-snap carousel behavior as the first 5 cards.
  * -------------------------------------------------------------------------- */
-function MobileChallengeOverlay({ slug, cards, cardNumberOffset, originEl, onClose }) {
+function MobileChallengeOverlay({
+  slug,
+  cards,
+  cardNumberOffset,
+  originEl,
+  onClose,
+  fallbackImage,
+}) {
   const scrimRef = useRef(null);
   const sheetRef = useRef(null);
   const trackRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
+
+  // +1 for the synthetic CTA slide appended after the real cards.
+  const totalSlides = cards.length + 1;
+
+  // Dedicated CTA photo if one exists for this industry, else fall back to
+  // the hero image so the CTA slide always gets the same full-bleed photo
+  // treatment as the other cards — never a flat/plain background.
+  const ctaBackgroundImage = getCtaImage(slug) ?? fallbackImage ?? null;
 
   /* Open animation from origin card */
   useLayoutEffect(() => {
@@ -335,28 +392,29 @@ function MobileChallengeOverlay({ slug, cards, cardNumberOffset, originEl, onClo
   const goToSlide = (i) => {
     const t = trackRef.current;
     if (!t) return;
-    const clamped = Math.max(0, Math.min(i, cards.length - 1));
+    const clamped = Math.max(0, Math.min(i, totalSlides - 1));
     t.scrollTo({ left: clamped * t.clientWidth, behavior: "smooth" });
   };
 
   const handlePrev = () => goToSlide(activeIndex - 1);
   const handleNext = () => goToSlide(activeIndex + 1);
 
-  /* Auto-advance: Card 1 -> 2 -> ... -> last -> Card 1, every 5s.
+  /* Auto-advance: Card 1 -> 2 -> ... -> CTA -> Card 1, every 5s.
    * Reuses goToSlide() (same fn used by the next arrow / dots) so the
-   * scroll animation is identical to a manual advance.
+   * scroll animation is identical to a manual advance. Now cycles across
+   * totalSlides (real cards + CTA) instead of just cards.length.
    * Restarts whenever activeIndex changes (manual prev/next/dot/swipe all
    * update activeIndex via handleScroll), which resets the 5s timer.
    * Cleared on unmount, i.e. when the challenge overlay is closed. */
   useEffect(() => {
-    if (!cards || cards.length <= 1) return undefined;
+    if (totalSlides <= 1) return undefined;
 
     const timer = setTimeout(() => {
-      goToSlide((activeIndex + 1) % cards.length);
+      goToSlide((activeIndex + 1) % totalSlides);
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [activeIndex, cards.length]);
+  }, [activeIndex, totalSlides]);
 
   /* Lock body scroll while open */
   useEffect(() => {
@@ -393,6 +451,15 @@ function MobileChallengeOverlay({ slug, cards, cardNumberOffset, originEl, onClo
               </div>
             );
           })}
+
+          {/* 6th slide — premium "Book a Demo" CTA, identical for every
+              industry/challenge. Not part of the data model. Uses the same
+              full-bleed background image + overlay treatment as the other
+              5 cards so it reads as a natural continuation, not a plain
+              CTA section. */}
+          <div className="mobile-overlay__slide" key="cta">
+            <IndustryCTACard backgroundImage={ctaBackgroundImage} />
+          </div>
         </div>
 
         {activeIndex > 0 && (
@@ -405,7 +472,7 @@ function MobileChallengeOverlay({ slug, cards, cardNumberOffset, originEl, onClo
             ‹
           </button>
         )}
-        {activeIndex < cards.length - 1 && (
+        {activeIndex < totalSlides - 1 && (
           <button
             type="button"
             className="mobile-overlay__nav mobile-overlay__nav--next"
@@ -417,7 +484,7 @@ function MobileChallengeOverlay({ slug, cards, cardNumberOffset, originEl, onClo
         )}
 
         <div className="mobile-overlay__dots">
-          {cards.map((_, i) => (
+          {Array.from({ length: totalSlides }).map((_, i) => (
             <button
               key={i}
               type="button"
@@ -480,6 +547,52 @@ function MobileIndustryCard({ card, backgroundImage, isVideo }) {
       <div className="industry-card__detail">
         <h3 className="industry-card__detail-title">{card.title}</h3>
         <p className="industry-card__detail-text">{card.content}</p>
+      </div>
+    </div>
+  );
+}
+
+/* --------------------------------------------------------------------------
+ * CTA card — always the final slide in every challenge overlay.
+ * Not part of the data model in industries.js — rendered synthetically so
+ * the first 5 cards, their content, numbering, and image lookups stay
+ * completely untouched.
+ *
+ * Deliberately mirrors MobileIndustryCard's structure 1:1 — same
+ * `industry-card industry-card--mobile` shell, same full-bleed
+ * `backgroundImage` treatment, same `.industry-card__bg-overlay` dark
+ * overlay — so it reads as a natural 6th slide in the same photo carousel,
+ * not a separate plain CTA section. Only the content layer swaps the
+ * title/description for a centered "Book a Demo" CTA. Uses the same
+ * WhatsApp deep-link behavior as the Footer's handleBookDemo().
+ * -------------------------------------------------------------------------- */
+function IndustryCTACard({ backgroundImage }) {
+  return (
+    <div
+      className="industry-card industry-card--mobile industry-card--cta"
+      style={
+        backgroundImage
+          ? {
+              backgroundImage: `url(${backgroundImage})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }
+          : undefined
+      }
+    >
+      <div className="industry-card__bg-overlay" />
+      <div className="industry-card__detail industry-card__detail--cta">
+        <span className="industry-card__cta-eyebrow">Ready to see it in action?</span>
+        <h3 className="industry-card__detail-title industry-card__cta-title">
+          Let&apos;s build your first campaign
+        </h3>
+        <button
+          type="button"
+          className="book-demo-btn industry-card__cta-button"
+          onClick={handleBookDemo}
+        >
+          Book a Demo
+        </button>
       </div>
     </div>
   );

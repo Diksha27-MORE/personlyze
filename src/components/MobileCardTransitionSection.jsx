@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -69,43 +69,46 @@ const CARDS = [
   },
 ];
 
-// Compact scroll length. The heading sits at the top of the section from
-// frame zero (no fullscreen intro state) and exits after only a tiny sliver
-// of scroll — just enough (~10-20px) to read as a deliberate transition
-// rather than a jump cut. Roughly: near-instant heading exit, then per card
-// ~ (1 hero-in + N * section + out)
-const perCardScroll = (c) => 0.45 + c.desc.length * 0.35 + 0.2;// in "screens"
-// Kept tiny on purpose: this fraction of the total scroll track is what the
-// user has to scroll before the first card is fully in. At ~0.02 "screens"
-// (≈2% of one viewport height), that's roughly 15px on an 800px-tall
-// viewport — a quick, smooth nudge, not a dedicated intro screen.
-const HEADLINE_EXIT_SCREENS = 0.01;
-// Small bottom preview shown for the first card before any scrolling
-// happens — a rounded square peeking up from the bottom, image only, no
-// text. These are the only new visual values introduced; everything else
-// (typography, spacing, other cards) is untouched.
-const PREVIEW_SIZE = 96; // px, square
-const PREVIEW_BOTTOM = 160; // px from the bottom edge — raised closer to the heading
-const PREVIEW_RADIUS = 20; // px corner rounding
-const totalScreens =
-  HEADLINE_EXIT_SCREENS + CARDS.reduce((a, c) => a + perCardScroll(c), 0);
+// ---- Scroll choreography constants -----------------------------------
+// The "What We Do" heading now lives in its own plain, normal-flow section
+// (see the JSX below) that scrolls away like ordinary content — it is no
+// longer part of the pinned/scrubbed timeline at all. The pinned section
+// that follows starts pinning exactly when the heading section has fully
+// scrolled past (that's just how ScrollTrigger's `start: "top top"` lines
+// up against the element directly above it in the flow), and by then card
+// 01 is already sitting in its normal full-screen layout — there's nothing
+// left to animate into place, so there's no slide-up/expand to worry
+// about. The strategy cards (01 / 02 / 03) still transition purely on
+// scroll via GSAP + ScrollTrigger, exactly as before. The three bullet
+// points inside a card are swipe/drag/arrow controlled (see the React
+// state + pointer handlers below), so the timeline only needs to (a)
+// bring a card in, (b) hold it on screen long enough to swipe through its
+// points, and (c) send it back out.
+const HERO_IN = 0.55; // screens - entrance for cards 02/03 (unchanged pace)
+const HOLD = 1.0; // screens - dwell time per card, for swiping through points
+const OUT = 0.4; // screens - exit fade for all but the last card
+const GAP = 0.35; // screens - overlap/gap between one card's exit and the next's entrance
+
+const perCardScroll = (i) =>
+  (i === 0 ? 0 : HERO_IN) + HOLD + (i < CARDS.length - 1 ? OUT : 0.5);
+
+const totalScreens = CARDS.reduce((a, _c, i) => a + perCardScroll(i), 0);
 const SECTION_HEIGHT = `${Math.round(totalScreens * 100)}vh`;
+
+const SWIPE_THRESHOLD_PX = 50;
 
 export default function MobileCardTransitionSection() {
   const sectionRef = useRef(null);
   const stickyRef = useRef(null);
-  const headlineRef = useRef(null);
 
-  // Proper ref-array patterns instead of calling useRef() inside map()/loops.
   const cardRefs = useRef([]);
   const descWrapRefs = useRef([]);
-  const descSectionRefs = useRef([]);
+  const trackRefs = useRef([]);
+  const dragRefs = useRef(CARDS.map(() => ({ dragging: false, startX: 0, dx: 0, pointerId: null })));
 
   cardRefs.current = [];
   descWrapRefs.current = [];
-  if (descSectionRefs.current.length !== CARDS.length) {
-    descSectionRefs.current = CARDS.map(() => []);
-  }
+  trackRefs.current = [];
 
   const setCardRef = (i) => (el) => {
     cardRefs.current[i] = el;
@@ -113,9 +116,64 @@ export default function MobileCardTransitionSection() {
   const setDescWrapRef = (i) => (el) => {
     descWrapRefs.current[i] = el;
   };
-  const setDescSectionRef = (ci, si) => (el) => {
-    if (!descSectionRefs.current[ci]) descSectionRefs.current[ci] = [];
-    descSectionRefs.current[ci][si] = el;
+  const setTrackRef = (i) => (el) => {
+    trackRefs.current[i] = el;
+  };
+
+  // Which point (0/1/2) is showing per card. Purely a swipe/drag/arrow
+  // concern - scroll never touches this.
+  const [pointIndex, setPointIndex] = useState(() => CARDS.map(() => 0));
+
+  const goToPoint = (cardIdx, nextIndex) => {
+    const max = CARDS[cardIdx].desc.length - 1;
+    const clamped = Math.max(0, Math.min(max, nextIndex));
+    setPointIndex((prev) => {
+      if (prev[cardIdx] === clamped) return prev;
+      const next = [...prev];
+      next[cardIdx] = clamped;
+      return next;
+    });
+  };
+
+  // ---- Pointer handlers (mouse + touch + pen, unified) ----
+  const handlePointerDown = (cardIdx) => (e) => {
+    const dr = dragRefs.current[cardIdx];
+    dr.dragging = true;
+    dr.startX = e.clientX;
+    dr.dx = 0;
+    dr.pointerId = e.pointerId;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    const track = trackRefs.current[cardIdx];
+    if (track) track.style.transition = "none";
+  };
+
+  const handlePointerMove = (cardIdx) => (e) => {
+    const dr = dragRefs.current[cardIdx];
+    if (!dr.dragging) return;
+    dr.dx = e.clientX - dr.startX;
+    const track = trackRefs.current[cardIdx];
+    if (track) {
+      const basePercent = -pointIndex[cardIdx] * 100;
+      track.style.transform = `translateX(calc(${basePercent}% + ${dr.dx}px))`;
+    }
+  };
+
+  const endDrag = (cardIdx) => () => {
+    const dr = dragRefs.current[cardIdx];
+    if (!dr.dragging) return;
+    dr.dragging = false;
+    const track = trackRefs.current[cardIdx];
+    if (track) track.style.transition = ""; // restore CSS transition for the snap
+
+    if (dr.dx <= -SWIPE_THRESHOLD_PX) {
+      goToPoint(cardIdx, pointIndex[cardIdx] + 1);
+    } else if (dr.dx >= SWIPE_THRESHOLD_PX) {
+      goToPoint(cardIdx, pointIndex[cardIdx] - 1);
+    } else if (track) {
+      // Not enough movement - snap back to the current point.
+      track.style.transform = "";
+    }
+    dr.dx = 0;
   };
 
   useLayoutEffect(() => {
@@ -124,50 +182,28 @@ export default function MobileCardTransitionSection() {
 
     const E_OUT = "power2.out";
     const E_IN = "power2.in";
-    const E_INOUT = "power2.inOut";
 
     const ctx = gsap.context(() => {
       const applyInitial = () => {
-        gsap.set(headlineRef.current, { opacity: 1, y: 0 });
-
         cardRefs.current.forEach((el, i) => {
           if (!el) return;
           if (i === 0) {
-            // First card starts as a small rounded-square preview of just
-            // the background image, sitting near the bottom of the screen
-            // — no text/number visible yet. top stays 'auto' throughout so
-            // it never fights with the explicit bottom/height values.
-            gsap.set(el, {
-              opacity: 1,
-              top: "auto",
-              right: "auto",
-              left: "50%",
-              xPercent: -50,
-              bottom: PREVIEW_BOTTOM,
-              width: PREVIEW_SIZE,
-              height: PREVIEW_SIZE,
-              borderRadius: PREVIEW_RADIUS,
-              zIndex: 10 + i,
-            });
-            const topEl = el.querySelector(".mcts-card__top");
-            if (topEl) gsap.set(topEl, { opacity: 0 });
+            // Card 01 is fully visible, full-screen, from the moment the
+            // pinned section engages — no fade, no slide-up, no scale, no
+            // special positioning. It's already in its final layout; the
+            // heading above it (in its own section) is what moves, via
+            // ordinary page scroll, not this one.
+            gsap.set(el, { opacity: 1, y: 0, zIndex: 10 + i, pointerEvents: "auto" });
           } else {
-            gsap.set(el, {
-              opacity: 0,
-              y: 40,
-              zIndex: 10 + i,
-            });
+            gsap.set(el, { opacity: 0, y: 40, zIndex: 10 + i, pointerEvents: "none" });
           }
         });
 
-        descWrapRefs.current.forEach((el) => {
-          if (el) gsap.set(el, { opacity: 0 });
-        });
-
-        descSectionRefs.current.forEach((secs) => {
-          (secs || []).forEach((el) => {
-            if (el) gsap.set(el, { opacity: 0, y: 16 });
-          });
+        descWrapRefs.current.forEach((el, i) => {
+          if (!el) return;
+          // Card 01's description/points block is visible immediately,
+          // matching the card itself. Others fade in with their card.
+          gsap.set(el, { opacity: i === 0 ? 1 : 0 });
         });
       };
 
@@ -189,113 +225,35 @@ export default function MobileCardTransitionSection() {
 
       let t = 0;
 
-      // Heading is already in place (top-left, on the white section background)
-      // from the very start of the section — it just drifts up and fades out
-      // as the first card enters, with no separate fullscreen intro state.
-      // This is a very short exit: the first card is essentially fully
-      // resolved within the first ~15-20px of scroll.
-      tl.to(
-        headlineRef.current,
-        { opacity: 0, y: -60, duration: HEADLINE_EXIT_SCREENS, ease: E_INOUT },
-        t
-      );
-      t += HEADLINE_EXIT_SCREENS;
-
-      CARDS.forEach((card, i) => {
+      CARDS.forEach((_card, i) => {
         const cardEl = cardRefs.current[i];
         const descWrap = descWrapRefs.current[i];
-        const sections = descSectionRefs.current[i] || [];
 
-        // The first card starts already visible as a small preview (set in
-        // applyInitial above), so there's nothing to fade in from blank —
-        // it just needs to scale up to fullscreen within the first ~20-30px
-        // of scroll. Later cards keep their original fade-in pace
-        // (unchanged).
-        const heroInDuration = i === 0 ? 0.06 : 0.55;
-        const descInDelay = i === 0 ? 0.02 : 0.2;
+        const heroInDuration = i === 0 ? 0 : HERO_IN;
 
-        // Hero card in
-        if (cardEl) {
-          if (i === 0) {
-            // Expand the small square preview into the fullscreen card.
-            tl.to(
-              cardEl,
-              {
-                left: 0,
-                xPercent: 0,
-                bottom: 0,
-                width: "100%",
-                height: "100%",
-                borderRadius: 0,
-                duration: heroInDuration,
-                ease: E_OUT,
-              },
-              t
-            );
-            // Reveal the number/title only once the card is basically
-            // fullscreen — showing it at thumbnail size would be
-            // unreadable, and the reference image shows the preview as
-            // image-only with no text.
-            const topEl = cardEl.querySelector(".mcts-card__top");
-            if (topEl) {
-              tl.to(
-                topEl,
-                { opacity: 1, duration: 0.2, ease: E_OUT },
-                t + heroInDuration * 0.6
-              );
-            }
-          } else {
-            tl.to(
-              cardEl,
-              { opacity: 1, y: 0, duration: heroInDuration, ease: E_OUT },
-              t
-            );
+        if (i !== 0 && cardEl) {
+          tl.set(cardEl, { pointerEvents: "auto" }, t);
+          tl.to(cardEl, { opacity: 1, y: 0, duration: heroInDuration, ease: E_OUT }, t);
+          if (descWrap) {
+            tl.to(descWrap, { opacity: 1, duration: 0.4 }, t + 0.15);
           }
         }
-        if (descWrap) {
-          tl.to(descWrap, { opacity: 1, duration: 0.4 }, t + descInDelay);
-        }
 
-        // For card 0 this now tracks the actual (short) entrance duration
-        // instead of a fixed 0.6 — that fixed offset was the source of the
-        // dead scroll: the card would finish popping in almost instantly,
-        // then the timeline would idle until the old 0.6 mark before the
-        // description text was allowed to start. Other cards are untouched.
-        const heroInEnd = i === 0 ? t + heroInDuration + 0.03 : t + 0.6;
+        const heroInEnd = t + heroInDuration;
+        const holdEnd = heroInEnd + HOLD;
 
-        // Cycle description sections (crossfade in place)
-        const perSec = 0.8;
-        sections.forEach((el, si) => {
-          if (!el) return;
-          const slot = heroInEnd + si * perSec;
-          tl.to(el, { opacity: 1, y: 0, duration: 0.35, ease: E_OUT }, slot);
-          if (si < sections.length - 1) {
-            tl.to(
-              el,
-              { opacity: 0, y: -12, duration: 0.3, ease: E_IN },
-              slot + perSec - 0.3
-            );
-          }
-        });
-
-        const sectionsEnd = heroInEnd + sections.length * perSec;
-
-        // Fade out current card unless it's the last
         if (i < CARDS.length - 1) {
           if (cardEl && descWrap) {
-            tl.to(
-              [cardEl, descWrap],
-              { opacity: 0, duration: 0.4, ease: E_IN },
-              sectionsEnd
-            );
+            tl.to([cardEl, descWrap], { opacity: 0, duration: OUT, ease: E_IN }, holdEnd);
           }
           if (cardEl) {
-            tl.to(cardEl, { y: -30, duration: 0.4, ease: E_IN }, sectionsEnd);
+            tl.to(cardEl, { y: -30, duration: OUT, ease: E_IN }, holdEnd);
+            tl.set(cardEl, { pointerEvents: "none" }, holdEnd);
           }
-          t = sectionsEnd + 0.35;
+          t = holdEnd + GAP;
         } else {
-          tl.to({}, { duration: 0.5 }, sectionsEnd);
-          t = sectionsEnd + 0.5;
+          tl.to({}, { duration: 0.5 }, holdEnd);
+          t = holdEnd + 0.5;
         }
       });
 
@@ -331,56 +289,110 @@ export default function MobileCardTransitionSection() {
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      className="mcts-section"
-      style={{ height: SECTION_HEIGHT }}
-    >
-      <div ref={stickyRef} className="mcts-sticky">
-        <h1 ref={headlineRef} className="mcts-headline">
-          What we do
-        </h1>
+    <>
+      {/* Plain white/cream intro section, in normal document flow - it
+          scrolls away exactly like any other content. It's deliberately
+          shorter than a full viewport so that Strategy 01 (already
+          rendered full-screen, right below it) peeks up from the bottom
+          edge while the heading is still on screen. Once this section has
+          fully scrolled past, the pinned section below it takes over -
+          and by then card 01 is simply *already* in its full-screen
+          layout, so there's nothing left to animate. */}
+      <div className="mcts-heading-section">
+        <h1 className="mcts-headline">What we do</h1>
+      </div>
 
-        {CARDS.map((card, i) => (
-          <div
-            key={card.num}
-            ref={setCardRef(i)}
-            className={`mcts-card mcts-card--${i + 1}`}
-            style={{
-              backgroundImage: `url(${CARD_IMAGES[i]})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-            }}
-          >
-            <div className="mcts-card__top">
-              <span className="mcts-card__num">{card.num}</span>
-              <h2 className="mcts-card__title">
-               {(card.title || "").split("\n").map((l, li) => (
-                  <span key={li} className="mcts-card__title-line">
-                    {l}
-                  </span>
-                ))}
-              </h2>
-            </div>
+      <section
+        ref={sectionRef}
+        className="mcts-section"
+        style={{ height: SECTION_HEIGHT }}
+      >
+        <div ref={stickyRef} className="mcts-sticky">
+          {CARDS.map((card, i) => (
+            <div
+              key={card.num}
+              ref={setCardRef(i)}
+              className={`mcts-card mcts-card--${i + 1}`}
+              style={{
+                backgroundImage: `url(${CARD_IMAGES[i]})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }}
+            >
+              <div className="mcts-card__top">
+                <span className="mcts-card__num">{card.num}</span>
+                <h2 className="mcts-card__title">
+                  {(card.title || "").split("\n").map((l, li) => (
+                    <span key={li} className="mcts-card__title-line">
+                      {l}
+                    </span>
+                  ))}
+                </h2>
+              </div>
 
-            <div ref={setDescWrapRef(i)} className="mcts-desc">
-              <div className="mcts-desc__stack">
-                {card.desc.map((s, si) => (
+              <div ref={setDescWrapRef(i)} className="mcts-desc">
+                <div
+                  className="mcts-desc__slider"
+                  style={{ touchAction: "pan-y" }}
+                  onPointerDown={handlePointerDown(i)}
+                  onPointerMove={handlePointerMove(i)}
+                  onPointerUp={endDrag(i)}
+                  onPointerCancel={endDrag(i)}
+                >
                   <div
-                    key={si}
-                    ref={setDescSectionRef(i, si)}
-                    className="mcts-desc__section"
+                    ref={setTrackRef(i)}
+                    className="mcts-desc__track"
+                    style={{ transform: `translateX(-${pointIndex[i] * 100}%)` }}
                   >
-                    <h3 className="mcts-desc__heading">{s.heading}</h3>
-                    <p className="mcts-desc__body">{s.body}</p>
+                    {card.desc.map((s, si) => (
+                      <div key={si} className="mcts-desc__slide">
+                        <h3 className="mcts-desc__heading">{s.heading}</h3>
+                        <p className="mcts-desc__body">{s.body}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                <div className="mcts-desc__nav">
+                  <button
+                    type="button"
+                    className="mcts-desc__arrow mcts-desc__arrow--prev"
+                    aria-label="Previous point"
+                    onClick={() => goToPoint(i, pointIndex[i] - 1)}
+                    disabled={pointIndex[i] === 0}
+                  >
+                    ‹
+                  </button>
+
+                  <div className="mcts-desc__dots" role="tablist" aria-label="Points">
+                    {card.desc.map((_s, si) => (
+                      <button
+                        key={si}
+                        type="button"
+                        className={`mcts-desc__dot${si === pointIndex[i] ? " is-active" : ""}`}
+                        aria-label={`Go to point ${si + 1}`}
+                        aria-selected={si === pointIndex[i]}
+                        onClick={() => goToPoint(i, si)}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="mcts-desc__arrow mcts-desc__arrow--next"
+                    aria-label="Next point"
+                    onClick={() => goToPoint(i, pointIndex[i] + 1)}
+                    disabled={pointIndex[i] === card.desc.length - 1}
+                  >
+                    ›
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-    </section>
+          ))}
+        </div>
+      </section>
+    </>
   );
 }

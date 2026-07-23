@@ -4,6 +4,40 @@
   background: #EDEAE2;
 }
 
+/* Plain, normal-flow intro section. This is NOT pinned and NOT part of
+   the GSAP scroll timeline - it scrolls away exactly like any other block
+   of content. It's intentionally shorter than a full viewport so the
+   pinned section right after it (which starts as a full-screen Strategy
+   01 card) is already peeking up from the bottom edge while the heading
+   is still on screen. */
+.mcts-heading-section {
+  position: relative;
+  width: 100%;
+  min-height: 25vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: #EDEAE2;
+  padding-top: clamp(56px, 10vh, 100px);
+  padding-bottom: 32px;
+  box-sizing: border-box;
+}
+
+.mcts-headline {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+
+  font-family: "Avenir Black";
+  font-weight: 900;
+
+  font-size: clamp(32px, 6.5vw, 72px);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+
+  color: #111;
+}
+
 .mcts-sticky {
   position: relative;
   width: 100%;
@@ -14,30 +48,11 @@
   background: #EDEAE2;
 }
 
-.mcts-headline {
-  position: absolute;
-  top: 22px;
-  left: 0;
-  right: 0;
-
-  width: 100%;
-  margin: 0;
-
-  text-align: center;
-
-  font-family: "Avenir Black";
-  font-weight: 900;
-
-  font-size: clamp(45px, 7vw, 10px) !important;
-  line-height: 0.95;
-  letter-spacing: -0.035em;
-
-  color: #111;
-
-  z-index: 100;
-}
-
 .mcts-card {
+  /* Full-screen, always - including card 01. It no longer shares screen
+     space with the heading (that now lives in its own section above,
+     see .mcts-heading-section), so there's no gapped/special initial
+     position to manage here anymore. */
   position: absolute;
   inset: 0;
   width: 100%;
@@ -49,6 +64,12 @@
     env(safe-area-inset-bottom, 1.5rem) 1.25rem;
   box-sizing: border-box;
   color: #fff;
+
+  /* Prevent any OS/browser "smart" color adjustment (forced-colors,
+     auto-dark-mode text recoloring, etc.) from touching this element. */
+  color-scheme: light;
+  filter: none;
+  mix-blend-mode: normal;
 }
 
 .mcts-card::before {
@@ -74,20 +95,52 @@
   padding-top: 2.5rem;
 }
 
+/* --- Pure white text, high specificity, no opacity/filter dilution ---
+   Requirement 6: title / description / point text must render as solid
+   #FFFFFF on every device. Opacity was previously used on the number and
+   body text to fake a "soft white" - that's the off-white some phones
+   were showing, amplified by inherited color rules on certain browsers.
+   Both are now forced to full, flat white. */
+.mcts-section .mcts-card .mcts-card__num,
+.mcts-section .mcts-card .mcts-card__title,
+.mcts-section .mcts-card .mcts-desc__heading,
+.mcts-section .mcts-card .mcts-desc__body {
+  color: #FFFFFF !important;
+  /* !important added here too - without it, a same-or-higher-specificity
+     global rule loaded after this file (a gradient-text utility class,
+     an inherited autofill/link style, etc.) can still win the cascade on
+     this property alone even though `color` above is correctly white,
+     which is exactly the kind of per-device inconsistency described. */
+  -webkit-text-fill-color: #FFFFFF !important;
+  background: none !important;
+  background-clip: initial !important;
+  -webkit-background-clip: initial !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}
+
 .mcts-card__num {
   font-family: "Avenir Black";
-  font-size: 30px;   /* yaha size increase karo */
+  font-size: 30px;
   font-weight: 900;
   letter-spacing: 0.12em;
-  opacity: 0.9;
 }
 
 .mcts-card__title {
   margin: 0;
-  font-size: clamp(2.8rem, 10vw, 3.25rem);
+  /* Slightly smaller and less viewport-aggressive than before (10vw was
+     letting long words like "INTELLIGENCE" outgrow narrow phone widths).
+     overflow-wrap/word-break are a hard backstop so no single word can
+     ever push past the card's safe padding, on any device. */
+  font-size: clamp(2.1rem, 7.5vw, 3rem);
   font-weight: 800;
-  line-height: 1.05;
+  line-height: 1.08;
   letter-spacing: -0.02em;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .mcts-card__title-line {
@@ -99,18 +152,46 @@
   z-index: 1;
   width: 100%;
   padding-bottom: 1.5rem;
+  /* Nudges the whole points block (slider + dots/arrows) a little lower
+     inside the card. This is a static visual offset only - GSAP never
+     animates a transform on this element (only opacity), so it can't
+     collide with or get overwritten by the scroll timeline. Scoped to
+     mobile widths since that's where the request applies; desktop is
+     untouched. */
 }
 
-.mcts-desc__stack {
+@media (max-width: 900px) {
+  .mcts-desc {
+    transform: translateY(clamp(10px, 3.2vh, 26px));
+  }
+}
+
+/* --- Swipe slider: only the point content moves. Image, card size,
+   number, and layout are untouched by this. --- */
+.mcts-desc__slider {
   position: relative;
-  min-height: 8.5rem;
+  overflow: hidden;
+  min-height: 9.5rem;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.mcts-desc__slider:active {
+  cursor: grabbing;
 }
 
-.mcts-desc__section {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+.mcts-desc__track {
+  display: flex;
+  width: 100%;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.mcts-desc__slide {
+  flex: 0 0 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding-right: 0.25rem;
 }
 
 .mcts-desc__heading {
@@ -123,41 +204,80 @@
   margin: 0;
   font-size: clamp(0.9rem, 3.6vw, 1rem);
   line-height: 1.5;
-  opacity: 0.92;
+}
+
+/* --- Pagination dots + arrows --- */
+.mcts-desc__nav {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.1rem;
+}
+
+.mcts-desc__dots {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mcts-desc__dot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.mcts-desc__dot.is-active {
+  background: #FFFFFF;
+  transform: scale(1.3);
+}
+
+.mcts-desc__arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.25s ease, opacity 0.25s ease, transform 0.15s ease;
+}
+
+.mcts-desc__arrow:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.mcts-desc__arrow:active {
+  transform: scale(0.92);
+}
+
+.mcts-desc__arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Arrows are a desktop affordance (drag/swipe covers touch); hide them on
+   touch-first small screens to keep the mobile UI minimal, dots remain. */
+@media (max-width: 640px) {
+  .mcts-desc__arrow {
+    display: none;
+  }
 }
 
 @supports not (height: 100dvh) {
   .mcts-sticky {
     height: calc(var(--mcts-vh, 1vh) * 100);
   }
-}
-.mcts-heading-block{
-    width:100%;
-    max-width:1360px;
-    margin:0 auto;
-
-    padding:20px 4% 48px;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
-
-.mcts-headline{
-    position:relative !important;   /* remove absolute */
-    top:auto !important;
-    left:auto !important;
-    right:auto !important;
-
-    width:100%;
-    margin-top:40px;
-
-    font-family:var(--heading) !important;
-    font-size:clamp(34px,4.6vw,76px) !important;
-    font-weight:900 !important;
-    line-height:1.04 !important;
-    letter-spacing:-0.03em !important;
-
-    color:#111 !important;
-    text-align:center !important;
 }

@@ -7,7 +7,12 @@ function Industries() {
     <section className="industries">
       <div className="industries-header">
         <h2>Personalization for Every Business!</h2>
-      </div>
+
+
+  <p className="industries-hint">
+    Click on your category to explore →
+  </p>
+</div>
 
       <DynamicFrameLayout />
     </section>

@@ -126,6 +126,10 @@ const IndustryCard = memo(function IndustryCard({
         <h3 className="dfl-name">{industry.name}</h3>
         <div className="dfl-sep" />
       </div>
+      {/* Mobile-only tap affordance: glass circular button with › icon */}
+      <div className="dfl-mobile-affordance" aria-hidden="true">
+        <span className="dfl-mobile-affordance-icon">›</span>
+      </div>
     </div>
   );
 });

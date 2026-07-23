@@ -378,4 +378,152 @@ top:50%;
     aspect-ratio:16/9;
   }
 
+  /* ── Mobile-only two-phase experience ──────────────────────────
+     phase 'cover': cover image + play button only.
+     phase 'video': the source is a genuine 9:16 clip, so it is shown
+     with object-fit:contain (never cropped/over-zoomed) against a
+     black stage, letterboxed if the viewport's ratio isn't exactly
+     9:16. All rules below are scoped to this media query and only
+     ever apply inside the isMobile branch, so desktop is untouched.
+     ──────────────────────────────────────────────────────────── */
+
+  .mobile-video-stage {
+    background: #000; /* letterbox color behind the contained video */
+  }
+
+  .mobile-cover-wrap,
+  .mobile-inline-video-wrap {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Cover image: visible by default, fills the stage exactly like
+     before (this element is unaffected by the video's object-fit
+     change below — it's a separate <img>, not the <video>). */
+  .mobile-cover-wrap {
+    opacity: 1;
+    transition: opacity 0.8s ease;
+    z-index: 2;
+  }
+
+  .mobile-cover-wrap .workspace-video-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* React adds this class the instant phase becomes 'video'. The
+     transition above animates opacity to 0; when that transition
+     ends, handleCoverTransitionEnd removes the cover from the DOM.
+     No second timer involved. */
+  .mobile-cover-wrap.is-fading-out {
+    opacity: 0;
+  }
+
+  /* Video sits underneath the cover and fades in on mount. */
+  .mobile-inline-video-wrap {
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: mobileVideoFadeIn 0.9s ease both;
+  }
+
+  @keyframes mobileVideoFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* THE FIX for over-zoomed video: contain (not cover) preserves the
+     full 9:16 frame exactly as authored. If the viewport's aspect
+     ratio differs slightly from 9:16, this letterboxes rather than
+     cropping the composition. */
+  .mobile-inline-video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* Floating control cluster — bottom-right, out of the way of the
+     video's visual focus, safe-area aware for notched devices. */
+  .mobile-video-controls {
+    position: absolute;
+    right: 16px;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+
+    opacity: 0;
+    transform: translateY(14px);
+    animation: mobileControlsIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.35s;
+  }
+
+  @keyframes mobileControlsIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Shared glass surface — Apple/Stripe/Linear-style minimal glassmorphism */
+  .glass-btn,
+  .glass-pill {
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(20, 20, 20, 0.35);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+  }
+
+  .glass-btn:active,
+  .glass-pill:active {
+    transform: scale(0.94);
+    background: rgba(20, 20, 20, 0.5);
+  }
+
+  /* Mute / unmute — small circular glass button */
+  .glass-btn.mute-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .mute-btn-icon {
+    font-size: 17px;
+    line-height: 1;
+    display: inline-block;
+    transition: transform 0.2s ease;
+  }
+
+  .glass-btn.mute-btn:active .mute-btn-icon {
+    transform: scale(0.85);
+  }
+
+  /* Watch on YouTube — small premium pill */
+  .glass-pill.youtube-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+
 }

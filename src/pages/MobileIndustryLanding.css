@@ -639,3 +639,102 @@
   background: #fff;
   transform: scale(1.4);
 }
+/* --------------------------------------------------------------------------
+ * CTA card (6th/final slide) — reuses the exact same full-bleed photo +
+ * dark overlay treatment as the other 5 cards (.industry-card--mobile,
+ * .industry-card__bg-overlay). Append to MobileIndustryLanding.css.
+ * Does not modify any existing rules.
+ * -------------------------------------------------------------------------- */
+
+/* Base card shell is inherited from .industry-card--mobile — no separate
+ * background/border defined here, so the photo + .industry-card__bg-overlay
+ * (rgba(0,0,0,0.42)) look identical to every other slide. We only deepen
+ * the overlay slightly on the CTA slide for button legibility/contrast. */
+.industry-card--cta .industry-card__bg-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(0, 0, 0, 0.55) 55%,
+    rgba(0, 0, 0, 0.68) 100%
+  );
+}
+
+
+/* CTA content center */
+.industry-card__detail--cta {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 18px;
+}
+
+
+/* Small eyebrow text */
+.industry-card__cta-eyebrow {
+  font-family: var(--body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+
+/* CTA headline */
+.industry-card__detail--cta .industry-card__cta-title {
+  margin: 0;
+  max-width: 290px;
+  align-self: center;
+  text-align: center;
+}
+
+
+/* Premium Book a Demo Button */
+.industry-card__cta-button {
+  margin-top: 18px;
+
+  min-width: 190px;
+  height: 56px;
+  padding: 0 36px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+
+  font-family: var(--body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+
+  color: #111;
+  background: #fff;
+
+  border: 1px solid rgba(255,255,255,0.45);
+
+  box-shadow:
+    0 12px 35px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.9);
+
+  transition:
+    transform 0.35s cubic-bezier(.22,1,.36,1),
+    box-shadow 0.35s ease,
+    background 0.35s ease;
+}
+
+
+.industry-card__cta-button:hover {
+  transform: translateY(-3px) scale(1.03);
+
+  background: #f5f5f5;
+
+  box-shadow:
+    0 20px 45px rgba(0,0,0,0.38),
+    inset 0 1px 0 rgba(255,255,255,1);
+}
+
+
+.industry-card__cta-button:active {
+  transform: scale(0.98);
+}
