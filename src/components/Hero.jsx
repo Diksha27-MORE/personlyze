@@ -4,26 +4,10 @@ import "./Hero.mobile.css";
 import backgroundVideo from "../assets/hero-video.mp4";
 import LogoAnimation from "../assets/Logo animation new.webm";
 import logoStatic from "../assets/logo.png";
+import { hasIntroPlayed, markIntroPlayed } from "./introSession";
 
 const mobileHeroVideo =
   "https://res.cloudinary.com/t4s8m2hn/video/upload/v1784388112/hero-mobile_ewaryl.mp4";
-
-const INTRO_PLAYED_KEY = "personlyze:heroIntroPlayed";
-
-function hasIntroPlayed() {
-  if (typeof window === "undefined") return false;
-  try {
-    return window.sessionStorage.getItem(INTRO_PLAYED_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-function markIntroPlayed() {
-  if (typeof window === "undefined") return;
-  try {
-    window.sessionStorage.setItem(INTRO_PLAYED_KEY, "1");
-  } catch {}
-}
 
 const NAV_ITEMS = [
   { label: "Who We Are", id: "who-we-are" },
@@ -139,15 +123,9 @@ function NavMenu({ revealed }) {
 
 function Hero() {
   // --- Device detection (deterministic on mount) ---------------------------
-  // Initial render: assume desktop on SSR, correct value on CSR.
   const [isMobile, setIsMobile] = useState(getIsMobile);
-  const isMobileRef = useRef(isMobile);
 
   // --- Intro state ---------------------------------------------------------
-  // IMPORTANT: do NOT read sessionStorage during initial state.
-  // That produces SSR/CSR mismatches and race conditions with the intro
-  // effects. We initialize to "playing" and correct it in a mount effect
-  // BEFORE any timer effect runs (both are useEffect so ordering is stable).
   const [introDecided, setIntroDecided] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [showMobileIntro, setShowMobileIntro] = useState(false);
@@ -155,15 +133,17 @@ function Hero() {
   const [mobileIntroStep, setMobileIntroStep] = useState(0);
   const [revealed, setRevealed] = useState(false);
 
-  // Guards against StrictMode double-invoke and cross-branch double start.
+  // Guards against StrictMode double-invoke and duplicate timer starts.
   const didStartRef = useRef(false);
   const videoRef = useRef(null);
-  const currentVideoSrcRef = useRef(null);
 
-  // Keep isMobile ref in sync (used only by non-timer callbacks).
-  useEffect(() => {
-    isMobileRef.current = isMobile;
-  }, [isMobile]);
+  // Tracks whether the video-loading effect has already run once for the
+  // current mount, and the isMobile value it last acted on. Used so we only
+  // force a real reload of the <video> element when the device category
+  // genuinely changes (mobile <-> desktop) after mount - never as a side
+  // effect of the intro finishing.
+  const videoEffectRanOnceRef = useRef(false);
+  const prevIsMobileRef = useRef(isMobile);
 
   // Track viewport changes.
   useEffect(() => {
@@ -174,17 +154,34 @@ function Hero() {
     return () => mediaQuery.removeEventListener("change", checkScreen);
   }, []);
 
-  // Decide, exactly once on mount, whether the intro should play this session.
-  // Runs before the timer effects observe `introDecided`, so timers won't
-  // start with the wrong intent.
+  // Decide, exactly once on mount, whether the intro should play.
+  //
+  // `hasIntroPlayed()` reads an in-memory module flag (see introSession.js):
+  // - true  -> this Hero mounted because of client-side navigation within
+  //            the same page load (e.g. Back button); skip the intro and
+  //            reveal immediately, with no restart/flicker.
+  // - false -> this is a genuinely fresh page load (first visit OR a hard
+  //            refresh, since a refresh re-executes the JS bundle and resets
+  //            the flag); play the intro.
   useEffect(() => {
-    const played = hasIntroPlayed();
-    if (played) {
+    const alreadyPlayed = hasIntroPlayed();
+
+    if (alreadyPlayed) {
       setShowIntro(false);
       setShowMobileIntro(false);
       setRevealed(true);
     } else {
-      // Show the correct branch for the current viewport ONLY.
+      // Make sure a hard refresh always starts at the top of the page,
+      // regardless of where the user scrolled to before reloading, and
+      // stop the browser from silently restoring that old scroll position
+      // for us later.
+      if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+      if (typeof window !== "undefined") {
+        window.scrollTo(0, 0);
+      }
+
       const mobile = getIsMobile();
       setShowIntro(!mobile);
       setShowMobileIntro(mobile);
@@ -193,21 +190,40 @@ function Hero() {
     setIntroDecided(true);
   }, []);
 
-  // Video (re)load — only when the source actually changes, and never while
-  // the intro is running (prevents re-render churn during the intro).
+  // Video lifecycle - intentionally independent of intro/reveal state.
+  //
+  // The <video> element is rendered on first paint with the correct
+  // <source>, autoPlay, and preload="auto", so the browser already starts
+  // fetching/playing it immediately, even while it's visually hidden
+  // (opacity: 0) behind the intro. That's exactly what we want: buffering
+  // happens quietly during the intro.
+  //
+  // This effect's ONLY job is to force a real reload when the device
+  // category actually changes (mobile <-> desktop), because changing a
+  // child <source>'s src does not make the browser reload the media by
+  // itself. It must NEVER run in response to `revealed` changing - doing
+  // that was the root cause of the black screen, since el.load() throws
+  // away everything already buffered and restarts the fetch from zero.
   useEffect(() => {
-    if (!introDecided) return;
-    if (!revealed) return; // wait until intro is done to touch the video
     const el = videoRef.current;
     if (!el) return;
-    const nextSrc = isMobile ? mobileHeroVideo : backgroundVideo;
-    if (currentVideoSrcRef.current === nextSrc) return;
-    currentVideoSrcRef.current = nextSrc;
+
+    if (!videoEffectRanOnceRef.current) {
+      // First run after mount: nothing to do, the browser is already
+      // handling the initial source correctly.
+      videoEffectRanOnceRef.current = true;
+      prevIsMobileRef.current = isMobile;
+      return;
+    }
+
+    if (prevIsMobileRef.current === isMobile) return; // no real change
+
+    prevIsMobileRef.current = isMobile;
     try {
       el.load();
       el.play().catch(() => {});
     } catch {}
-  }, [isMobile, introDecided, revealed]);
+  }, [isMobile]);
 
   // Desktop intro sequence.
   useEffect(() => {
@@ -216,8 +232,6 @@ function Hero() {
     if (didStartRef.current) return;
     didStartRef.current = true;
 
-    // Mark as played immediately so a route change mid-intro still
-    // suppresses replay on return.
     markIntroPlayed();
 
     const LINE1_APPEAR = 100;
@@ -240,7 +254,7 @@ function Hero() {
 
     return () => {
       timers.forEach(clearTimeout);
-      // Do NOT reset didStartRef — StrictMode remount must not restart.
+      // Do NOT reset didStartRef - StrictMode remount must not restart.
     };
   }, [introDecided, showIntro]);
 

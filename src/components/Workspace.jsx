@@ -11,7 +11,7 @@ const YOUTUBE_ID = "qPMJL64Qvq0";
 const MOBILE_MP4_SRC =
   "https://res.cloudinary.com/t4s8m2hn/video/upload/v1784788885/Personlyze_AI_-_Intro_9_16_1_ndznph.mp4";
 const MOBILE_BREAKPOINT = "(max-width: 640px)";
-const PHASE2_DELAY_MS = 5000; // cover image is shown for this long, no video exists yet
+const PHASE2_DELAY_MS = 2000; // cover image is shown for this long, no video exists yet
 
 export default function Workspace() {
   const sectionRef = useRef(null);

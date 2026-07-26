@@ -153,9 +153,6 @@
     align-items: center;
     padding: env(safe-area-inset-top, 0) 24px env(safe-area-inset-bottom, 0);
     z-index: 2;
-    /* Establishes a stacking context so the full-screen glass layer
-       (positioned relative to .hero-logo-wrap below) is clipped to the
-       Hero section instead of bleeding into content below it. */
     overflow: hidden;
   }
 
@@ -169,7 +166,6 @@
     text-align: center;
     gap: 0;
 
-    /* Premium entrance: soft fade + subtle rise, ease-in-out */
     opacity: 0;
     transform: translateY(14px);
     transition:
@@ -192,7 +188,6 @@
     align-items: baseline;
     line-height: 0.95;
     color: #ffffff;
-    /* Fluid: nearly full width w/ safe margins */
     font-size: clamp(44px, 15.5vw, 92px);
     letter-spacing: -0.045em;
     font-weight: 800;
@@ -238,14 +233,6 @@
 
   /* =========================================================
      LOGO + PREMIUM GLASS EXPAND ANIMATION
-     .hero-logo-wrap holds the logo video.
-     .hero-logo-wrap::before is the glass layer that starts as a
-     tiny, ALREADY-VISIBLE dot centered behind the logo and grows
-     via `transform: scale()` only over 8s (GPU-composited, no
-     layout thrash). Opacity is a static value — it never animates
-     — so there is no fade-in flare and no fade-out at the end.
-     `animation-fill-mode: forwards` locks the end state (scale(1))
-     in permanently once the animation completes.
   ========================================================= */
   .hero-logo-wrap {
     position: relative;
@@ -266,10 +253,6 @@
     top: 50%;
     left: 50%;
 
-    /* 300vmax is always bigger than the screen diagonal, on every
-       device/orientation (tall narrow phones, short wide phones,
-       foldables, etc.), so at scale(1) it reads as a flat
-       full-bleed glass panel rather than a visible circular edge. */
     width: 300vmax;
     height: 300vmax;
     border-radius: 50%;
@@ -282,36 +265,16 @@
       0 0 100px rgba(255, 255, 255, 0.22),
       inset 0 0 50px rgba(255, 255, 255, 0.12);
 
-    /* Static opacity — intentionally NOT part of the keyframes.
-       This is the key fix: nothing fades in or out, only the size
-       changes, so the glass layer reads as a continuous, permanent
-       expansion rather than a flare that dies away. */
     opacity: 0.55;
 
     z-index: 0;
     pointer-events: none;
     will-change: transform;
 
-    /* Starting state (also the 0% keyframe, kept here as a fallback
-       in case animation is disabled e.g. prefers-reduced-motion) */
     transform: translate(-50%, -50%) scale(0.02);
 
     animation: logoCircleExpand 20s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     animation-delay: 0.1s;
-
-    /* ROOT-CAUSE FIX: this element is mounted (and its animation
-       clock starts ticking) as soon as the component renders — long
-       before the user can see it, because its ancestor
-       `.hero-mobile-stack` sits at opacity:0 during the intro
-       sequence. `opacity:0` hides paint output but does NOT pause a
-       running CSS animation, so by the time the stack fades in
-       (`revealed` becomes true, ~6s after mount) the circle was
-       already ~70% expanded and finished almost immediately after
-       becoming visible — which reads as "appears instantly".
-       Pausing here and only setting it to `running` once `.hero`
-       gets the `.is-revealed` class (added by React exactly when
-       `revealed` flips true) synchronizes the animation's start
-       with the first moment it's actually visible. */
     animation-play-state: paused;
   }
 
@@ -338,7 +301,7 @@
 
   .hero-center--mobile .hero-logo-video {
     position: relative;
-    z-index: 1; /* always above the glass layer */
+    z-index: 1;
     width: 350px;
     height: auto;
     display: block;
@@ -350,57 +313,56 @@
   }
 
   /* ---------- Button ---------- */
-/* ---------- Button ---------- */
-.hero-center--mobile .hero-demo-btn {
-  /* Centering — hardened against any desktop override */
-  position: static !important;
-  left: auto !important;
-  right: auto !important;
-  transform: none !important;
-  width: auto !important;
-  margin: 48px auto 0 !important;
-  align-self: center !important;
+  .hero-center--mobile .hero-demo-btn {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+    width: auto !important;
+    margin: 48px auto 0 !important;
+    align-self: center !important;
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 
-  padding: 15px 34px;
-  font-size: 14px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-weight: 500;
+    padding: 15px 34px;
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
 
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 999px;
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.08) inset,
-    0 10px 30px rgba(0, 0, 0, 0.25);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.08) inset,
+      0 10px 30px rgba(0, 0, 0, 0.25);
 
-  opacity: 1;
-  cursor: pointer;
-  z-index: 1;
-  transition:
-    background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
+    opacity: 1;
+    cursor: pointer;
+    z-index: 1;
+    transition:
+      background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
-.hero-center--mobile .hero-demo-btn:hover,
-.hero-center--mobile .hero-demo-btn:active {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.35);
-  transform: translateY(-1px) !important;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.12) inset,
-    0 14px 36px rgba(0, 0, 0, 0.3);
-}
+  .hero-center--mobile .hero-demo-btn:hover,
+  .hero-center--mobile .hero-demo-btn:active {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: translateY(-1px) !important;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.12) inset,
+      0 14px 36px rgba(0, 0, 0, 0.3);
+  }
+
   .hero-center--mobile .hero-demo-btn__arrow {
     display: inline-block;
     transform: translateY(1px);
