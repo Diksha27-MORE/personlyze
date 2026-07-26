@@ -3,7 +3,6 @@ import "./Hero.desktop.css";
 import "./Hero.mobile.css";
 import backgroundVideo from "../assets/hero-video.mp4";
 import LogoAnimation from "../assets/Logo animation new.webm";
-import logoStatic from "../assets/logo.png";
 import { hasIntroPlayed, markIntroPlayed } from "./introSession";
 
 // Cloudinary delivery transformation: f_auto (best format for the
@@ -69,16 +68,25 @@ function NavMenu({ revealed }) {
 
   return (
     <>
-      <button
-        className={`nav-hamburger-btn reveal-item ${revealed ? "is-revealed" : ""} ${isOpen ? "is-open" : ""}`}
-        onClick={() => setIsOpen((prev) => !prev)}
-        aria-label={isOpen ? "Close menu" : "Open menu"}
-        aria-expanded={isOpen}
-      >
-        <span className="nav-hamburger-line" />
-        <span className="nav-hamburger-line" />
-        <span className="nav-hamburger-line" />
-      </button>
+      {/*
+        Hamburger button only mounts while the menu is closed. When
+        isOpen becomes true, this block returns null and React
+        unmounts the hamburger from the DOM entirely (not hidden,
+        genuinely removed), so it can never overlap the close (✕)
+        button rendered inside the nav panel below.
+      */}
+      {!isOpen && (
+        <button
+          className={`nav-hamburger-btn reveal-item ${revealed ? "is-revealed" : ""}`}
+          onClick={() => setIsOpen(true)}
+          aria-label="Open menu"
+          aria-expanded={false}
+        >
+          <span className="nav-hamburger-line" />
+          <span className="nav-hamburger-line" />
+          <span className="nav-hamburger-line" />
+        </button>
+      )}
 
       <div
         className={`nav-overlay ${isOpen ? "is-visible" : ""}`}
@@ -126,21 +134,15 @@ function NavMenu({ revealed }) {
 
 /**
  * Always mounts the <video> immediately (not conditionally on `revealed`).
- * This is the actual fix for the logo-flash bug: the video's decode clock
- * must start at MOUNT time, quietly hidden behind the ancestor's
- * opacity:0 during the intro, so that by the time the Hero reveals, real
- * frames are already buffered and playback is instant. Delaying the
- * mount until `revealed` (the previous approach) forced the browser to
- * start decoding at reveal time, which meant it had nothing to show but
- * the poster for a beat first - that beat was the visible flash.
+ * The decode clock starts at MOUNT time, quietly hidden behind the
+ * ancestor's opacity:0 during the intro, so by the time the Hero reveals,
+ * real frames are already buffered and playback is instant — no flash.
  *
  * `fetchPriority="low"` deprioritizes this small file relative to the
- * larger background hero video, which is the correct way to avoid mobile
- * decode-session contention: the network/priority scheduler resolves it,
- * not the component lifecycle.
+ * larger background hero video for mobile decode-session contention.
  *
  * `logo.png` is used ONLY as a genuine error fallback (video failed to
- * load/decode), via onError - never as a loading placeholder.
+ * load/decode), via onError — never as a loading placeholder.
  */
 function LogoMedia() {
   const [videoFailed, setVideoFailed] = useState(false);
