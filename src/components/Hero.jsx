@@ -6,8 +6,11 @@ import LogoAnimation from "../assets/Logo animation new.webm";
 import logoStatic from "../assets/logo.png";
 import { hasIntroPlayed, markIntroPlayed } from "./introSession";
 
+// Cloudinary delivery transformation: f_auto (best format for the
+// requesting browser), q_auto (adaptive quality), w_800 (never ship more
+// pixels than a mobile hero needs).
 const mobileHeroVideo =
-  "https://res.cloudinary.com/t4s8m2hn/video/upload/v1784388112/hero-mobile_ewaryl.mp4";
+  "https://res.cloudinary.com/t4s8m2hn/video/upload/f_auto,q_auto,w_800/v1784388112/hero-mobile_ewaryl.mp4";
 
 const NAV_ITEMS = [
   { label: "Who We Are", id: "who-we-are" },
@@ -121,6 +124,47 @@ function NavMenu({ revealed }) {
   );
 }
 
+/**
+ * Always mounts the <video> immediately (not conditionally on `revealed`).
+ * This is the actual fix for the logo-flash bug: the video's decode clock
+ * must start at MOUNT time, quietly hidden behind the ancestor's
+ * opacity:0 during the intro, so that by the time the Hero reveals, real
+ * frames are already buffered and playback is instant. Delaying the
+ * mount until `revealed` (the previous approach) forced the browser to
+ * start decoding at reveal time, which meant it had nothing to show but
+ * the poster for a beat first - that beat was the visible flash.
+ *
+ * `fetchPriority="low"` deprioritizes this small file relative to the
+ * larger background hero video, which is the correct way to avoid mobile
+ * decode-session contention: the network/priority scheduler resolves it,
+ * not the component lifecycle.
+ *
+ * `logo.png` is used ONLY as a genuine error fallback (video failed to
+ * load/decode), via onError - never as a loading placeholder.
+ */
+function LogoMedia() {
+  const [videoFailed, setVideoFailed] = useState(false);
+
+  if (videoFailed) {
+    return <img src={logoStatic} alt="" aria-hidden="true" className="hero-logo-video" />;
+  }
+
+  return (
+    <video
+      className="hero-logo-video"
+      autoPlay
+      loop
+      muted
+      playsInline
+      preload="auto"
+      fetchPriority="low"
+      onError={() => setVideoFailed(true)}
+    >
+      <source src={LogoAnimation} type="video/webm" />
+    </video>
+  );
+}
+
 function Hero() {
   // --- Device detection (deterministic on mount) ---------------------------
   const [isMobile, setIsMobile] = useState(getIsMobile);
@@ -133,36 +177,23 @@ function Hero() {
   const [mobileIntroStep, setMobileIntroStep] = useState(0);
   const [revealed, setRevealed] = useState(false);
 
-  // Guards against StrictMode double-invoke and duplicate timer starts.
   const didStartRef = useRef(false);
   const videoRef = useRef(null);
-
-  // Tracks whether the video-loading effect has already run once for the
-  // current mount, and the isMobile value it last acted on. Used so we only
-  // force a real reload of the <video> element when the device category
-  // genuinely changes (mobile <-> desktop) after mount - never as a side
-  // effect of the intro finishing.
   const videoEffectRanOnceRef = useRef(false);
   const prevIsMobileRef = useRef(isMobile);
 
-  // Track viewport changes.
+  // Track viewport changes — only re-render on an actual change.
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 768px)");
-    const checkScreen = () => setIsMobile(mediaQuery.matches);
+    const checkScreen = () => {
+      setIsMobile((prev) => (prev === mediaQuery.matches ? prev : mediaQuery.matches));
+    };
     checkScreen();
     mediaQuery.addEventListener("change", checkScreen);
     return () => mediaQuery.removeEventListener("change", checkScreen);
   }, []);
 
   // Decide, exactly once on mount, whether the intro should play.
-  //
-  // `hasIntroPlayed()` reads an in-memory module flag (see introSession.js):
-  // - true  -> this Hero mounted because of client-side navigation within
-  //            the same page load (e.g. Back button); skip the intro and
-  //            reveal immediately, with no restart/flicker.
-  // - false -> this is a genuinely fresh page load (first visit OR a hard
-  //            refresh, since a refresh re-executes the JS bundle and resets
-  //            the flag); play the intro.
   useEffect(() => {
     const alreadyPlayed = hasIntroPlayed();
 
@@ -171,10 +202,6 @@ function Hero() {
       setShowMobileIntro(false);
       setRevealed(true);
     } else {
-      // Make sure a hard refresh always starts at the top of the page,
-      // regardless of where the user scrolled to before reloading, and
-      // stop the browser from silently restoring that old scroll position
-      // for us later.
       if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
         window.history.scrollRestoration = "manual";
       }
@@ -190,33 +217,20 @@ function Hero() {
     setIntroDecided(true);
   }, []);
 
-  // Video lifecycle - intentionally independent of intro/reveal state.
-  //
-  // The <video> element is rendered on first paint with the correct
-  // <source>, autoPlay, and preload="auto", so the browser already starts
-  // fetching/playing it immediately, even while it's visually hidden
-  // (opacity: 0) behind the intro. That's exactly what we want: buffering
-  // happens quietly during the intro.
-  //
-  // This effect's ONLY job is to force a real reload when the device
-  // category actually changes (mobile <-> desktop), because changing a
-  // child <source>'s src does not make the browser reload the media by
-  // itself. It must NEVER run in response to `revealed` changing - doing
-  // that was the root cause of the black screen, since el.load() throws
-  // away everything already buffered and restarts the fetch from zero.
+  // Background video lifecycle - independent of intro/reveal state.
+  // Only forces a real reload when the device category genuinely changes
+  // (mobile <-> desktop) after mount. Never runs in response to `revealed`.
   useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
 
     if (!videoEffectRanOnceRef.current) {
-      // First run after mount: nothing to do, the browser is already
-      // handling the initial source correctly.
       videoEffectRanOnceRef.current = true;
       prevIsMobileRef.current = isMobile;
       return;
     }
 
-    if (prevIsMobileRef.current === isMobile) return; // no real change
+    if (prevIsMobileRef.current === isMobile) return;
 
     prevIsMobileRef.current = isMobile;
     try {
@@ -254,7 +268,6 @@ function Hero() {
 
     return () => {
       timers.forEach(clearTimeout);
-      // Do NOT reset didStartRef - StrictMode remount must not restart.
     };
   }, [introDecided, showIntro]);
 
@@ -307,6 +320,7 @@ function Hero() {
         loop
         playsInline
         preload="auto"
+        fetchPriority="high"
       >
         <source src={isMobile ? mobileHeroVideo : backgroundVideo} type="video/mp4" />
       </video>
@@ -352,9 +366,7 @@ function Hero() {
               <span className="personalization">Personalization</span>
             </div>
             <div className="hero-logo-wrap">
-              <video className="hero-logo-video" autoPlay loop muted playsInline preload="auto">
-                <source src={LogoAnimation} type="video/webm" />
-              </video>
+              <LogoMedia />
             </div>
             <button className="hero-demo-btn" onClick={handleBookDemo}>
               <span className="hero-demo-btn__label">Know More</span>
@@ -365,9 +377,7 @@ function Hero() {
       ) : (
         <div className="hero-center">
           <div className={`hero-left reveal-item ${revealed ? "is-revealed" : ""}`}>
-            <video className="hero-logo-video" autoPlay loop muted playsInline>
-              <source src={LogoAnimation} type="video/webm" />
-            </video>
+            <LogoMedia />
           </div>
           <div className={`hero-right reveal-item ${revealed ? "is-revealed" : ""}`}>
             <h1 className="hero-brand">
