@@ -258,6 +258,40 @@
   color: #fff;
 }
 
+/* ── Shared glass surface (used by the mobile Watch on YouTube pill) —
+   Apple/Stripe/Linear-style minimal glassmorphism. Kept independent of
+   any one screen so it can be reused wherever a floating glass control
+   is needed. ── */
+.glass-btn,
+.glass-pill {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(20, 20, 20, 0.35);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+}
+
+.glass-btn:active,
+.glass-pill:active {
+  transform: scale(0.94);
+  background: rgba(20, 20, 20, 0.5);
+}
+
+.glass-pill.youtube-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
 /* ── Tablet ── */
 @media (max-width: 1024px) {
   .workspace-section {
@@ -284,12 +318,19 @@
 
 /* ===============================
    MOBILE
-   Not a shrunk desktop grid: single column, the
-   statement reads as a short editorial headline
-   with real line breaks, and the supporting copy
-   drops below with a top hairline instead of a
-   left one — same device, rotated for a narrow
-   viewport rather than scaled down.
+   Two full-viewport screens, back to back in normal
+   document flow (no scroll-snap/JS needed to gate
+   one from the other — height alone does that):
+
+     Screen 2 — "Who We Are" card: the same editorial
+     headline content, expanded to fill almost the
+     entire viewport, with a fixed-to-this-screen
+     "Book a Demo" button pinned to the bottom.
+
+     Screen 3 — Video: full-viewport, fully manual
+     play/pause (no autoplay, no timers), with a
+     transparent centered play/pause button and a
+     small "Watch on YouTube" pill bottom-right.
 ================================= */
 
 @media (max-width:640px){
@@ -339,37 +380,163 @@
     margin-left:2px;
   }
 
-  .workspace-video{
-    position:relative;
-    width:100vw;
-    height:100vh;
-    margin-left:calc(50% - 50vw);
-    overflow:hidden;
-    cursor:pointer;
-    display:flex;
-    flex-direction:column;
-    justify-content:flex-start;
+  /* ── Screen 2: "Who We Are" full-viewport card ──────────────────
+     Fills almost the whole screen (100svh, with a 100vh fallback for
+     browsers that don't support svh), so Screen 3 only ever comes
+     into view once the user has scrolled past this one. The Book a
+     Demo button is pinned to the bottom of this card specifically
+     (not globally fixed), so it travels away with the card and never
+     overlaps the video screen below. ── */
+  .mobile-whoweare-card{
+    position: relative;
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 96px 24px calc(128px + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
   }
 
-  .workspace-video::before{
-    height:70px;
+  .mobile-whoweare-card .workspace-heading{
+    row-gap: 34px;
   }
 
-@media (max-width:640px){
-
-  .play-btn{
-top:50%;
-    left:50%;
-    transform:translate(-50%, -50%);
-
-    width:72px;
-    height:72px;
+  .mobile-whoweare-card .heading-statement{
+    font-size: clamp(36px, 10.5vw, 46px);
+    line-height: 1.16;
   }
 
-}
-  .play-btn svg{
-    width:20px;
-    height:20px;
+  .mobile-whoweare-card .heading-support{
+    font-size: 16px;
+    line-height: 1.75;
+    padding-top: 26px;
+    opacity: 0.7;
+  }
+
+  .mobile-book-demo-btn{
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    padding: 18px 0;
+    border: none;
+    border-radius: 999px;
+    background: #111111;
+    color: #fff;
+    font-family: var(--body, "Helvetica Neue", Arial, sans-serif);
+    font-size: 15.5px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+
+  .mobile-book-demo-btn:active{
+    transform: scale(0.97);
+    background: #000;
+  }
+
+  /* ── Screen 3: full-viewport manual play/pause video ──────────── */
+  .workspace-video.mobile-video-stage{
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    height: 100svh;
+    margin-left: calc(50% - 50vw);
+    overflow: hidden;
+    cursor: pointer;
+    background: #000; /* letterbox / loading color behind the video */
+  }
+
+  .workspace-video.mobile-video-stage::before{
+    height: 70px;
+  }
+
+  .mobile-cover-wrap{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.5s ease;
+  }
+
+  .mobile-cover-wrap .workspace-video-media{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Faded once playback starts — no longer intercepts taps, so the
+     video and the controls above it stay reachable. */
+  .mobile-cover-wrap.is-fading-out{
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .mobile-inline-video{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    display: block;
+  }
+
+  /* Centered, transparent play/pause toggle. Always present and
+     tappable — full opacity while paused, and it stays visible (at
+     reduced opacity) while playing so the user can pause just as
+     easily as they started. */
+  .mobile-playpause-btn{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.6);
+    background: rgba(0, 0, 0, 0.16);
+    backdrop-filter: blur(6px) saturate(140%);
+    -webkit-backdrop-filter: blur(6px) saturate(140%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease, opacity 0.25s ease;
+  }
+
+  .mobile-playpause-btn:active{
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+
+  .mobile-playpause-btn svg{
+    width: 30px;
+    height: 30px;
+    fill: #fff;
+  }
+
+  /* Watch on YouTube — small pill, bottom-right, safe-area aware. */
+  .mobile-youtube-btn{
+    position: absolute;
+    right: 16px;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    z-index: 6;
+  }
+
+  .youtube-icon{
+    width: 24px;
+    height: 17px;
+    flex-shrink: 0;
   }
 
   .video-modal-inner{
@@ -377,153 +544,4 @@ top:50%;
     height:auto;
     aspect-ratio:16/9;
   }
-
-  /* ── Mobile-only two-phase experience ──────────────────────────
-     phase 'cover': cover image + play button only.
-     phase 'video': the source is a genuine 9:16 clip, so it is shown
-     with object-fit:contain (never cropped/over-zoomed) against a
-     black stage, letterboxed if the viewport's ratio isn't exactly
-     9:16. All rules below are scoped to this media query and only
-     ever apply inside the isMobile branch, so desktop is untouched.
-     ──────────────────────────────────────────────────────────── */
-
-  .mobile-video-stage {
-    background: #000; /* letterbox color behind the contained video */
-  }
-
-  .mobile-cover-wrap,
-  .mobile-inline-video-wrap {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* Cover image: visible by default, fills the stage exactly like
-     before (this element is unaffected by the video's object-fit
-     change below — it's a separate <img>, not the <video>). */
-  .mobile-cover-wrap {
-    opacity: 1;
-    transition: opacity 0.8s ease;
-    z-index: 2;
-  }
-
-  .mobile-cover-wrap .workspace-video-media {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  /* React adds this class the instant phase becomes 'video'. The
-     transition above animates opacity to 0; when that transition
-     ends, handleCoverTransitionEnd removes the cover from the DOM.
-     No second timer involved. */
-  .mobile-cover-wrap.is-fading-out {
-    opacity: 0;
-  }
-
-  /* Video sits underneath the cover and fades in on mount. */
-  .mobile-inline-video-wrap {
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: mobileVideoFadeIn 0.9s ease both;
-  }
-
-  @keyframes mobileVideoFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  /* THE FIX for over-zoomed video: contain (not cover) preserves the
-     full 9:16 frame exactly as authored. If the viewport's aspect
-     ratio differs slightly from 9:16, this letterboxes rather than
-     cropping the composition. */
-  .mobile-inline-video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-  }
-
-  /* Floating control cluster — bottom-right, out of the way of the
-     video's visual focus, safe-area aware for notched devices. */
-  .mobile-video-controls {
-    position: absolute;
-    right: 16px;
-    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-    z-index: 6;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 12px;
-
-    opacity: 0;
-    transform: translateY(14px);
-    animation: mobileControlsIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: 0.35s;
-  }
-
-  @keyframes mobileControlsIn {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* Shared glass surface — Apple/Stripe/Linear-style minimal glassmorphism */
-  .glass-btn,
-  .glass-pill {
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    background: rgba(20, 20, 20, 0.35);
-    backdrop-filter: blur(16px) saturate(160%);
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-    color: #fff;
-    cursor: pointer;
-    transition: transform 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
-  }
-
-  .glass-btn:active,
-  .glass-pill:active {
-    transform: scale(0.94);
-    background: rgba(20, 20, 20, 0.5);
-  }
-
-  /* Mute / unmute — small circular glass button */
-  .glass-btn.mute-btn {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-  }
-
-  .mute-btn-icon {
-    font-size: 17px;
-    line-height: 1;
-    display: inline-block;
-    transition: transform 0.2s ease;
-  }
-
-  .glass-btn.mute-btn:active .mute-btn-icon {
-    transform: scale(0.85);
-  }
-
-  /* Watch on YouTube — small premium pill */
-  .glass-pill.youtube-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 10px 16px;
-    border-radius: 999px;
-    font-size: 12.5px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    white-space: nowrap;
-  }
-
 }

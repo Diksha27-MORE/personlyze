@@ -159,7 +159,7 @@ function LogoMedia() {
       muted
       playsInline
       preload="auto"
-      fetchPriority="low"
+      fetchpriority="low"
       onError={() => setVideoFailed(true)}
     >
       <source src={LogoAnimation} type="video/webm" />
@@ -183,6 +183,7 @@ function Hero() {
   const videoRef = useRef(null);
   const videoEffectRanOnceRef = useRef(false);
   const prevIsMobileRef = useRef(isMobile);
+  const sectionRef = useRef(null);
 
   // Track viewport changes — only re-render on an actual change.
   useEffect(() => {
@@ -218,6 +219,87 @@ function Hero() {
     }
     setIntroDecided(true);
   }, []);
+
+  // ---------------------------------------------------------------------
+  // Intro scroll lock.
+  //
+  // `revealed` is false for the entire time the intro is on screen
+  // (both the "already decided but not yet revealed" gap and the actual
+  // intro animation), and only flips true once the intro + hero are
+  // fully ready. So "!revealed" is exactly the window we need to lock.
+  //
+  // We do NOT use a position:fixed/scrollY-restore trick here on
+  // purpose: the previous effect already forces window.scrollTo(0, 0)
+  // before the intro starts, so simply freezing overflow keeps the
+  // document at 0 the whole time. There is nothing to "restore" after
+  // unlocking, which is what prevents any jump to a previously
+  // scrolled position once the intro finishes.
+  // ---------------------------------------------------------------------
+  useEffect(() => {
+    if (!introDecided) return;
+
+    const root = document.documentElement;
+    const body = document.body;
+
+    if (revealed) {
+      root.classList.remove("intro-scroll-lock");
+      body.classList.remove("intro-scroll-lock");
+
+      // Re-enable Lenis / ScrollTrigger if the project wires them up as
+      // globals elsewhere. Guarded so this is a no-op when absent.
+      try {
+        window.lenis?.start?.();
+      } catch {}
+      try {
+        window.ScrollTrigger?.getAll?.().forEach((st) => st.enable());
+        window.ScrollTrigger?.refresh?.();
+      } catch {}
+
+      return;
+    }
+
+    // --- Lock ---
+    root.classList.add("intro-scroll-lock");
+    body.classList.add("intro-scroll-lock");
+
+    try {
+      window.lenis?.stop?.();
+    } catch {}
+    try {
+      window.ScrollTrigger?.getAll?.().forEach((st) => st.disable(false));
+    } catch {}
+
+    const SCROLL_KEYS = new Set([
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+      "PageUp",
+      "PageDown",
+      "Home",
+      "End",
+      " ",
+      "Spacebar",
+    ]);
+
+    const blockWheel = (e) => e.preventDefault();
+    const blockTouch = (e) => e.preventDefault();
+    const blockKeys = (e) => {
+      if (SCROLL_KEYS.has(e.key) || e.code === "Space") {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("wheel", blockWheel, { passive: false });
+    window.addEventListener("touchmove", blockTouch, { passive: false });
+    window.addEventListener("keydown", blockKeys, { passive: false });
+
+    return () => {
+      window.removeEventListener("wheel", blockWheel);
+      window.removeEventListener("touchmove", blockTouch);
+      window.removeEventListener("keydown", blockKeys);
+    };
+  }, [introDecided, revealed]);
 
   // Background video lifecycle - independent of intro/reveal state.
   // Only forces a real reload when the device category genuinely changes
@@ -305,15 +387,82 @@ function Hero() {
     };
   }, [introDecided, showMobileIntro]);
 
-  const handleBookDemo = () => {
-    const section = document.getElementById("who-we-are");
-    if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  // ---------------------------------------------------------------------
+  // TEMPORARY DEBUG INSTRUMENTATION — remove once the ordering issue is
+  // confirmed/resolved. Logs the ACTUAL rendered DOM order of
+  // .hero-mobile-stack's children after every commit where it's mobile
+  // and revealed, plus a computed-style dump so we can see if anything
+  // (order, flex-direction, position, transform) is visually reordering
+  // them even though the DOM itself is correct.
+  // ---------------------------------------------------------------------
+  useEffect(() => {
+    if (!isMobile) return;
+    const stack = document.querySelector(".hero-mobile-stack");
+    if (!stack) return;
+
+    const children = Array.from(stack.children);
+    console.log(
+      "[HERO DEBUG] .hero-mobile-stack DOM order:",
+      children.map((el) => el.className),
+    );
+
+    children.forEach((el) => {
+      const cs = getComputedStyle(el);
+      console.log(
+        `[HERO DEBUG] <${el.tagName.toLowerCase()} class="${el.className}">`,
+        {
+          order: cs.order,
+          position: cs.position,
+          transform: cs.transform,
+          flexDirection: cs.flexDirection,
+          top: cs.top,
+          left: cs.left,
+        },
+      );
+    });
+
+    const stackStyles = getComputedStyle(stack);
+    console.log("[HERO DEBUG] .hero-mobile-stack computed:", {
+      display: stackStyles.display,
+      flexDirection: stackStyles.flexDirection,
+    });
+  }, [isMobile, revealed]);
+  // ---------------------------------------------------------------------
+  // END TEMPORARY DEBUG INSTRUMENTATION
+  // ---------------------------------------------------------------------
+
+const handleBookDemo = () => {
+  const phone = "919819104471";
+
+  const message = encodeURIComponent(`Hi, I'd like to book a demo of Personlyze AI for my business.
+
+Details below.
+
+Name:
+Company:
+Website:
+Email:`);
+
+  window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+};
+
+// Smoothly scrolls from the Hero into the next section ("Who We Are" /
+// Workspace). Mobile CTA arrow only — desktop's "Know More" button keeps
+// its existing onClick (handleBookDemo) untouched.
+const handleScrollToNextSection = () => {
+  document.getElementById("who-we-are")?.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
+};
 
   const videoHiddenForMobileIntro = isMobile && !revealed;
 
   return (
-    <section className={`hero ${revealed ? "is-revealed" : "is-intro"}`}>
+    <section
+      ref={sectionRef}
+      className={`hero ${revealed ? "is-revealed" : "is-intro"}`}
+    >
       <video
         ref={videoRef}
         className={`hero-video ${videoHiddenForMobileIntro ? "is-preloading" : "is-ready"}`}
@@ -322,7 +471,7 @@ function Hero() {
         loop
         playsInline
         preload="auto"
-        fetchPriority="high"
+        fetchpriority="high"
       >
         <source src={isMobile ? mobileHeroVideo : backgroundVideo} type="video/mp4" />
       </video>
@@ -352,27 +501,36 @@ function Hero() {
         </div>
       )}
 
+      {isMobile && (
+        <button
+          className={`hero-book-demo-btn reveal-item ${revealed ? "is-revealed" : ""}`}
+          onClick={handleBookDemo}
+        >
+          Book a Demo
+        </button>
+      )}
+
       <NavMenu revealed={revealed} />
 
       {isMobile ? (
         <div className="hero-center hero-center--mobile">
           <div className={`hero-mobile-stack reveal-item ${revealed ? "is-revealed" : ""}`}>
+            <div className="hero-logo-wrap">
+              <LogoMedia />
+            </div>
             <h1 className="hero-brand">
               <span className="brand-name">personlyze</span>
               <span className="brand-dot">.</span>
               <span className="brand-ai">ai</span>
             </h1>
-            <div className="hero-tagline">
-              <span className="strategy">Strategy First</span>
-              <span className="tagline-sep" aria-hidden="true">|</span>
-              <span className="personalization">Personalization</span>
-            </div>
-            <div className="hero-logo-wrap">
-              <LogoMedia />
-            </div>
-            <button className="hero-demo-btn" onClick={handleBookDemo}>
-              <span className="hero-demo-btn__label">Know More</span>
-              <span className="hero-demo-btn__arrow">↓</span>
+            {/* Strategy-first / Personalization tagline removed on mobile
+                per the reference layout — desktop tagline is unaffected. */}
+            <button
+              className="hero-demo-btn"
+              onClick={handleScrollToNextSection}
+              aria-label="Scroll to next section"
+            >
+              <span className="hero-demo-btn__arrow">⌄</span>
             </button>
           </div>
         </div>

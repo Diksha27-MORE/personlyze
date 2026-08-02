@@ -11,105 +11,105 @@ const YOUTUBE_ID = "qPMJL64Qvq0";
 const MOBILE_MP4_SRC =
   "https://res.cloudinary.com/t4s8m2hn/video/upload/v1784788885/Personlyze_AI_-_Intro_9_16_1_ndznph.mp4";
 const MOBILE_BREAKPOINT = "(max-width: 640px)";
-const PHASE2_DELAY_MS = 2000; // cover image is shown for this long, no video exists yet
 
 export default function Workspace() {
   const sectionRef = useRef(null);
   const headingRef = useRef(null);
-  const videoRef = useRef(null); // outer container — GSAP fade target (shared by desktop + mobile)
+  const videoRef = useRef(null); // outer container — GSAP fade target + IntersectionObserver target (mobile)
   const mp4Ref = useRef(null); // mobile inline <video> element
-  const phaseTimerRef = useRef(null);
 
   const [modalOpen, setModalOpen] = useState(false);
 
   /* ── Mobile-only state ──────────────────────────────────────────
-     ONE state drives everything: `phase`.
-       'cover' → only the cover image + play button exist. No <video>
-                 tag anywhere in the DOM. This is the initial value,
-                 always, on every mount.
-       'video' → the <video> tag is mounted for the first time here,
-                 plays, and the controls (mute / watch on YouTube)
-                 appear. The play button is gone.
-
-     `coverVisible` exists only to let the cover image crossfade out
-     instead of popping off. It is flipped to false by a CSS
-     `transitionend` event on the cover element itself — not by a
-     second timer — so there is exactly one timer in this whole
-     component: the 5s delay below. ────────────────────────────── */
+     Screen 3 (video) is now fully manual:
+       isPlaying === false → poster/cover image + centered transparent
+                              play button are shown, video is paused.
+       isPlaying === true  → cover fades out, video plays (with sound,
+                              since playback is always a direct result
+                              of a user tap).
+     There is no auto-play and no timer anywhere in this component
+     anymore — the user is always the one who starts playback. ── */
   const [isMobile, setIsMobile] = useState(
     () =>
       typeof window !== "undefined" &&
       window.matchMedia(MOBILE_BREAKPOINT).matches
   );
-  const [phase, setPhase] = useState("cover");
-  const [coverVisible, setCoverVisible] = useState(true);
-  const [muted, setMuted] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   /* ── GSAP entrance + word-by-word scroll reveal (unchanged) ── */
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const words = headingRef.current.querySelectorAll(".reveal-word");
-      const aiSpans = headingRef.current.querySelectorAll(".workspace-ai");
+      const words = headingRef.current?.querySelectorAll(".reveal-word") ?? [];
+      const aiSpans = headingRef.current?.querySelectorAll(".workspace-ai") ?? [];
 
-      gsap.set(words, {
-        color: "#CFCFCF",
-        willChange: "color",
-      });
-      gsap.set(aiSpans, {
-        color: "#CFCFCF",
-        willChange: "color",
-      });
+      if (words.length) {
+        gsap.set(words, {
+          color: "#CFCFCF",
+          willChange: "color",
+        });
+      }
 
-      gsap.fromTo(
-        videoRef.current,
-        { opacity: 0, scale: 0.96 },
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 1,
-          ease: "power3.out",
+      if (aiSpans.length) {
+        gsap.set(aiSpans, {
+          color: "#CFCFCF",
+          willChange: "color",
+        });
+      }
+
+      if (videoRef.current && sectionRef.current) {
+        gsap.fromTo(
+          videoRef.current,
+          { opacity: 0, scale: 0.96 },
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 1,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top 90%",
+              end: "top 55%",
+              scrub: 1,
+            },
+          }
+        );
+      }
+
+      if (sectionRef.current) {
+        const tl = gsap.timeline({
           scrollTrigger: {
             trigger: sectionRef.current,
-            start: "top 90%",
-            end: "top 55%",
+            start: "top 75%",
+            end: "top 15%",
             scrub: 1,
           },
-        }
-      );
+        });
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 75%",
-          end: "top 15%",
-          scrub: 1,
-        },
-      });
-
-      words.forEach((word, i) => {
-        tl.to(
-          word,
-          {
-            color: "#111111",
-            duration: 1,
-            ease: "none",
-          },
-          i === 0 ? 0 : "-=0.25"
-        );
-
-        const aiSpan = word.querySelector(".workspace-ai");
-        if (aiSpan) {
+        words.forEach((word, i) => {
           tl.to(
-            aiSpan,
+            word,
             {
-              color: "#d10000",
+              color: "#111111",
               duration: 1,
               ease: "none",
             },
-            "<"
+            i === 0 ? 0 : "-=0.25"
           );
-        }
-      });
+
+          const aiSpan = word.querySelector(".workspace-ai");
+          if (aiSpan) {
+            tl.to(
+              aiSpan,
+              {
+                color: "#d10000",
+                duration: 1,
+                ease: "none",
+              },
+              "<"
+            );
+          }
+        });
+      }
     }, sectionRef);
 
     return () => ctx.revert();
@@ -136,99 +136,82 @@ export default function Workspace() {
     };
   }, []);
 
-  /* ── The ONLY timer in this component.
-     ROOT CAUSE FIX: the countdown must NOT start on component mount.
-     This component (like the rest of the page) mounts immediately,
-     often while an intro/splash animation is still covering the screen
-     or before the user has scrolled this section into view — so a
-     mount-based timer was silently burning down before anyone ever saw
-     the cover image.
-
-     Instead, an IntersectionObserver watches the actual video stage
-     element. The 5s (or whatever PHASE2_DELAY_MS is set to) countdown
-     starts only the first time that element is genuinely visible in
-     the viewport — i.e. only once the user can actually see the cover
-     image and Play button. It is one-shot (the observer disconnects
-     after firing) so scrolling away and back doesn't restart it. ── */
+  /* ── Auto-pause the mobile video whenever it scrolls (mostly) out
+     of view. This is NOT one-shot: it re-checks every time visibility
+     changes, so leaving and returning to the video always re-applies
+     the rule. It only ever pauses — resuming is always a manual tap,
+     per spec ("if the user scrolls back, keep the video paused until
+     the user presses Play again"). ── */
   useEffect(() => {
     if (!isMobile) return undefined;
 
-    setPhase("cover");
-    setCoverVisible(true);
-    clearTimeout(phaseTimerRef.current);
-
     const node = videoRef.current;
-    if (!node || typeof IntersectionObserver === "undefined") {
-      // Fallback for environments without IntersectionObserver support:
-      // start immediately rather than never starting at all.
-      phaseTimerRef.current = setTimeout(() => setPhase("video"), PHASE2_DELAY_MS);
-      return () => clearTimeout(phaseTimerRef.current);
-    }
+    if (!node || typeof IntersectionObserver === "undefined") return undefined;
 
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        if (entry.isIntersecting) {
-          phaseTimerRef.current = setTimeout(() => {
-            setPhase("video");
-          }, PHASE2_DELAY_MS);
-          observer.disconnect(); // one-shot: only ever starts the countdown once
+        if (!entry.isIntersecting) {
+          setIsPlaying((wasPlaying) => {
+            if (wasPlaying && mp4Ref.current) {
+              mp4Ref.current.pause();
+            }
+            return false;
+          });
         }
       },
-      { threshold: 0.5 } // require the stage to be meaningfully on-screen, not just a sliver
+      { threshold: 0.35 }
     );
 
     observer.observe(node);
-
-    return () => {
-      observer.disconnect();
-      clearTimeout(phaseTimerRef.current);
-    };
+    return () => observer.disconnect();
   }, [isMobile]);
 
-  /* ── Once phase flips to 'video', the <video> element mounts for the
-     first time on this render. Play it explicitly (muted autoplay is
-     allowed by browsers). No timer involved. ── */
+  /* ── Pause inline video while the YouTube modal is open. Resuming
+     afterwards is left to the user (tap Play again) — consistent
+     with the "always a deliberate tap" rule above. ── */
   useEffect(() => {
-    if (phase !== "video" || !mp4Ref.current) return;
-    const playPromise = mp4Ref.current.play();
-    if (playPromise && typeof playPromise.catch === "function") {
-      playPromise.catch(() => {
-        /* autoplay blocked — video stays paused until user interacts */
-      });
-    }
-  }, [phase]);
-
-  /* ── Keep the <video> element's muted property in sync with state ── */
-  useEffect(() => {
-    if (mp4Ref.current) {
-      mp4Ref.current.muted = muted;
-    }
-  }, [muted]);
-
-  /* ── Pause inline video while the YouTube modal is open, resume after ── */
-  useEffect(() => {
-    if (phase !== "video" || !mp4Ref.current) return;
-    if (modalOpen) {
+    if (!isMobile || !mp4Ref.current) return;
+    if (modalOpen && isPlaying) {
       mp4Ref.current.pause();
-    } else {
-      const playPromise = mp4Ref.current.play();
-      if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => {});
-      }
+      setIsPlaying(false);
     }
-  }, [modalOpen, phase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalOpen, isMobile]);
 
-  // Event-driven cover removal — fires when the cover's own opacity
-  // transition finishes, replacing what used to be a second timer.
-  const handleCoverTransitionEnd = (e) => {
-    if (e.target !== e.currentTarget || e.propertyName !== "opacity") return;
-    if (phase === "video") setCoverVisible(false);
-  };
+  /* ── When the clip finishes naturally, reset to the poster/cover
+     state instead of holding on the last frame. ── */
+  useEffect(() => {
+    const el = mp4Ref.current;
+    if (!isMobile || !el) return undefined;
 
-  const toggleMute = (e) => {
-    e.stopPropagation();
-    setMuted((m) => !m);
+    const onEnded = () => {
+      setIsPlaying(false);
+      el.currentTime = 0;
+    };
+    el.addEventListener("ended", onEnded);
+    return () => el.removeEventListener("ended", onEnded);
+  }, [isMobile]);
+
+  /* ── Direct, gesture-synchronous play/pause toggle. Calling
+     play()/pause() straight from the click handler (rather than from
+     an effect) keeps this reliably tied to the user's tap, including
+     for unmuted playback. ── */
+  const toggleMobilePlayback = (e) => {
+    if (e) e.stopPropagation();
+    const el = mp4Ref.current;
+    if (!el) return;
+
+    if (isPlaying) {
+      el.pause();
+      setIsPlaying(false);
+    } else {
+      const playPromise = el.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => setIsPlaying(false));
+      }
+      setIsPlaying(true);
+    }
   };
 
   const openModal = (e) => {
@@ -236,11 +219,36 @@ export default function Workspace() {
     setModalOpen(true);
   };
 
+  /* ── Book a Demo → same WhatsApp deep link used site-wide (Hero /
+     Footer), so the action is identical everywhere. ── */
+  const handleBookDemo = () => {
+    const phone = "919819104471";
+    const message = encodeURIComponent(
+      `Hi, I'd like to book a demo of Personlyze AI for my business.
+Details below.
+Name:
+Company:
+Website:
+Email:`
+    );
+    window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+  };
+
   return (
     <>
       <section className="workspace-section" ref={sectionRef}>
-        {/* Editorial headline — unchanged */}
-        <section className="workspace-title">
+        {/* ══════════════════ Screen 2 — "Who We Are" ══════════════════
+            Desktop: identical to before — an editorial headline in
+            normal flow, no card, no button.
+            Mobile: the same headline content, but wrapped so it fills
+            almost the entire viewport as a standalone screen, with a
+            Book a Demo button pinned to the bottom of that screen.
+            Screen 3 simply sits in normal flow right after it, so it
+            only comes into view once the user scrolls past this
+            full-height screen — no extra JS needed for that part. ── */}
+        <section
+          className={`workspace-title${isMobile ? " mobile-whoweare-card" : ""}`}
+        >
           <div className="workspace-heading" ref={headingRef}>
             <p className="heading-statement">
               <span className="reveal-word">We</span>{" "}
@@ -283,81 +291,79 @@ export default function Workspace() {
               <span className="reveal-word">end-to-end.</span>
             </p>
           </div>
+
+          {isMobile && (
+            <button
+              type="button"
+              className="mobile-book-demo-btn"
+              onClick={handleBookDemo}
+            >
+              Book a Demo
+            </button>
+          )}
         </section>
 
         {isMobile ? (
-          /* ══════════════════ MOBILE-ONLY EXPERIENCE ══════════════════
-             phase === 'cover' → only image + play button, no <video> in
-             the DOM at all.
-             phase === 'video' → <video> mounts for the first time, plays,
-             controls appear, play button is gone. ═══════════════════ */
-          <div className="workspace-video mobile-video-stage" ref={videoRef}>
-            {coverVisible && (
-              <div
-                className={`mobile-cover-wrap${
-                  phase === "video" ? " is-fading-out" : ""
-                }`}
-                onClick={openModal}
-                onTransitionEnd={handleCoverTransitionEnd}
-                role="button"
-                aria-label="Play platform walkthrough video"
-              >
-                <img
-                  src={workspaceMobileImg}
-                  alt="Workspace"
-                  className="workspace-video-media"
-                />
+          /* ══════════════════ Screen 3 — MOBILE VIDEO ══════════════════
+             Full-viewport stage. Poster/cover shows until the user taps
+             Play. Tapping anywhere on the stage (or the play/pause
+             button itself) toggles playback. Scrolling the stage out of
+             view auto-pauses it; resuming is always a manual tap. ─── */
+          <div
+            className="workspace-video mobile-video-stage"
+            ref={videoRef}
+            onClick={toggleMobilePlayback}
+            role="button"
+            aria-label={isPlaying ? "Pause video" : "Play platform walkthrough video"}
+          >
+            <div
+              className={`mobile-cover-wrap${isPlaying ? " is-fading-out" : ""}`}
+              aria-hidden={isPlaying}
+            >
+              <img
+                src={workspaceMobileImg}
+                alt="Workspace"
+                className="workspace-video-media"
+              />
+            </div>
 
-                {phase !== "video" && (
-                  <button
-                    className="play-btn"
-                    aria-label="Play video"
-                    onClick={openModal}
-                  >
-                    <svg viewBox="0 0 24 24">
-                      <polygon points="5,3 19,12 5,21" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            )}
+            <video
+              ref={mp4Ref}
+              className="mobile-inline-video"
+              src={MOBILE_MP4_SRC}
+              playsInline
+              preload="metadata"
+            />
 
-            {phase === "video" && (
-              <div className="mobile-inline-video-wrap">
-                <video
-                  ref={mp4Ref}
-                  className="mobile-inline-video"
-                  src={MOBILE_MP4_SRC}
-                  muted
-                  playsInline
-                  preload="auto"
-                  loop
-                  autoPlay
-                />
+            <button
+              type="button"
+              className="mobile-playpause-btn"
+              onClick={toggleMobilePlayback}
+              aria-label={isPlaying ? "Pause video" : "Play video"}
+            >
+              {isPlaying ? (
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="6" y="4" width="4" height="16" rx="1" />
+                  <rect x="14" y="4" width="4" height="16" rx="1" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <polygon points="6,4 20,12 6,20" />
+                </svg>
+              )}
+            </button>
 
-                <div className="mobile-video-controls">
-                  <button
-                    type="button"
-                    className="glass-btn mute-btn"
-                    onClick={toggleMute}
-                    aria-label={muted ? "Unmute video" : "Mute video"}
-                    aria-pressed={!muted}
-                  >
-                    <span className="mute-btn-icon" aria-hidden="true">
-                      {muted ? "🔇" : "🔊"}
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="glass-pill youtube-btn"
-                    onClick={openModal}
-                  >
-                    <span aria-hidden="true">▶</span> Watch on YouTube
-                  </button>
-                </div>
-              </div>
-            )}
+            <button
+              type="button"
+              className="glass-pill youtube-btn mobile-youtube-btn"
+              onClick={openModal}
+            >
+              <svg viewBox="0 0 28 20" className="youtube-icon" aria-hidden="true">
+                <rect x="0" y="0" width="28" height="20" rx="6" fill="#FF0000" />
+                <polygon points="11,6 20,10 11,14" fill="#fff" />
+              </svg>
+              Watch on YouTube
+            </button>
           </div>
         ) : (
           /* ══════════════════ DESKTOP — untouched ══════════════════ */

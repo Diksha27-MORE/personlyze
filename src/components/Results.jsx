@@ -43,11 +43,39 @@ const METRICS = [
   },
 ];
 
+// Simple inline chevron icons for the mobile nav arrows — no extra
+// dependency needed, and they inherit color via `currentColor` so the
+// CSS opacity/hover rules just work.
+const ChevronLeft = () => (
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path
+      d="M15 18l-6-6 6-6"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const ChevronRight = () => (
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path
+      d="M9 18l6-6-6-6"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 export default function Results() {
   const sectionRef    = useRef(null);
   const cardsStripRef = useRef(null);
   const cardsAreaRef  = useRef(null);
   const cardsPinRef   = useRef(null);
+  const headingRef    = useRef(null); // NEW — used for the mobile scroll-reveal
 
   // Tracks which card is centered in the mobile carousel, drives the dots.
   const [activeIndex, setActiveIndex] = useState(0);
@@ -130,6 +158,75 @@ const totalTravel = stripWidth - effectiveWidth;
     return () => mm.revert();
   }, []);
 
+  // ── Mobile-only heading scroll-scrub color reveal ──
+  // Premium Apple/Linear-style effect: the heading sits fixed in place
+  // (no movement, no opacity change) and only text color animates, from
+  // a light gray to solid black, scrubbed directly to scroll position.
+  // Because it's `scrub` (not a one-shot play), the color tracks the
+  // scrollbar exactly — scroll up and it lightens back toward gray.
+  // Desktop is untouched — this matchMedia block only ever registers
+  // below 769px.
+  //
+  // IMPORTANT: .results-brand and .results-ai each have their own CSS
+  // color rule, which has higher specificity than an inherited color on
+  // the parent <h2> — so animating heading.color alone never reaches
+  // those spans. To make the whole heading reveal as one piece, all
+  // three pieces (the "Why" text via the h2 itself, the brand span, and
+  // the accent span) are set to the SAME starting gray with gsap.set
+  // BEFORE the tween is created (this kills the flash-of-black you'd
+  // otherwise see from the plain CSS color painting first), then tweened
+  // together on the SAME timeline + SAME ScrollTrigger so they move in
+  // perfect sync as one scrubbed animation. The accent span animates to
+  // its final red instead of black, so the ".ai" accent color is
+  // preserved once the reveal completes.
+  useEffect(() => {
+    const mm = gsap.matchMedia();
+
+    mm.add("(max-width: 768px)", () => {
+      const heading = headingRef.current;
+      if (!heading) return;
+
+      const brandEl = heading.querySelector(".results-brand");
+      const aiEl    = heading.querySelector(".results-ai");
+
+      const LIGHT  = "#CFCFCF";
+      const DARK   = "#111111";
+      const ACCENT = "#d10000";
+
+      const targets = [heading, brandEl, aiEl].filter(Boolean);
+
+      // Force the starting gray immediately, before ScrollTrigger even
+      // measures anything — prevents any flash of the CSS-default black
+      // on first paint.
+      gsap.set(targets, { color: LIGHT });
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: heading,
+          start: "top 90%",
+          end: "top 35%",
+          scrub: 0.5,
+        },
+      });
+
+      tl.fromTo(heading, { color: LIGHT }, { color: DARK, ease: "none" }, 0);
+      if (brandEl) {
+        tl.fromTo(brandEl, { color: LIGHT }, { color: DARK, ease: "none" }, 0);
+      }
+      if (aiEl) {
+        tl.fromTo(aiEl, { color: LIGHT }, { color: ACCENT, ease: "none" }, 0);
+      }
+
+      return () => {
+        tl.scrollTrigger && tl.scrollTrigger.kill();
+        tl.kill();
+        gsap.set(targets, { clearProps: "color" });
+      };
+    });
+
+    return () => mm.revert();
+  }, []);
+
   // ── Mobile carousel: track which card is centered so the dots stay in
   // sync while the user swipes. Native scroll-snap does the actual paging;
   // this just observes scrollLeft and reports the nearest card's index.
@@ -182,7 +279,12 @@ const totalTravel = stripWidth - effectiveWidth;
   const scrollToCard = (index) => {
     const viewport = cardsAreaRef.current;
     if (!viewport) return;
-    const card = viewport.querySelectorAll(".metric-card")[index];
+
+    // Clamp so arrow clicks at the ends are harmless no-ops instead of
+    // scrolling to an out-of-range card.
+    const clamped = Math.max(0, Math.min(index, METRICS.length - 1));
+
+    const card = viewport.querySelectorAll(".metric-card")[clamped];
     if (!card) return;
 
     const target =
@@ -195,63 +297,91 @@ const totalTravel = stripWidth - effectiveWidth;
     <section className="results-section" ref={sectionRef}>
 
 <div className="results-heading-block">
-  <h2 className="results-heading">
+  <h2 className="results-heading" ref={headingRef}>
     Why <span className="results-brand">personlyze</span><span className="results-ai">.ai</span>
   </h2>
 </div>
 
       <div className="results-cards-pin" ref={cardsPinRef}>
-        <div className="results-cards-viewport" ref={cardsAreaRef}>
-          <div className="results-cards-strip" ref={cardsStripRef}>
-            {METRICS.map((m) => (
-              <div
-                key={m.label}
-                className="metric-card"
-                style={{ backgroundImage: `url(${m.image})` }}
-              >
-                <div className="metric-card-overlay" />
-                <div className="metric-card-content">
+        {/* Mobile-only wrapper (display:contents on desktop) so the nav
+            arrows can be positioned relative to the carousel without
+            altering the desktop DOM/layout at all. */}
+        <div className="results-cards-carousel-wrap">
+          <div className="results-cards-viewport" ref={cardsAreaRef}>
+            <div className="results-cards-strip" ref={cardsStripRef}>
+              {METRICS.map((m) => (
+                <div
+                  key={m.label}
+                  className="metric-card"
+                  style={{ backgroundImage: `url(${m.image})` }}
+                >
+                  <div className="metric-card-overlay" />
+                  <div className="metric-card-content">
 
-                  {/* Mobile-only floating badge (glass pill). Hidden on
-                      desktop via display:none — reuses the footnote text
-                      so no new copy is introduced. */}
-                  <div className="metric-card-badge">{m.footnote}</div>
+                    {/* Mobile-only floating badge (glass pill). Hidden on
+                        desktop via display:none — reuses the footnote text
+                        so no new copy is introduced. */}
+                    <div className="metric-card-badge">{m.footnote}</div>
 
-                  {/* Mobile-only glass panel wrapping the stat + heading +
-                      description. On desktop this is display:contents, so
-                      its children (.metric-card-top + .metric-card-description)
-                      behave as plain flex children exactly like before. */}
-                  <div className="metric-card-mobile-panel">
-                    <div className="metric-card-top">
-                      <div className="metric-card-number">{m.number}</div>
-                      <div className="metric-card-label">{m.label}</div>
+                    {/* Mobile-only glass panel wrapping the stat + heading +
+                        description. On desktop this is display:contents, so
+                        its children (.metric-card-top + .metric-card-description)
+                        behave as plain flex children exactly like before. */}
+                    <div className="metric-card-mobile-panel">
+                      <div className="metric-card-top">
+                        <div className="metric-card-number">{m.number}</div>
+                        <div className="metric-card-label">{m.label}</div>
+                      </div>
+                      <div className="metric-card-description">
+                        As established by industry data from personalized video campaigns
+                        across categories and markets across the world.
+                      </div>
                     </div>
-                    <div className="metric-card-description">
-                      As established by industry data from personalized video campaigns
-                      across categories and markets across the world.
-                    </div>
-                  </div>
 
-                  {/* Group 2: footnote + disclaimer — this is the ORIGINAL
-                      desktop layout, unchanged. Hidden on mobile, where the
-                      badge + description above take over that same content. */}
-                  <div className="metric-card-bottom">
-                    <div className="metric-card-footnote">{m.footnote}</div>
-                    <div className="metric-card-disclaimer">
-                      As established by industry data from personalized video campaigns
-                      across categories and markets across the world.
+                    {/* Group 2: footnote + disclaimer — this is the ORIGINAL
+                        desktop layout, unchanged. Hidden on mobile, where the
+                        badge + description above take over that same content. */}
+                    <div className="metric-card-bottom">
+                      <div className="metric-card-footnote">{m.footnote}</div>
+                      <div className="metric-card-disclaimer">
+                        As established by industry data from personalized video campaigns
+                        across categories and markets across the world.
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            {/* Invisible spacer — creates one final `gap` after the last
-                card, identical in size to the gaps between cards, so the
-                pin doesn't release until that trailing gap has scrolled by.
-                On mobile this is hidden — scroll-snap needs the last real
-                card to be the final snap point, not an empty spacer. */}
-            <div className="results-cards-spacer" aria-hidden="true" />
+              ))}
+              {/* Invisible spacer — creates one final `gap` after the last
+                  card, identical in size to the gaps between cards, so the
+                  pin doesn't release until that trailing gap has scrolled by.
+                  On mobile this is hidden — scroll-snap needs the last real
+                  card to be the final snap point, not an empty spacer. */}
+              <div className="results-cards-spacer" aria-hidden="true" />
+            </div>
           </div>
+
+          {/* Mobile-only transparent nav arrows. Hidden entirely on desktop.
+              Disabled (and visually hidden) at the ends so they never imply
+              navigation that isn't possible. */}
+          <button
+            type="button"
+            className="results-nav-arrow results-nav-arrow--prev"
+            onClick={() => scrollToCard(activeIndex - 1)}
+            disabled={activeIndex === 0}
+            aria-label="Previous result"
+          >
+            <ChevronLeft />
+          </button>
+
+          <button
+            type="button"
+            className="results-nav-arrow results-nav-arrow--next"
+            onClick={() => scrollToCard(activeIndex + 1)}
+            disabled={activeIndex === METRICS.length - 1}
+            aria-label="Next result"
+          >
+            <ChevronRight />
+          </button>
         </div>
 
         {/* Instagram-style pagination dots — mobile only (display:none on

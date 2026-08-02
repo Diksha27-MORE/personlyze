@@ -35,7 +35,21 @@
   line-height: 0.95;
   letter-spacing: -0.035em;
 
-  color: #111;
+  /* Scroll-driven reveal: a hard-edged two-tone gradient (black on the
+     left half, light gray on the right half) twice the element's width,
+     clipped to the glyph shapes. Sliding its position from 100% 0 to
+     0% 0 sweeps the black/gray boundary left-to-right across the text -
+     GSAP scrubs background-position on scroll (see the ScrollTrigger in
+     MobileCardTransitionSection.jsx). Color/-webkit-text-fill-color are
+     set transparent so the gradient itself is what's visible. */
+  color: transparent;
+  background-image: linear-gradient(90deg, #111111 50%, #C9C6BE 50%);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .mcts-sticky {
@@ -246,8 +260,10 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   color: #FFFFFF;
   font-size: 1.25rem;
   line-height: 1;
@@ -256,7 +272,7 @@
 }
 
 .mcts-desc__arrow:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.24);
 }
 
 .mcts-desc__arrow:active {
@@ -264,17 +280,14 @@
 }
 
 .mcts-desc__arrow:disabled {
-  opacity: 0.3;
+  opacity: 0.35;
   cursor: default;
 }
 
-/* Arrows are a desktop affordance (drag/swipe covers touch); hide them on
-   touch-first small screens to keep the mobile UI minimal, dots remain. */
-@media (max-width: 640px) {
-  .mcts-desc__arrow {
-    display: none;
-  }
-}
+/* Arrows now stay visible on touch/mobile too (not just desktop), as a
+   clear affordance that the points block is swipeable/navigable. Drag
+   and swipe still work exactly as before; this is purely an additional
+   visual cue. */
 
 @supports not (height: 100dvh) {
   .mcts-sticky {

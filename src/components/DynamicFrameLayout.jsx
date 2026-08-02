@@ -1,6 +1,5 @@
-// DynamicFrameLayout.jsx
-
-import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
+// DynamicFrameLayout.jsx  ·  DESKTOP ONLY
+import { useState, useCallback, useMemo, memo, useEffect, useRef } from "react";
 import "./DynamicFrameLayout.css";
 import { FaExpand, FaPlay, FaExternalLinkAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -24,15 +23,15 @@ import b2bImg from "../assets/b2bimg.png";
 import fashionImg from "../assets/fashionimg.png";
 
 const industries = [
-  { name: "Real Estate",             video: realEstateVideo, image: realEstateImg, className: "real-estate", slug: "real-estate" },
-  { name: "BFSI",                    video: bfsiVideo,        image: bfsiImg,       className: "bfsi",        slug: "bfsi"        },
-  { name: "Travel & Hospitality",    video: travelVideo,      image: travelImg,     className: "travel",      slug: "travel"      },
-  { name: "Health & Wellness",       video: healthVideo,      image: healthImg,     className: "health",      slug: "health"      },
-  { name: "Retail & D2C",            video: retailVideo,      image: retailImg,     className: "retail",      slug: "retail"      },
-  { name: "Automotive",              video: automotiveVideo,  image: automotiveImg, className: "automotive",  slug: "automotive"  },
-  { name: "B2B & SaaS",              video: b2bVideo,         image: b2bImg,        className: "saas",        slug: "b2b"         },
-  { name: "Fashion & Lifestyle",     video: fashionVideo,     image: fashionImg,    className: "fashion",     slug: "fashion"     },
-  { name: "Internal Communication",  video: fashionVideo,     image: fashionImg,    className: "fashion",     slug: "fashion"     },
+  { name: "Real Estate",            video: realEstateVideo, image: realEstateImg, className: "real-estate", slug: "real-estate" },
+  { name: "BFSI",                   video: bfsiVideo,       image: bfsiImg,       className: "bfsi",        slug: "bfsi"        },
+  { name: "Travel & Hospitality",   video: travelVideo,     image: travelImg,     className: "travel",      slug: "travel"      },
+  { name: "Health & Wellness",      video: healthVideo,     image: healthImg,     className: "health",      slug: "health"      },
+  { name: "Retail & D2C",           video: retailVideo,     image: retailImg,     className: "retail",      slug: "retail"      },
+  { name: "Automotive",             video: automotiveVideo, image: automotiveImg, className: "automotive",  slug: "automotive"  },
+  { name: "B2B & SaaS",             video: b2bVideo,        image: b2bImg,        className: "saas",        slug: "b2b"         },
+  { name: "Fashion & Lifestyle",    video: fashionVideo,    image: fashionImg,    className: "fashion",     slug: "fashion"     },
+  { name: "Internal Communication", video: fashionVideo,    image: fashionImg,    className: "fashion",     slug: "fashion"     },
 ];
 
 const getPos = (index) => ({ row: Math.floor(index / 3), col: index % 3 });
@@ -67,7 +66,9 @@ function useLetterErase(fullText, active) {
   return displayed;
 }
 
-/* ── IndustryCard ──────────────────────────────────────────── */
+/* ============================================================
+   DESKTOP CARD  ·  unchanged behavior
+   ============================================================ */
 const IndustryCard = memo(function IndustryCard({
   industry, index, isHovered, isDimmed, setHovered, onCardClick,
 }) {
@@ -126,14 +127,13 @@ const IndustryCard = memo(function IndustryCard({
         <h3 className="dfl-name">{industry.name}</h3>
         <div className="dfl-sep" />
       </div>
-      {/* Mobile-only tap affordance: glass circular button with › icon */}
-      <div className="dfl-mobile-affordance" aria-hidden="true">
-        <span className="dfl-mobile-affordance-icon">›</span>
-      </div>
     </div>
   );
 });
 
+/* ============================================================
+   ROOT  ·  DESKTOP ONLY
+   ============================================================ */
 export default function DynamicFrameLayout() {
   const navigate = useNavigate();
   const [hovered, setHovered] = useState(null);

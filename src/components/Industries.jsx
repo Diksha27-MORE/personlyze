@@ -1,20 +1,35 @@
+import { useEffect, useState } from "react";
 import DynamicFrameLayout from "./DynamicFrameLayout";
+import DynamicFrameLayoutMobile from "./DynamicFrameLayoutMobile";
 import "./Industries.css";
 
-
 function Industries() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <section className="industries">
       <div className="industries-header">
         <h2>Personalization for Every Business!</h2>
 
+        <p className="industries-hint">
+          Click on your category to explore →
+        </p>
+      </div>
 
-  <p className="industries-hint">
-    Click on your category to explore →
-  </p>
-</div>
-
-      <DynamicFrameLayout />
+      {isMobile ? (
+        <DynamicFrameLayoutMobile />
+      ) : (
+        <DynamicFrameLayout />
+      )}
     </section>
   );
 }

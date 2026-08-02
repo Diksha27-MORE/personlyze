@@ -29,7 +29,7 @@ const CARDS = [
       },
       {
         heading: "Identify High-Impact Personalization Opportunities",
-        body: "Finding the moments where personalization creates the biggest impact on conversion, loyalty and advocacy and helps in prioritizing creative, budget and technology investments.",
+        body: "Finding the moments where personalization creates the biggest impact on conversion, loyalty and advocacy.",
       },
     ],
   },
@@ -100,6 +100,7 @@ const SWIPE_THRESHOLD_PX = 50;
 export default function MobileCardTransitionSection() {
   const sectionRef = useRef(null);
   const stickyRef = useRef(null);
+  const headlineRef = useRef(null);
 
   const cardRefs = useRef([]);
   const descWrapRefs = useRef([]);
@@ -257,6 +258,30 @@ export default function MobileCardTransitionSection() {
         }
       });
 
+      // --- Heading scroll reveal ------------------------------------
+      // Independent of the pinned card timeline above (own trigger, own
+      // scrub). The headline's CSS paints its text with a two-tone
+      // gradient (light gray -> black) clipped to the text via
+      // background-clip: text; here we just scrub that gradient's
+      // horizontal position as the heading scrolls through view, so the
+      // fill sweeps left-to-right from light gray to solid black.
+      if (headlineRef.current) {
+        gsap.fromTo(
+          headlineRef.current,
+          { backgroundPosition: "100% 0" },
+          {
+            backgroundPosition: "0% 0",
+            ease: "none",
+            scrollTrigger: {
+              trigger: headlineRef.current,
+              start: "top 85%",
+              end: "bottom 45%",
+              scrub: true,
+            },
+          }
+        );
+      }
+
       const handleResize = () => ScrollTrigger.refresh();
       window.addEventListener("resize", handleResize);
       window.addEventListener("orientationchange", handleResize);
@@ -299,7 +324,7 @@ export default function MobileCardTransitionSection() {
           and by then card 01 is simply *already* in its full-screen
           layout, so there's nothing left to animate. */}
       <div className="mcts-heading-section">
-        <h1 className="mcts-headline">What we do</h1>
+        <h1 ref={headlineRef} className="mcts-headline">What we do</h1>
       </div>
 
       <section
