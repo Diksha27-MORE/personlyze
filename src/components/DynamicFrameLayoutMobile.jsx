@@ -1,30 +1,16 @@
-// DynamicFrameLayoutMobile.jsx  ·  MOBILE ONLY  ·  v2 (stacked deck)
-// Apple Wallet / Arc / Linear / Framer feel.
+// DynamicFrameLayoutMobile.jsx  ·  v5  ·  simple premium vertical card list (mobile)
 //
-// Behaviour:
-//  - NOTHING is expanded on arrival. Every card starts in the same collapsed state.
-//  - Collapsed = overlapping stacked card: image + industry title only.
-//    Only ~54px of each following card peeks out (Apple Wallet stack).
-//  - Tapping a collapsed card smoothly expands it (full image, description, CTA)
-//    and collapses whichever card was open. Only one open at a time.
-//  - Tapping the open card again — or its CTA — navigates to the industry page.
-//
-// The desktop component is untouched.
-import { useState, useEffect, useRef, useCallback, memo } from "react";
+// No stacked deck, no sticky, no overlap, no expand/collapse, no hover, no video.
+// 10 full-width cards, one below another, 180–220px tall.
+// Image fills the card + numbered label top-center + industry name centered
+// + ">" arrow bottom-right + iOS-style touch ripple on tap.
+// Tap anywhere on a card navigates straight to the industry page.
+import { memo, useCallback, useRef, useState } from "react";
 import "./DynamicFrameLayoutMobile.css";
 import { useNavigate } from "react-router-dom";
 
-import realEstateVideo from "../assets/real-estate.mp4";
-import bfsiVideo from "../assets/bfsi.mp4";
-import travelVideo from "../assets/travel.mp4";
-import healthVideo from "../assets/health.mp4";
-import retailVideo from "../assets/Retail.mp4";
-import automotiveVideo from "../assets/automotive.mp4";
-import b2bVideo from "../assets/b2b.mp4";
-import fashionVideo from "../assets/fashion.mp4";
-
 import realEstateImg from "../assets/real-estateimg.png";
-import bfsiImg from "../assets/bfsi-img.png";
+import financeImg from "../assets/bfsi-img.png";
 import travelImg from "../assets/travelimg.png";
 import healthImg from "../assets/healthimg.png";
 import retailImg from "../assets/Retailimg.png";
@@ -32,250 +18,145 @@ import automotiveImg from "../assets/automotiveimg.png";
 import b2bImg from "../assets/b2bimg.png";
 import fashionImg from "../assets/fashionimg.png";
 
+// TODO: replace with real Govt & Politics image/video assets once available.
+// Using a placeholder (falls back to fashionImg) so the card renders correctly
+// until the real creative is dropped in.
+import govtPlaceholderImg from "../assets/fashionimg.png";
+// import govtPoliticsVideo from "../assets/govt-politics.mp4"; // placeholder for future video preview
+
 const industries = [
-  {
-    name: "Real Estate",
-    video: realEstateVideo,
-    image: realEstateImg,
-    slug: "real-estate",
-    description:
-      "AI powered personalization for real estate businesses to engage, convert and delight every customer.",
-  },
-  {
-    name: "BFSI",
-    video: bfsiVideo,
-    image: bfsiImg,
-    slug: "bfsi",
-    description:
-      "AI driven solutions for BFSI companies to personalize customer journeys at scale.",
-  },
-  {
-    name: "Travel & Hospitality",
-    video: travelVideo,
-    image: travelImg,
-    slug: "travel",
-    description:
-      "Personalized travel experiences that turn browsers into loyal guests.",
-  },
-  {
-    name: "Health & Wellness",
-    video: healthVideo,
-    image: healthImg,
-    slug: "health",
-    description: "AI powered engagement that builds trust and better health outcomes.",
-  },
-  {
-    name: "Retail & D2C",
-    video: retailVideo,
-    image: retailImg,
-    slug: "retail",
-    description: "Convert browsers into buyers with hyper-personalized retail journeys.",
-  },
-  {
-    name: "Automotive",
-    video: automotiveVideo,
-    image: automotiveImg,
-    slug: "automotive",
-    description:
-      "Guide every test drive and purchase decision with tailored automotive experiences.",
-  },
-  {
-    name: "B2B & SaaS",
-    video: b2bVideo,
-    image: b2bImg,
-    slug: "b2b",
-    description: "Personalized journeys that shorten sales cycles and grow B2B accounts.",
-  },
-  {
-    name: "Fashion & Lifestyle",
-    video: fashionVideo,
-    image: fashionImg,
-    slug: "fashion",
-    description: "Style recommendations and campaigns tailored to every shopper.",
-  },
+  { name: "Real Estate", image: realEstateImg, slug: "real-estate" },
+  { name: "Finance", image: financeImg, slug: "bfsi" },
+  { name: "Travel & Hospitality", image: travelImg, slug: "travel" },
+  { name: "Health & Wellness", image: healthImg, slug: "health" },
+  { name: "Retail & D2C", image: retailImg, slug: "retail" },
+  { name: "Automotive", image: automotiveImg, slug: "automotive" },
+  { name: "B2B & SaaS", image: b2bImg, slug: "b2b" },
+  { name: "Fashion & Lifestyle", image: fashionImg, slug: "fashion" },
   {
     name: "Internal Communication",
-    video: fashionVideo,
     image: fashionImg,
     slug: "internal-communication",
-    description:
-      "Keep every employee informed and engaged with personalized internal updates.",
+  },
+  {
+    name: "Govt & Politics",
+    image: govtPlaceholderImg, // placeholder — swap in real asset
+    video: null, // placeholder — swap in real asset when video previews are added back
+    slug: "govt-politics",
   },
 ];
 
-/* ============================================================
-   CARD
-   ============================================================ */
-const IndustryCard = memo(function IndustryCard({
-  industry,
-  index,
-  total,
-  isExpanded,
-  isOpenElsewhere,
-  onSelect,
-  onOpen,
-  registerCard,
-}) {
-  const videoRef = useRef(null);
-  const [videoReady, setVideoReady] = useState(false);
+/* Only real touch devices get the ripple — mouse/pen pointers are skipped. */
+const isTouchPointer = (e) => e.pointerType === "touch";
 
-  /* The video only ever loads for the single expanded card. */
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-
-    if (isExpanded) {
-      if (!v.src) v.src = industry.video;
-      v.muted = true;
-      const p = v.play();
-      if (p && typeof p.catch === "function") p.catch(() => {});
-    } else {
-      setVideoReady(false);
-      try {
-        v.pause();
-        v.removeAttribute("src");
-        v.load();
-      } catch {
-        /* ignore */
-      }
-    }
-  }, [isExpanded, industry.video]);
-
-  const handleTap = useCallback(() => {
-    if (isExpanded) onOpen(index);
-    else onSelect(index);
-  }, [isExpanded, index, onOpen, onSelect]);
+const IndustryCard = memo(function IndustryCard({ industry, index, onOpen }) {
+  const cardRef = useRef(null);
+  const rippleIdRef = useRef(0);
+  const [ripples, setRipples] = useState([]);
 
   const handleKeyDown = useCallback(
     (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        handleTap();
+        onOpen(industry.slug);
       }
     },
-    [handleTap],
+    [industry.slug, onOpen],
   );
 
+  const spawnRipple = useCallback((e) => {
+    if (!isTouchPointer(e)) return;
+    const card = cardRef.current;
+    if (!card) return;
+
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    // Size the ripple so it always covers the full card from the tap point.
+    const maxDist = Math.max(
+      Math.hypot(x, y),
+      Math.hypot(rect.width - x, y),
+      Math.hypot(x, rect.height - y),
+      Math.hypot(rect.width - x, rect.height - y),
+    );
+    const size = maxDist * 2;
+
+    const id = rippleIdRef.current++;
+    setRipples((prev) => [...prev, { id, x, y, size }]);
+
+    window.setTimeout(() => {
+      setRipples((prev) => prev.filter((r) => r.id !== id));
+    }, 800);
+  }, []);
+
+  const label = String(index + 1).padStart(2, "0");
+
   return (
-    <div
-      className={[
-        "dfl-m-slot",
-        isExpanded ? "is-expanded" : "is-collapsed",
-        isOpenElsewhere ? "is-dimmed" : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      ref={(el) => registerCard(index, el)}
-      style={{ "--i": index, zIndex: index + 1 }}
+    <article
+      ref={cardRef}
+      role="link"
+      tabIndex={0}
+      aria-label={`Open ${industry.name} industry page`}
+      className="dfl-m-card"
+      onClick={() => onOpen(industry.slug)}
+      onKeyDown={handleKeyDown}
+      onPointerDown={spawnRipple}
     >
       <div
-        role="button"
-        tabIndex={0}
-        aria-expanded={isExpanded}
-        aria-label={
-          isExpanded ? `Open ${industry.name} page` : `Expand ${industry.name}`
-        }
-        onClick={handleTap}
-        onKeyDown={handleKeyDown}
-        className={`dfl-m-card${isExpanded ? " is-expanded" : ""}`}
-      >
-        <div
-          className="dfl-m-card-bg"
-          style={{ backgroundImage: `url(${industry.image})` }}
-        />
-        <video
-          ref={videoRef}
-          className={`dfl-m-card-video${videoReady && isExpanded ? " is-visible" : ""}`}
-          muted
-          loop
-          playsInline
-          preload="none"
-          disablePictureInPicture
-          onPlaying={() => setVideoReady(true)}
-        />
-        <div className="dfl-m-card-scrim" />
+        className="dfl-m-card-bg"
+        style={{ backgroundImage: `url(${industry.image})` }}
+      />
+      <div className="dfl-m-card-scrim" />
 
-        {/* Title strip — always inside the visible peek area, always legible. */}
-        <div className="dfl-m-card-head">
-          <h3 className="dfl-m-name">{industry.name}</h3>
-          <span className="dfl-m-chev" aria-hidden="true" />
-        </div>
+      <span className="dfl-m-number">
+        {label} 
+      </span>
 
-        {/* Revealed only when expanded. */}
-        <div className="dfl-m-reveal" aria-hidden={!isExpanded}>
-          <p className="dfl-m-desc">{industry.description}</p>
-          <button
-            type="button"
-            className="dfl-m-cta"
-            tabIndex={isExpanded ? 0 : -1}
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpen(index);
+      <h3 className="dfl-m-name">{industry.name}</h3>
+
+      <span className="dfl-m-arrow" aria-hidden="true">
+        &gt;
+      </span>
+
+      <span className="dfl-m-ripple-layer" aria-hidden="true">
+        {ripples.map((r) => (
+          <span
+            key={r.id}
+            className="dfl-m-ripple"
+            style={{
+              left: r.x,
+              top: r.y,
+              width: r.size,
+              height: r.size,
+              marginLeft: -r.size / 2,
+              marginTop: -r.size / 2,
             }}
-          >
-            Explore {industry.name}
-            <span className="dfl-m-cta-arrow" aria-hidden="true">
-              →
-            </span>
-          </button>
-          <span className="dfl-m-count" aria-hidden="true">
-            {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
-          </span>
-        </div>
-      </div>
-    </div>
+          />
+        ))}
+      </span>
+    </article>
   );
 });
 
-/* ============================================================
-   DECK
-   ============================================================ */
 export default function DynamicFrameLayoutMobile() {
   const navigate = useNavigate();
-  const cardsRef = useRef([]);
-  const [expanded, setExpanded] = useState(null); // nothing open on arrival
-
-  const registerCard = useCallback((index, el) => {
-    cardsRef.current[index] = el;
-  }, []);
-
-  const handleSelect = useCallback((index) => {
-    setExpanded((prev) => (prev === index ? null : index));
-    if (navigator.vibrate) navigator.vibrate(10);
-
-    requestAnimationFrame(() => {
-      const el = cardsRef.current[index];
-      if (!el) return;
-      const top = el.getBoundingClientRect().top + window.scrollY - 88;
-      window.scrollTo({ top, behavior: "smooth" });
-    });
-  }, []);
 
   const handleOpen = useCallback(
-    (index) => {
-      navigate(`/industry/${industries[index].slug}`);
+    (slug) => {
+      navigate(`/industry/${slug}`);
     },
     [navigate],
   );
 
   return (
-    <section
-      className={`dfl-m-section${expanded !== null ? " has-open" : ""}`}
-      aria-label="Industries"
-    >
-
-      <div className="dfl-m-deck">
+    <section className="dfl-m-section" aria-label="Industries">
+      <div className="dfl-m-list">
         {industries.map((industry, index) => (
           <IndustryCard
-            key={industry.slug + index}
+            key={industry.slug}
             industry={industry}
             index={index}
-            total={industries.length}
-            isExpanded={expanded === index}
-            isOpenElsewhere={expanded !== null && expanded !== index}
-            onSelect={handleSelect}
             onOpen={handleOpen}
-            registerCard={registerCard}
           />
         ))}
       </div>

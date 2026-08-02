@@ -618,6 +618,137 @@ const industries = [
       },
     ],
   },
+  /* ========================================================================
+ * INTERNAL COMMUNICATION
+ * ====================================================================== */
+{
+  slug: "internal-communication",
+  name: "Internal Communication",
+  image: fashionImg, // Replace with your own image later
+  className: "internal-communication",
+  heroTitle: "Internal Communication",
+  heroDescription:
+    "AI-powered employee engagement that keeps teams informed, aligned, and connected through personalized internal communication.",
+
+  challenges: [
+    {
+      problem: "Employees ignore important internal announcements and company updates.",
+      cards: [
+        {
+          title: "What this means",
+          content:
+            "Emails and intranet announcements often get overlooked, causing employees to miss important updates, policy changes, and organizational news.",
+        },
+        {
+          title: "Personlyze Intervention",
+          content:
+            "Deliver personalized WhatsApp and video messages based on department, role, and location so every employee receives relevant information at the right time.",
+        },
+        { title: "Video" },
+        {
+          title: "Why this works",
+          content:
+            "Personalized communication feels relevant and increases attention, ensuring employees engage with information that directly impacts them.",
+        },
+        {
+          title: "Expected Outcome",
+          content:
+            "Higher announcement engagement, improved communication effectiveness, and better employee awareness across the organization.",
+        },
+      ],
+    },
+    {
+      problem: "Low participation in company initiatives, training, and internal events.",
+      cards: [
+        {
+          title: "What this means",
+          content:
+            "Training programs, wellness initiatives, surveys, and company events often receive low participation because communication is generic and untimely.",
+        },
+        {
+          title: "Personlyze Intervention",
+          content:
+            "Send personalized invitation videos and timely reminders tailored to each employee's role, interests, and previous participation.",
+        },
+        { title: "Video" },
+        {
+          title: "Why this works",
+          content:
+            "Relevant and personalized invitations create stronger engagement, making employees more likely to participate in organizational activities.",
+        },
+        {
+          title: "Expected Outcome",
+          content:
+            "Higher participation rates, increased training completion, stronger employee engagement, and improved internal communication metrics.",
+        },
+      ],
+    },
+  ],
+},
+  {
+  slug: "govt-politics",
+  name: "Govt & Politics",
+  image: fashionImg, // replace with your actual image later
+  className: "govt-politics",
+  heroTitle: "Govt & Politics",
+  heroDescription:
+    "AI-powered citizen engagement and personalized public communication for government organizations.",
+
+  challenges: [
+    {
+      problem: "Citizens often miss important government announcements and schemes.",
+      cards: [
+        {
+          title: "What this means",
+          content:
+            "Generic communication fails to reach the right citizens at the right time.",
+        },
+        {
+          title: "Personlyze Intervention",
+          content:
+            "Deliver personalized WhatsApp videos based on citizen profile, language and location.",
+        },
+        { title: "Video" },
+        {
+          title: "Why this works",
+          content:
+            "Personalized communication increases trust, engagement and awareness.",
+        },
+        {
+          title: "Expected Outcome",
+          content:
+            "Higher citizen engagement, improved awareness and faster response rates.",
+        },
+      ],
+    },
+    {
+      problem: "Government campaigns struggle to achieve high participation.",
+      cards: [
+        {
+          title: "What this means",
+          content:
+            "Mass campaigns often receive low engagement because messaging is generic.",
+        },
+        {
+          title: "Personlyze Intervention",
+          content:
+            "Send personalized campaign videos based on citizen interests and demographics.",
+        },
+        { title: "Video" },
+        {
+          title: "Why this works",
+          content:
+            "Relevant messaging encourages participation and builds public trust.",
+        },
+        {
+          title: "Expected Outcome",
+          content:
+            "Better campaign participation and stronger citizen interaction.",
+        },
+      ],
+    },
+  ],
+},
 ];
 
 export default industries;

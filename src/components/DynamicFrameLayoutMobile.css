@@ -1,327 +1,165 @@
-/* ============================================================
-   DYNAMIC FRAME LAYOUT · MOBILE ONLY · v2 · STACKED CARD DECK
-   Apple Wallet / Arc / Stripe / Linear / Framer feel.
-
-   Model:
-   - Every card is the SAME collapsed state on arrival (nothing open).
-   - Cards are physically stacked: each slot only reserves --dfl-peek
-     (54px) of vertical space, so each card overlaps the one before it
-     and only its title strip peeks out — a real Wallet stack.
-   - Tapping expands one card to --dfl-open; the deck below glides down.
-     Only one card can ever be open (state is single-value in JS).
-   - Titles live inside the peek strip, so they are never covered,
-     blurred or clipped.
-   ============================================================ */
+/* DynamicFrameLayoutMobile.css · v5 · simple premium vertical card list (mobile)
+   Full replacement. No deck / sticky / overlap / expand / hover / video styles remain.
+   Adds: numbered label, iOS-style touch ripple. */
 
 .dfl-m-section {
-  --dfl-peek: 54px;        /* how much of each stacked card is visible */
-  --dfl-card: 268px;       /* real height of a collapsed card         */
-  --dfl-open: 432px;       /* height of the expanded card             */
-  --dfl-radius: 26px;
-  --dfl-ink: #14110e;
-  --dfl-ease: cubic-bezier(0.22, 1, 0.36, 1);
-
-  display: block;
   width: 100%;
-  padding: 12px 0 20px;
-  background: #f6f4ef;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-/* ── Section header ──────────────────────────────────────── */
-.dfl-m-head {
-  padding: 0 22px 28px;
-}
-
-.dfl-m-eyebrow {
-  margin: 0 0 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(20, 17, 14, 0.5);
-}
-
-.dfl-m-title {
+  padding: 16px 14px 24px;
   margin: 0;
-  font-family: var(--heading, inherit);
-  font-size: clamp(1.7rem, 8vw, 2.2rem);
-  font-weight: 700;
-  line-height: 1.12;
-  letter-spacing: -0.02em;
-  color: var(--dfl-ink);
+  background: transparent;
+  color: #fff;
+  border-radius: 0;
 }
 
-.dfl-m-sub {
-  margin: 12px 0 0;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: rgba(20, 17, 14, 0.55);
+/* ---------- Vertical list ---------- */
+.dfl-m-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: none;
+  margin: 0;
 }
 
-/* ── Deck ────────────────────────────────────────────────── */
-.dfl-m-deck {
-  position: relative;
-  display: block;
-  padding: 0 16px;
-  /* room for the last card, which bleeds past its own slot */
-  padding-bottom: calc(var(--dfl-card) - var(--dfl-peek) + 24px);
-  transition: padding-bottom 0.55s var(--dfl-ease);
-}
-
-.dfl-m-section.has-open .dfl-m-deck {
-  padding-bottom: calc(var(--dfl-open) - var(--dfl-peek) + 24px);
-}
-
-/* Each slot only reserves the peek height → cards overlap. */
-.dfl-m-slot {
-  position: relative;
-  height: var(--dfl-peek);
-  transition: height 0.55s var(--dfl-ease);
-  will-change: height;
-}
-
-/* The open card reserves its full height so the rest glides down. */
-.dfl-m-slot.is-expanded {
-  height: calc(var(--dfl-open) + 16px);
-  z-index: 60 !important;
-}
-
-/* ── Card ────────────────────────────────────────────────── */
+/* ---------- Card ---------- */
 .dfl-m-card {
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: var(--dfl-card);
-  border-radius: var(--dfl-radius);
+  position: relative;
+  width: 100%;
+  height: 200px;
+  border-radius: 18px;
   overflow: hidden;
   cursor: pointer;
+  isolation: isolate;
+  background: #0d1018;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   -webkit-tap-highlight-color: transparent;
-  transform-origin: top center;
-  background: #191512;
-  box-shadow:
-    0 -1px 0 rgba(255, 255, 255, 0.18) inset,
-    0 -18px 40px -12px rgba(20, 17, 14, 0.45),
-    0 22px 44px -20px rgba(20, 17, 14, 0.55);
-  transition:
-    height 0.55s var(--dfl-ease),
-    transform 0.55s var(--dfl-ease),
-    box-shadow 0.45s var(--dfl-ease),
-    opacity 0.4s var(--dfl-ease);
-  will-change: height, transform;
+  touch-action: manipulation;
 }
 
-.dfl-m-card.is-expanded {
-  height: var(--dfl-open);
-  transform: scale(1);
-  box-shadow:
-    0 -1px 0 rgba(255, 255, 255, 0.24) inset,
-    0 34px 70px -22px rgba(20, 17, 14, 0.6);
+.dfl-m-card:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 3px;
 }
 
-/* Cards behind the open one recede slightly (depth, not a list). */
-.dfl-m-slot.is-dimmed .dfl-m-card {
-  transform: scale(0.985);
-}
-
-.dfl-m-slot.is-dimmed .dfl-m-card-scrim {
-  opacity: 1;
-}
-
-/* ── Media ───────────────────────────────────────────────── */
-.dfl-m-card-bg,
-.dfl-m-card-video {
+.dfl-m-card-bg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
-}
-
-.dfl-m-card-video {
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
-
-.dfl-m-card-video.is-visible {
-  opacity: 1;
 }
 
 .dfl-m-card-scrim {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(12, 10, 8, 0.72) 0%,
-      rgba(12, 10, 8, 0.34) 26%,
-      rgba(12, 10, 8, 0.2) 52%,
-      rgba(12, 10, 8, 0.82) 100%
-    );
-  opacity: 0.94;
-  transition: opacity 0.45s var(--dfl-ease);
-}
-
-/* ── Title strip (always inside the visible peek) ────────── */
-.dfl-m-card-head {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--dfl-peek);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0 18px;
-  box-sizing: border-box;
-}
-
-.dfl-m-name {
-  margin: 0;
-  flex: 1 1 auto;
-  min-width: 0;
-  font-family: var(--heading, inherit);
-  font-size: 1.02rem;
-  font-weight: 650;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  color: #fffdf9;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.dfl-m-chev {
-  flex: 0 0 auto;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  position: relative;
-  transition: transform 0.45s var(--dfl-ease), background 0.45s ease;
-}
-
-.dfl-m-chev::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 7px;
-  height: 7px;
-  border-right: 1.6px solid #fffdf9;
-  border-bottom: 1.6px solid #fffdf9;
-  transform: translate(-50%, -62%) rotate(45deg);
-}
-
-.dfl-m-card.is-expanded .dfl-m-chev {
-  transform: rotate(-180deg);
-  background: rgba(255, 255, 255, 0.24);
-}
-
-/* ── Reveal (description + CTA) ──────────────────────────── */
-.dfl-m-reveal {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 20px 20px 22px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
-  opacity: 0;
-  transform: translateY(14px);
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.25) 40%,
+    rgba(0, 0, 0, 0.35) 100%
+  );
   pointer-events: none;
-  transition:
-    opacity 0.38s var(--dfl-ease),
-    transform 0.48s var(--dfl-ease);
 }
 
-.dfl-m-card.is-expanded .dfl-m-reveal {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-  transition-delay: 0.1s;
+/* ---------- Numbered label (top-center) ---------- */
+.dfl-m-number {
+  position: absolute;
+  z-index: 1;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
 }
 
-.dfl-m-desc {
+/* ---------- Text ---------- */
+.dfl-m-name {
+  position: relative;
+  z-index: 1;
   margin: 0;
-  font-size: 0.94rem;
-  line-height: 1.55;
-  color: rgba(255, 253, 249, 0.86);
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.45);
-}
-
-.dfl-m-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 18px;
-  border: 0;
-  border-radius: 999px;
-  background: #fffdf9;
-  color: var(--dfl-ink);
-  font-size: 0.9rem;
-  font-weight: 600;
+  padding: 0 16px;
+  text-align: center;
+  font-size: clamp(20px, 5.5vw, 26px);
+  line-height: 1.2;
+  font-weight: 650;
   letter-spacing: -0.01em;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.7);
-  transition: transform 0.2s var(--dfl-ease);
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
 }
 
-.dfl-m-cta:active {
-  transform: scale(0.96);
-}
-
-.dfl-m-cta-arrow {
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.dfl-m-count {
-  font-size: 0.7rem;
+.dfl-m-arrow {
+  position: absolute;
+  z-index: 1;
+  right: 18px;
+  bottom: 14px;
+  font-size: 20px;
   font-weight: 600;
-  letter-spacing: 0.14em;
-  color: rgba(255, 253, 249, 0.55);
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-/* ── Focus + motion prefs ────────────────────────────────── */
-.dfl-m-card:focus-visible,
-.dfl-m-cta:focus-visible {
-  outline: 2px solid #fffdf9;
-  outline-offset: 3px;
+/* ---------- Touch ripple (iOS DYRipple style) ---------- */
+.dfl-m-ripple-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.dfl-m-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  transform: scale(0);
+  opacity: 1;
+  animation: dfl-m-ripple-expand 750ms cubic-bezier(0.25, 0.8, 0.4, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes dfl-m-ripple-expand {
+  0% {
+    transform: scale(0);
+    opacity: 0.55;
+  }
+  60% {
+    opacity: 0.22;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* Ripple is a touch-only affordance — never shows on hover-capable pointers. */
+@media (hover: hover) and (pointer: fine) {
+  .dfl-m-ripple-layer {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dfl-m-slot,
-  .dfl-m-card,
-  .dfl-m-reveal,
-  .dfl-m-chev,
-  .dfl-m-deck {
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* Slightly taller peek + card on larger phones. */
-@media (min-width: 430px) {
-  .dfl-m-section {
-    --dfl-peek: 58px;
-    --dfl-card: 288px;
-    --dfl-open: 460px;
-  }
-}
-
-/* Desktop never renders this component, but hard-stop just in case. */
-@media (min-width: 1024px) {
-  .dfl-m-section {
+  .dfl-m-ripple {
+    animation: none;
     display: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .dfl-m-section {
+    padding: 12px 12px 20px;
+  }
+
+  .dfl-m-card {
+    height: 180px;
   }
 }

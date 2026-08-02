@@ -399,22 +399,35 @@ function MobileChallengeOverlay({
   const handlePrev = () => goToSlide(activeIndex - 1);
   const handleNext = () => goToSlide(activeIndex + 1);
 
-  /* Auto-advance: Card 1 -> 2 -> ... -> CTA -> Card 1, every 5s.
-   * Reuses goToSlide() (same fn used by the next arrow / dots) so the
-   * scroll animation is identical to a manual advance. Now cycles across
-   * totalSlides (real cards + CTA) instead of just cards.length.
-   * Restarts whenever activeIndex changes (manual prev/next/dot/swipe all
-   * update activeIndex via handleScroll), which resets the 5s timer.
-   * Cleared on unmount, i.e. when the challenge overlay is closed. */
+  const currentCard = cards[activeIndex];
+  const currentIsVideo =
+    activeIndex < cards.length &&
+    isVideoCard(currentCard, activeIndex, cards.length);
+
+  /* Auto-advance for normal (non-video) slides, including the CTA slide.
+   * The Video card is intentionally excluded here — it advances only via
+   * its own onEnded event (see handleVideoEnded / MobileIndustryCard),
+   * so it plays out its full length (e.g. 18s) instead of cutting off
+   * at a fixed 10s.
+   * Keyed on activeIndex, so any manual navigation (swipe, arrows, dots)
+   * — which all update activeIndex — automatically clears the previous
+   * timer and starts a fresh one for the new slide. */
   useEffect(() => {
     if (totalSlides <= 1) return undefined;
+    if (currentIsVideo) return undefined;
 
     const timer = setTimeout(() => {
       goToSlide((activeIndex + 1) % totalSlides);
-    }, 5000);
+    }, 10000);
 
     return () => clearTimeout(timer);
-  }, [activeIndex, totalSlides]);
+  }, [activeIndex, totalSlides, currentIsVideo]);
+
+  /* Video-only advance: called from the active video card's onEnded.
+   * Wraps around the same way the timer-based advance does. */
+  const handleVideoEnded = () => {
+    goToSlide((activeIndex + 1) % totalSlides);
+  };
 
   /* Lock body scroll while open */
   useEffect(() => {
@@ -447,6 +460,8 @@ function MobileChallengeOverlay({
                   card={card}
                   backgroundImage={getCardImage(slug, cardNumber)}
                   isVideo={isVideoCard(card, i, cards.length)}
+                  isActive={i === activeIndex}
+                  onVideoEnded={handleVideoEnded}
                 />
               </div>
             );
@@ -503,9 +518,10 @@ function MobileChallengeOverlay({
  * overlay, title, and full description are all visible immediately; there
  * is no preview/reveal step.
  * -------------------------------------------------------------------------- */
-function MobileIndustryCard({ card, backgroundImage, isVideo }) {
+function MobileIndustryCard({ card, backgroundImage, isVideo, isActive, onVideoEnded }) {
   // Video card: only thumbnail + play icon. No title / description ever.
   if (isVideo) {
+    const videoSrc = card?.videoUrl || card?.video || null;
     return (
       <div
         className="industry-card industry-card--mobile industry-card--video"
@@ -519,6 +535,22 @@ function MobileIndustryCard({ card, backgroundImage, isVideo }) {
             : undefined
         }
       >
+        {/* Invisible driver for the onEnded-based auto-advance. Only
+            mounted/playing while this is the active slide, so we don't
+            play every video in the overlay at once. Purely functional —
+            no visual change to the card; the thumbnail + play icon below
+            are still the only things the user sees. */}
+        {isActive && videoSrc && (
+          <video
+            key={videoSrc}
+            src={videoSrc}
+            autoPlay
+            muted
+            playsInline
+            onEnded={onVideoEnded}
+            style={{ display: "none" }}
+          />
+        )}
         <div className="industry-card__bg-overlay" />
         <div className="industry-card__play" aria-hidden="true">
           <svg viewBox="0 0 60 60" width="72" height="72">

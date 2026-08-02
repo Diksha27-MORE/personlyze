@@ -9,6 +9,7 @@ import Results from "./components/Results";
 import Industries from "./components/Industries";
 import CardTransitionSection from "./components/CardTransitionSection";
 import Footer from "./components/Footer";
+import Testimonials from "./components/Testimonials";
 
 import IndustryLanding from "./pages/IndustryLanding";
 
@@ -208,6 +209,11 @@ function HomePage() {
 
       <section id="solutions" className="panel">
         <Industries />
+      </section>
+
+
+      <section id="testimonials" className="panel">
+        <Testimonials />
       </section>
 
       <section id="contact" className="panel">

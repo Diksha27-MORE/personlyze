@@ -1,0 +1,498 @@
+.testimonial-section {
+  width: 100%;
+  background:#edeae2;
+  padding: 90px 6%;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #111111;
+  box-sizing: border-box;
+}
+
+.testimonial-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* -------- intro -------- */
+.testimonial-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.testimonial-eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: #666666;
+  margin-bottom: 16px;
+}
+
+.testimonial-heading {
+     color: #8d1919;
+
+  font-size: 45px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0 0 16px;
+  max-width: 320px;
+}
+
+.testimonial-subtext {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #666666;
+  max-width: 320px;
+  margin: 0 0 28px;
+}
+
+.testimonial-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.testimonial-nav-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid #eaeaea;
+  background: #ffffff;
+  color: #111111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.testimonial-nav-btn:hover {
+  background: #111111;
+  color: #ffffff;
+  border-color: #111111;
+}
+
+.testimonial-nav-btn:active {
+  transform: scale(0.96);
+}
+
+.testimonial-count {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #666666;
+  margin-left: 4px;
+}
+
+.testimonial-count-divider {
+  width: 20px;
+  height: 1px;
+  background: #cccccc;
+}
+
+/* -------- stage / phones (desktop + tablet: real phone frame) -------- */
+.testimonial-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.testimonial-phones {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  height: 520px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: pan-y;
+}
+
+.phone-slot {
+  position: absolute;
+  width: 260px;
+  transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 0.5s ease;
+}
+
+.phone-slot-secondary {
+  display: none;
+}
+
+.phone-slot-primary {
+  transform: scale(1);
+  opacity: 1;
+  z-index: 2;
+}
+
+/* -------- phone frame -------- */
+.phone-frame {
+  position: relative;
+  background: #111111;
+  border-radius: 42px;
+  padding: 10px;
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.35),
+    0 10px 25px -10px rgba(0, 0, 0, 0.15);
+}
+
+.phone-notch {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70px;
+  height: 18px;
+  border-radius: 999px;
+  background: #111111;
+  z-index: 3;
+}
+
+.phone-screen {
+  position: relative;
+  background: #dceeef;
+  border-radius: 32px;
+  overflow: hidden;
+  aspect-ratio: 9 / 18.5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px 28px;
+  box-sizing: border-box;
+}
+
+.phone-quote-mark {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 150px;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(17, 17, 17, 0.06);
+  pointer-events: none;
+  user-select: none;
+}
+
+.phone-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.phone-quote {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.28;
+  letter-spacing: -0.01em;
+  color: #111111;
+  margin: 0;
+}
+
+.phone-author {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.phone-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 500;
+  background: linear-gradient(135deg, #111111 0%, #3a3a3a 100%);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.7);
+}
+
+.phone-author-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.phone-author-name {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #111111;
+}
+
+.phone-author-role {
+  font-size: 12px;
+  color: #666666;
+}
+
+.phone-pagination {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.phone-page-current {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #111111;
+}
+
+.phone-page-line {
+  width: 26px;
+  height: 1px;
+  background: rgba(17, 17, 17, 0.35);
+}
+
+.phone-page-total {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: #666666;
+}
+
+/* -------- dots -------- */
+.testimonial-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+}
+
+.testimonial-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #d8d6d0;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+.testimonial-dot.is-active {
+  width: 20px;
+  background: #111111;
+}
+
+/* ============================================================
+   TABLET
+============================================================ */
+@media (min-width: 768px) {
+  .testimonial-section {
+    padding: 110px 6%;
+  }
+
+  .testimonial-inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 48px;
+    text-align: left;
+  }
+
+  .testimonial-intro {
+    align-items: flex-start;
+    text-align: left;
+    margin-bottom: 0;
+    flex: 0 0 40%;
+  }
+
+  .testimonial-heading {
+    font-size: 34px;
+    max-width: 360px;
+  }
+
+  .testimonial-subtext {
+    max-width: 360px;
+  }
+
+  .testimonial-stage {
+    flex: 0 0 55%;
+  }
+
+  .testimonial-phones {
+    max-width: none;
+    height: 560px;
+  }
+
+  .phone-slot-secondary {
+    display: block;
+    transform: translateX(-95px) scale(0.86) rotate(-4deg);
+    opacity: 0.55;
+    z-index: 1;
+  }
+
+  .phone-slot-primary {
+    transform: translateX(60px) scale(1);
+  }
+
+  .phone-slot {
+    width: 230px;
+  }
+
+  .phone-slot-primary {
+    width: 260px;
+  }
+}
+
+/* ============================================================
+   DESKTOP
+============================================================ */
+@media (min-width: 1200px) {
+  .testimonial-heading {
+    font-size: 48px;
+    max-width: 420px;
+  }
+
+  .testimonial-subtext {
+    max-width: 400px;
+    font-size: 16px;
+  }
+
+  .testimonial-phones {
+    height: 600px;
+  }
+
+  .phone-slot-secondary {
+    transform: translateX(-130px) scale(0.86) rotate(-4deg);
+  }
+
+  .phone-slot-primary {
+    transform: translateX(70px) scale(1);
+  }
+}
+
+/* ============================================================
+   MOBILE
+   No phone frame, no notch, no black bezel. Just the light-blue
+   card filling the space: quote mark, quote text, avatar, name,
+   role, and the pagination numbers — matching the reference image
+   exactly. Same JSX/classes as desktop; the frame + notch are
+   simply hidden here and the screen takes over as a plain card.
+============================================================ */
+@media (max-width: 767px) {
+  .testimonial-section {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 32px 6%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .testimonial-inner {
+    width: 100%;
+  }
+
+  .testimonial-eyebrow,
+  .testimonial-subtext,
+  .testimonial-controls {
+    display: none;
+  }
+
+  .testimonial-intro {
+    margin-bottom: 20px;
+  }
+
+  .testimonial-heading {
+    display: block;
+    font-size: 28px;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .testimonial-stage {
+    width: 100%;
+  }
+
+  .testimonial-phones {
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    margin: 0 auto;
+  }
+
+  .phone-slot-secondary {
+    display: none;
+  }
+
+  .phone-slot-primary {
+    position: static;
+    width: 100%;
+    transform: none;
+    opacity: 1;
+  }
+
+  /* frame + notch removed entirely — screen becomes a plain card */
+  .phone-frame {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    width: 100%;
+  }
+
+  .phone-notch {
+    display: none;
+  }
+
+  .phone-screen {
+    width: 100%;
+    aspect-ratio: auto;
+    min-height: 70vh;
+    min-height: 70dvh;
+    border-radius: 24px;
+    padding: 48px 28px 36px;
+  }
+
+  .phone-quote-mark {
+    top: 0;
+    font-size: 110px;
+  }
+
+  .phone-content {
+    gap: 32px;
+    margin-top: 24px;
+  }
+
+  .phone-quote {
+    font-size: 24px;
+  }
+
+  .phone-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 17px;
+  }
+
+  .phone-author-name,
+  .phone-author-role {
+    font-size: 12px;
+  }
+
+  .phone-pagination {
+    margin-bottom: 4px;
+  }
+}
