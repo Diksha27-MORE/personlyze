@@ -544,4 +544,20 @@
     height:auto;
     aspect-ratio:16/9;
   }
+
+
+  .workspace-title {
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .workspace-video {
+    min-height: 100vh;
+    min-height: 100svh;
+    aspect-ratio: auto; /* height now comes from min-height, not 16:9 */
+  }
 }

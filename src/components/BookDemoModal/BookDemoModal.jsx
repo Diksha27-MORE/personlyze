@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import "./BookDemoModal.css";
-import { submitBookDemoRequest } from "../../bookDemo";
+import { submitBookDemoRequest } from "../../../api/bookDemo";
 
 const INITIAL_FORM = {
   name: "",

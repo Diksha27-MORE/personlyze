@@ -245,8 +245,12 @@ Email:`
             Book a Demo button pinned to the bottom of that screen.
             Screen 3 simply sits in normal flow right after it, so it
             only comes into view once the user scrolls past this
-            full-height screen — no extra JS needed for that part. ── */}
+            full-height screen — no extra JS needed for that part.
+
+            id="workspace-screen-1" — anchor used by the section-locked
+            wheel/touch scroll controller in App.jsx. ── */}
         <section
+          id="workspace-screen-1"
           className={`workspace-title${isMobile ? " mobile-whoweare-card" : ""}`}
         >
           <div className="workspace-heading" ref={headingRef}>
@@ -308,8 +312,12 @@ Email:`
              Full-viewport stage. Poster/cover shows until the user taps
              Play. Tapping anywhere on the stage (or the play/pause
              button itself) toggles playback. Scrolling the stage out of
-             view auto-pauses it; resuming is always a manual tap. ─── */
+             view auto-pauses it; resuming is always a manual tap.
+
+             id="workspace-screen-2" — anchor used by the section-locked
+             wheel/touch scroll controller in App.jsx. ─── */
           <div
+            id="workspace-screen-2"
             className="workspace-video mobile-video-stage"
             ref={videoRef}
             onClick={toggleMobilePlayback}
@@ -366,8 +374,12 @@ Email:`
             </button>
           </div>
         ) : (
-          /* ══════════════════ DESKTOP — untouched ══════════════════ */
+          /* ══════════════════ DESKTOP — untouched (only id added) ══════════════════
+
+             id="workspace-screen-2" — anchor used by the section-locked
+             wheel/touch scroll controller in App.jsx. ── */
           <div
+            id="workspace-screen-2"
             className="workspace-video"
             ref={videoRef}
             onClick={() => setModalOpen(true)}

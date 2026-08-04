@@ -619,3 +619,10 @@ body.intro-scroll-lock {
 .personalization {
   color: #ffffff !important;
 }
+@media (max-width: 768px) {
+  body.nav-open .hero-book-demo-btn {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(-10px) !important;
+  }
+}

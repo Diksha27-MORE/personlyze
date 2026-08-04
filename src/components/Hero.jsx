@@ -32,41 +32,52 @@ function getIsMobile() {
   return window.matchMedia("(max-width: 768px)").matches;
 }
 
-function NavMenu({ revealed }) {
-  const [isOpen, setIsOpen] = useState(false);
+/**
+ * `isMenuOpen` / `setIsMenuOpen` are now owned by the parent Hero
+ * component (lifted state) instead of a local useState here. This lets
+ * Hero conditionally unmount the floating "Book a Demo" button whenever
+ * the menu is open, without any CSS/z-index hacks.
+ */
+function NavMenu({ revealed, isMenuOpen, setIsMenuOpen }) {
   const { openBookDemo } = useBookDemoModal();
 
   useEffect(() => {
-    if (isOpen) {
+    if (isMenuOpen) {
+      document.body.classList.add("nav-open");
+
       const scrollY = window.scrollY;
       document.body.style.position = "fixed";
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = "100%";
       document.body.dataset.scrollY = String(scrollY);
     } else {
+      document.body.classList.remove("nav-open");
+
       const scrollY = document.body.dataset.scrollY || "0";
       document.body.style.position = "";
       document.body.style.top = "";
       document.body.style.width = "";
       window.scrollTo(0, parseInt(scrollY, 10));
     }
+
     return () => {
+      document.body.classList.remove("nav-open");
       document.body.style.position = "";
       document.body.style.top = "";
       document.body.style.width = "";
     };
-  }, [isOpen]);
+  }, [isMenuOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === "Escape") setIsOpen(false);
+      if (e.key === "Escape") setIsMenuOpen(false);
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [setIsMenuOpen]);
 
   const handleNavClick = (item) => {
-    setIsOpen(false);
+    setIsMenuOpen(false);
 
     if (item.action === "book-demo") {
       setTimeout(() => openBookDemo(), 250);
@@ -85,15 +96,15 @@ function NavMenu({ revealed }) {
     <>
       {/*
         Hamburger button only mounts while the menu is closed. When
-        isOpen becomes true, this block returns null and React
+        isMenuOpen becomes true, this block returns null and React
         unmounts the hamburger from the DOM entirely (not hidden,
         genuinely removed), so it can never overlap the close (✕)
         button rendered inside the nav panel below.
       */}
-      {!isOpen && (
+      {!isMenuOpen && (
         <button
           className={`nav-hamburger-btn reveal-item ${revealed ? "is-revealed" : ""}`}
-          onClick={() => setIsOpen(true)}
+          onClick={() => setIsMenuOpen(true)}
           aria-label="Open menu"
           aria-expanded={false}
         >
@@ -104,18 +115,18 @@ function NavMenu({ revealed }) {
       )}
 
       <div
-        className={`nav-overlay ${isOpen ? "is-visible" : ""}`}
-        onClick={() => setIsOpen(false)}
-        aria-hidden={!isOpen}
+        className={`nav-overlay ${isMenuOpen ? "is-visible" : ""}`}
+        onClick={() => setIsMenuOpen(false)}
+        aria-hidden={!isMenuOpen}
       />
 
       <nav
-        className={`nav-panel ${isOpen ? "is-open" : ""}`}
-        aria-hidden={!isOpen}
+        className={`nav-panel ${isMenuOpen ? "is-open" : ""}`}
+        aria-hidden={!isMenuOpen}
       >
         <button
           className="nav-panel-close"
-          onClick={() => setIsOpen(false)}
+          onClick={() => setIsMenuOpen(false)}
           aria-label="Close menu"
         >
           &times;
@@ -125,7 +136,7 @@ function NavMenu({ revealed }) {
             <li
               key={item.id}
               className="nav-panel-item"
-              style={{ transitionDelay: isOpen ? `${0.08 * index + 0.15}s` : "0s" }}
+              style={{ transitionDelay: isMenuOpen ? `${0.08 * index + 0.15}s` : "0s" }}
             >
               <button
                 className="nav-panel-link"
@@ -193,6 +204,12 @@ function Hero() {
   const [introStep, setIntroStep] = useState(0);
   const [mobileIntroStep, setMobileIntroStep] = useState(0);
   const [revealed, setRevealed] = useState(false);
+
+  // --- Mobile nav menu state (lifted up from NavMenu) ----------------------
+  // Owning this here lets Hero conditionally render the floating
+  // "Book a Demo" button out of the DOM whenever the menu is open,
+  // instead of relying on CSS opacity/z-index tricks.
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const didStartRef = useRef(false);
   const videoRef = useRef(null);
@@ -502,7 +519,13 @@ function Hero() {
         </div>
       )}
 
-      {isMobile && (
+      {/*
+        Book a Demo floating button is now removed from the DOM
+        entirely (not just CSS-hidden) whenever the mobile nav menu
+        is open, via the `!isMenuOpen` condition below. This is why
+        it can never render above the nav panel anymore.
+      */}
+      {isMobile && !isMenuOpen && (
         <button
           className={`hero-book-demo-btn reveal-item ${revealed ? "is-revealed" : ""}`}
           onClick={openBookDemo}
@@ -511,7 +534,11 @@ function Hero() {
         </button>
       )}
 
-      <NavMenu revealed={revealed} />
+      <NavMenu
+        revealed={revealed}
+        isMenuOpen={isMenuOpen}
+        setIsMenuOpen={setIsMenuOpen}
+      />
 
       {isMobile ? (
         <div className="hero-center hero-center--mobile">

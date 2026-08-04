@@ -154,6 +154,120 @@ function HomePage() {
     };
   }, []);
 
+  /* =========================
+     SECTION-LOCKED SCROLL
+     Workspace Screen 1 → Workspace Screen 2 (video) → Results.
+     Only intercepts scroll while inside that zone; everything before
+     (Hero) and everything from Results onward (its pinned carousel,
+     and the rest of the page) keeps native/GSAP-driven scrolling.
+
+     NOTE: this must live inside HomePage (not App), because it looks
+     up #workspace-screen-1, #workspace-screen-2 and .results-section,
+     all of which are rendered by HomePage's JSX below. A useEffect
+     placed outside any component is an invalid hook call and will
+     crash the app (that was the earlier bug).
+  ========================= */
+  useEffect(() => {
+    const LOCK_RESUME_MS = 900;
+    let isAnimating = false;
+    let unlockTimer = null;
+    let touchStartY = null;
+
+    const getSectionTops = () => {
+      const screen1 = document.getElementById("workspace-screen-1");
+      const screen2 = document.getElementById("workspace-screen-2");
+      const results = document.querySelector(".results-section");
+      if (!screen1 || !screen2 || !results) return null;
+
+      const topOf = (el) => el.getBoundingClientRect().top + window.scrollY;
+      return { tops: [topOf(screen1), topOf(screen2), topOf(results)] };
+    };
+
+    const isInLockedZone = (tops) => {
+      const currentY = window.scrollY;
+      const buffer = 2;
+      return currentY >= tops[0] - buffer && currentY < tops[2] - buffer;
+    };
+
+    const goToIndex = (tops, index) => {
+      const clamped = Math.max(0, Math.min(index, tops.length - 1));
+      isAnimating = true;
+      window.scrollTo({ top: tops[clamped], behavior: "smooth" });
+      clearTimeout(unlockTimer);
+      unlockTimer = setTimeout(() => {
+        isAnimating = false;
+      }, LOCK_RESUME_MS);
+    };
+
+    const navigate = (direction) => {
+      const data = getSectionTops();
+      if (!data) return;
+      const { tops } = data;
+
+      const currentY = window.scrollY;
+      let currentIndex = 0;
+      let minDist = Infinity;
+      tops.forEach((t, i) => {
+        const d = Math.abs(currentY - t);
+        if (d < minDist) {
+          minDist = d;
+          currentIndex = i;
+        }
+      });
+
+      goToIndex(tops, currentIndex + direction);
+    };
+
+    const handleWheel = (e) => {
+      const data = getSectionTops();
+      if (!data || !isInLockedZone(data.tops)) return;
+
+      e.preventDefault();
+      if (isAnimating) return;
+
+      navigate(e.deltaY > 0 ? 1 : -1);
+    };
+
+    const handleTouchStart = (e) => {
+      const data = getSectionTops();
+      if (!data || !isInLockedZone(data.tops)) {
+        touchStartY = null;
+        return;
+      }
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e) => {
+      if (touchStartY === null) return;
+      e.preventDefault();
+    };
+
+    const handleTouchEnd = (e) => {
+      if (touchStartY === null) return;
+      const endY = e.changedTouches[0].clientY;
+      const delta = touchStartY - endY;
+      touchStartY = null;
+
+      const SWIPE_THRESHOLD = 40;
+      if (Math.abs(delta) < SWIPE_THRESHOLD || isAnimating) return;
+
+      navigate(delta > 0 ? 1 : -1);
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+      clearTimeout(unlockTimer);
+    };
+  }, []);
+
   return (
     <div ref={containerRef} className="app">
       <section id="home" className="panel hero">
