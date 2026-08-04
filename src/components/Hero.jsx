@@ -4,6 +4,7 @@ import "./Hero.mobile.css";
 import backgroundVideo from "../assets/hero-video.mp4";
 import LogoAnimation from "../assets/Logo animation new.webm";
 import { hasIntroPlayed, markIntroPlayed } from "./introSession";
+import { useBookDemoModal } from "../context/BookDemoModalContext";
 
 // Cloudinary delivery transformation: f_auto (best format for the
 // requesting browser), q_auto (adaptive quality), w_800 (never ship more
@@ -11,12 +12,19 @@ import { hasIntroPlayed, markIntroPlayed } from "./introSession";
 const mobileHeroVideo =
   "https://res.cloudinary.com/t4s8m2hn/video/upload/f_auto,q_auto,w_800/v1784388112/hero-mobile_ewaryl.mp4";
 
+// `sectionId` is the actual DOM id of the target section on the page.
+// `label`/`id` are just the nav item's own identity/key. The "Connect"
+// item has no sectionId — it opens the shared Book a Demo modal instead
+// of scrolling.
+//
+// NOTE: adjust the sectionId values below if your "Who We Are" /
+// "What We Do" sections use different element ids in your codebase.
 const NAV_ITEMS = [
-  { label: "Who We Are", id: "who-we-are" },
-  { label: "Why Personlyze AI", id: "why-personlyze" },
-  { label: "What We Do", id: "what-we-do" },
-  { label: "Solutions", id: "solutions" },
-  { label: "Connect With Us", id: "contact" },
+  { label: "Home", id: "home", sectionId: "home" },
+  { label: "About", id: "about", sectionId: "who-we-are" },
+  { label: "Services", id: "services", sectionId: "what-we-do" },
+  { label: "Solutions", id: "solutions", sectionId: "solutions" },
+  { label: "Connect", id: "book-demo", action: "book-demo" },
 ];
 
 function getIsMobile() {
@@ -26,6 +34,7 @@ function getIsMobile() {
 
 function NavMenu({ revealed }) {
   const [isOpen, setIsOpen] = useState(false);
+  const { openBookDemo } = useBookDemoModal();
 
   useEffect(() => {
     if (isOpen) {
@@ -56,10 +65,16 @@ function NavMenu({ revealed }) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handleNavClick = (id) => {
+  const handleNavClick = (item) => {
     setIsOpen(false);
+
+    if (item.action === "book-demo") {
+      setTimeout(() => openBookDemo(), 250);
+      return;
+    }
+
     setTimeout(() => {
-      document.getElementById(id)?.scrollIntoView({
+      document.getElementById(item.sectionId)?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
@@ -114,7 +129,7 @@ function NavMenu({ revealed }) {
             >
               <button
                 className="nav-panel-link"
-                onClick={() => handleNavClick(item.id)}
+                onClick={() => handleNavClick(item)}
               >
                 <span className="nav-panel-link__index">
                   {String(index + 1).padStart(2, "0")}
@@ -184,6 +199,8 @@ function Hero() {
   const videoEffectRanOnceRef = useRef(false);
   const prevIsMobileRef = useRef(isMobile);
   const sectionRef = useRef(null);
+
+  const { openBookDemo } = useBookDemoModal();
 
   // Track viewport changes — only re-render on an actual change.
   useEffect(() => {
@@ -431,30 +448,14 @@ function Hero() {
   // END TEMPORARY DEBUG INSTRUMENTATION
   // ---------------------------------------------------------------------
 
-const handleBookDemo = () => {
-  const phone = "919819104471";
-
-  const message = encodeURIComponent(`Hi, I'd like to book a demo of Personlyze AI for my business.
-
-Details below.
-
-Name:
-Company:
-Website:
-Email:`);
-
-  window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
-};
-
-// Smoothly scrolls from the Hero into the next section ("Who We Are" /
-// Workspace). Mobile CTA arrow only — desktop's "Know More" button keeps
-// its existing onClick (handleBookDemo) untouched.
-const handleScrollToNextSection = () => {
-  document.getElementById("who-we-are")?.scrollIntoView({
-    behavior: "smooth",
-    block: "start",
-  });
-};
+  // Smoothly scrolls from the Hero into the next section ("Who We Are" /
+  // Workspace). Mobile CTA arrow only.
+  const handleScrollToNextSection = () => {
+    document.getElementById("who-we-are")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
 
   const videoHiddenForMobileIntro = isMobile && !revealed;
 
@@ -504,7 +505,7 @@ const handleScrollToNextSection = () => {
       {isMobile && (
         <button
           className={`hero-book-demo-btn reveal-item ${revealed ? "is-revealed" : ""}`}
-          onClick={handleBookDemo}
+          onClick={openBookDemo}
         >
           Book a Demo
         </button>
@@ -552,7 +553,7 @@ const handleScrollToNextSection = () => {
           </div>
           <button
             className={`hero-demo-btn reveal-item ${revealed ? "is-revealed" : ""}`}
-            onClick={handleBookDemo}
+            onClick={openBookDemo}
           >
             <span className="hero-demo-btn__label">Know More</span>
             <span className="hero-demo-btn__arrow">↓</span>

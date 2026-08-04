@@ -1,3 +1,28 @@
+/* ── True viewport-level overflow containment ────────────────────────────
+   NOTE: this is a companion to the nav-panel fix in Hero.desktop.css, not
+   a replacement/workaround for it. `.app { overflow-x: hidden }` below only
+   clips descendants that participate in normal flow relative to `.app`
+   (or are `position: absolute` inside it). It CANNOT clip `position: fixed`
+   descendants — like the nav menu's panel/overlay — because fixed elements
+   are positioned against the real viewport (the `html` box), not against
+   `.app`, and therefore ignore `.app`'s overflow entirely. That mismatch is
+   exactly why the strip survived even though `.app` already had
+   overflow-x: hidden.
+
+   Putting `overflow-x: hidden` on `html`/`body` constrains the actual
+   viewport box itself, so ANY element — fixed, absolute, or transformed —
+   gets clipped at the true edge of the screen, no matter which ancestor it
+   escapes. With the stray box-shadow paint removed at its source, there is
+   nothing left needing to be hidden here; this is just the standard safety
+   net (the same pattern Apple/Stripe/Linear use) so a future fixed/absolute
+   element that's off by a few sub-pixels on some mobile browser can never
+   reopen a horizontal-scroll/dark-strip bug. */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 /* ── App-level reset and base ───────────────────────────────────────────── */
 .app {
   width: 100%;

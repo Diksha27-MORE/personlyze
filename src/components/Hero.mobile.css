@@ -265,7 +265,8 @@ body.intro-scroll-lock {
      hero section. Sized as the primary visual element.
   ========================================================= */
   .hero-logo-wrap {
-    position: relative;
+     position: relative;
+     top: 20px; /* Move logo down */
     width: 100%;
     display: flex;
     justify-content: center;
@@ -348,9 +349,6 @@ body.intro-scroll-lock {
     border-radius: 999px;
     backdrop-filter: blur(14px) saturate(140%);
     -webkit-backdrop-filter: blur(14px) saturate(140%);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.08) inset,
-      0 10px 30px rgba(0, 0, 0, 0.25);
 
     opacity: 1;
     cursor: pointer;
@@ -359,7 +357,7 @@ body.intro-scroll-lock {
       background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
       border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
       transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    
   }
 
   .hero-center--mobile .hero-demo-btn:hover,
@@ -367,9 +365,6 @@ body.intro-scroll-lock {
     background: rgba(255, 255, 255, 0.14);
     border-color: rgba(255, 255, 255, 0.35);
     transform: translateY(-1px) !important;
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.12) inset,
-      0 14px 36px rgba(0, 0, 0, 0.3);
   }
 
   .hero-center--mobile .hero-demo-btn__arrow {
@@ -446,12 +441,63 @@ body.intro-scroll-lock {
     height: 48px;
   }
 
+  /* Shorter, narrower, top-anchored panel instead of a full-screen
+     takeover — reads like a compact SaaS dropdown menu rather than a
+     mobile app drawer. Only dimension/spacing/typography properties
+     are overridden here; the existing slide-in transform + open/close
+     transition defined in Hero.desktop.css is untouched, so the
+     animation behavior is preserved. */
   .nav-panel {
-    width: 100%;
-    padding: 88px 32px 40px;
+    top: 0;
+    right: 0;
+    left: auto;
+    width: min(78%, 320px);
+    height: auto;
+    max-height: min(64vh, 480px);
+    padding: 60px 26px 24px;
+    border-radius: 0 0 0 28px;
+    overflow-y: auto;
+    box-shadow: -24px 24px 64px rgba(0, 0, 0, 0.28);
   }
 
-  .nav-panel-link__label { font-size: 24px; }
+  .nav-panel-close {
+    top: 16px;
+    right: 16px;
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+  }
+
+  .nav-panel-list {
+    gap: 2px;
+  }
+
+  .nav-panel-item {
+    margin-bottom: 2px;
+  }
+
+  .nav-panel-link {
+    padding: 9px 0;
+    gap: 12px;
+  }
+
+  .nav-panel-link__index {
+    font-size: 10px;
+    font-weight: 500;
+    opacity: 0.35;
+  }
+
+  .nav-panel-link__label {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  .nav-panel-footer {
+    margin-top: 18px;
+    padding-top: 14px;
+    font-size: 10.5px;
+  }
 
   /* Desktop intro sizing preserved for other breakpoints */
   .hero-intro__line--1 { font-size: 36px; }
@@ -502,6 +548,12 @@ body.intro-scroll-lock {
   .mobile-split-intro__bottom-word {
     font-size: clamp(72px, 24vw, 150px);
   }
+
+  .nav-panel {
+    width: min(84%, 300px);
+    max-height: 70vh;
+    padding: 56px 22px 20px;
+  }
 }
 
 /* =========================================================
@@ -537,6 +589,11 @@ body.intro-scroll-lock {
 
   .mobile-split-intro__bottom-word {
     font-size: clamp(64px, 22vw, 130px);
+  }
+
+  .nav-panel {
+    max-height: 78vh;
+    padding-top: 50px;
   }
 }
 
