@@ -8,12 +8,18 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, company, email, phone } = req.body;
+    const { name, company, email, phone } = req.body || {};
 
-    const result = await resend.emails.send({
-      from: "onboarding@resend.dev",
+    // Basic validation — bad input shouldn't silently pass through
+    if (!name || !email) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const { data, error } = await resend.emails.send({
+      from: "onboarding@resend.dev", // see note below re: custom domain
       to: process.env.RESEND_TO_EMAIL,
       subject: "New Book Demo Request",
+      reply_to: email, // lets you hit "reply" and email the lead directly
       html: `
         <h2>New Book Demo Request</h2>
         <p><strong>Name:</strong> ${name}</p>
@@ -23,15 +29,23 @@ export default async function handler(req, res) {
       `,
     });
 
-    console.log(result);
+    // THIS is the check your original code was missing
+    if (error) {
+      console.error("Resend API error:", error);
+      return res.status(502).json({
+        success: false,
+        error: error.message || "Failed to send email",
+      });
+    }
+
+    console.log("Email sent:", data);
 
     return res.status(200).json({
       success: true,
-      result,
+      id: data?.id,
     });
   } catch (err) {
-    console.error(err);
-
+    console.error("Unexpected server error:", err);
     return res.status(500).json({
       error: err.message,
     });
