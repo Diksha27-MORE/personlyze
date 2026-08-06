@@ -505,19 +505,33 @@ function Hero() {
           </div>
         </div>
       )}
+{isMobile && showMobileIntro && (
+  <div className={`mobile-split-intro step-${mobileIntroStep}`}>
+    <div className="mobile-split-intro__half mobile-split-intro__half--top">
+<p className="mobile-split-intro__top-text">
+  <span className="mobile-split-intro__line mobile-split-intro__line--1">
+    THE
+  </span>
 
-      {isMobile && showMobileIntro && (
-        <div className={`mobile-split-intro step-${mobileIntroStep}`}>
-          <div className="mobile-split-intro__half mobile-split-intro__half--top">
-            <p className="mobile-split-intro__top-text">
-              THE FUTURE OF MARKETING IS NOT LOUD.
-            </p>
-          </div>
-          <div className="mobile-split-intro__half mobile-split-intro__half--bottom">
-            <p className="mobile-split-intro__bottom-word">it's human.</p>
-          </div>
-        </div>
-      )}
+  <span className="mobile-split-intro__line mobile-split-intro__line--2">
+    FUTURE OF
+  </span>
+
+  <span className="mobile-split-intro__line mobile-split-intro__line--3">
+    MARKETING IS
+  </span>
+
+  <span className="mobile-split-intro__line mobile-split-intro__line--4">
+    NOT LOUD
+  </span>
+</p>
+    </div>
+
+    <div className="mobile-split-intro__half mobile-split-intro__half--bottom">
+      <p className="mobile-split-intro__bottom-word">its human</p>
+    </div>
+  </div>
+)}
 
       {/*
         Book a Demo floating button is now removed from the DOM

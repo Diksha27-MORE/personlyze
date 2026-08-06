@@ -387,16 +387,19 @@
      Demo button is pinned to the bottom of this card specifically
      (not globally fixed), so it travels away with the card and never
      overlaps the video screen below. ── */
-  .mobile-whoweare-card{
-    position: relative;
-    min-height: 100vh;
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 96px 24px calc(128px + env(safe-area-inset-bottom, 0px));
-    box-sizing: border-box;
-  }
+.mobile-whoweare-card{
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  /* Change this */
+  padding: 40px 24px calc(128px + env(safe-area-inset-bottom, 0px));
+
+  box-sizing: border-box;
+}
 
   .mobile-whoweare-card .workspace-heading{
     row-gap: 34px;

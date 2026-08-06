@@ -2,7 +2,7 @@
 import { useState, useCallback, useMemo, memo, useEffect, useRef } from "react";
 import "./DynamicFrameLayout.css";
 import { FaExpand, FaPlay, FaExternalLinkAlt } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import realEstateVideo from "../assets/real-estate.mp4";
 import bfsiVideo from "../assets/bfsi.mp4";
@@ -136,7 +136,23 @@ const IndustryCard = memo(function IndustryCard({
    ============================================================ */
 export default function DynamicFrameLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [hovered, setHovered] = useState(null);
+
+  // Reset the expanded/hovered card whenever this route becomes active again.
+  // Fixes: navigating to an Industry page and back left the grid showing the
+  // previously hovered/clicked card's expanded layout instead of the default
+  // 3x3 grid, because `hovered` is component state that survives if this
+  // component stays mounted across the route change.
+  useEffect(() => {
+    setHovered(null);
+  }, [location.pathname]);
+
+  // Safety net: also clear on unmount so no stale index can leak into a
+  // future mount of this component.
+  useEffect(() => {
+    return () => setHovered(null);
+  }, []);
 
   const { colTemplate, rowTemplate } = useMemo(() => {
     if (hovered === null) return { colTemplate: "repeat(3, 1fr)", rowTemplate: "repeat(3, 1fr)" };

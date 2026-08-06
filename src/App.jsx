@@ -10,6 +10,7 @@ import Industries from "./components/Industries";
 import CardTransitionSection from "./components/CardTransitionSection";
 import Footer from "./components/Footer";
 import Testimonials from "./components/Testimonials";
+import FAQ from "./components/FAQ";
 
 import IndustryLanding from "./pages/IndustryLanding";
 
@@ -156,16 +157,16 @@ function HomePage() {
 
   /* =========================
      SECTION-LOCKED SCROLL
-     Workspace Screen 1 → Workspace Screen 2 (video) → Results.
+     Workspace Screen 1 → Workspace Screen 2 (video) → Results → Solutions.
      Only intercepts scroll while inside that zone; everything before
-     (Hero) and everything from Results onward (its pinned carousel,
-     and the rest of the page) keeps native/GSAP-driven scrolling.
+     (Hero) and everything from Testimonials onward (after Solutions),
+     keeps native/GSAP-driven scrolling.
 
      NOTE: this must live inside HomePage (not App), because it looks
-     up #workspace-screen-1, #workspace-screen-2 and .results-section,
-     all of which are rendered by HomePage's JSX below. A useEffect
-     placed outside any component is an invalid hook call and will
-     crash the app (that was the earlier bug).
+     up #workspace-screen-1, #workspace-screen-2, .results-section and
+     #solutions, all of which are rendered by HomePage's JSX below. A
+     useEffect placed outside any component is an invalid hook call and
+     will crash the app (that was the earlier bug).
   ========================= */
   useEffect(() => {
     const LOCK_RESUME_MS = 900;
@@ -183,11 +184,23 @@ function HomePage() {
       return { tops: [topOf(screen1), topOf(screen2), topOf(results)] };
     };
 
-    const isInLockedZone = (tops) => {
-      const currentY = window.scrollY;
-      const buffer = 2;
-      return currentY >= tops[0] - buffer && currentY < tops[2] - buffer;
-    };
+const isInLockedZone = (tops, direction) => {
+  const currentY = window.scrollY;
+  const buffer = 2;
+
+  // Down scroll
+  if (direction > 0) {
+    return currentY >= tops[0] - buffer && currentY < tops[2] - buffer;
+  }
+
+  // Up scroll
+  // Agar Workspace Screen 1 par hi ho, Hero ko native scroll karne do
+  if (currentY <= tops[0] + 10) {
+    return false;
+  }
+
+  return currentY >= tops[0] - buffer && currentY < tops[2] - buffer;
+};
 
     const goToIndex = (tops, index) => {
       const clamped = Math.max(0, Math.min(index, tops.length - 1));
@@ -268,6 +281,89 @@ function HomePage() {
     };
   }, []);
 
+  /* =========================
+     SOLUTIONS SINGLE-STOP LOCK
+     Independent from the Workspace→Results lock above, and from
+     CardTransitionSection's own pinning/horizontal scroll — this
+     effect never intercepts scroll anywhere before Solutions, so
+     the "What We Do" section scrolls 100% natively, unmodified.
+
+     Uses IntersectionObserver (not a scroll-position range) to
+     detect the exact moment #solutions enters the viewport, from
+     either direction. On that crossing it performs a single smooth
+     snap to align the section, then briefly blocks wheel/touch
+     scrolling (same pattern/duration as the lock above) so the
+     section "stops" for one scroll, after which it releases and
+     Testimonials/Footer (or Results, on the way back up) scroll
+     normally again. The "consumed" flag resets once the section is
+     fully left, so the stop re-triggers correctly next time.
+  ========================= */
+  useEffect(() => {
+    const solutions = document.getElementById("solutions");
+    if (!solutions) return;
+
+    const LOCK_RESUME_MS = 900;
+    let locked = false;
+    let hasSnappedForThisEntry = false;
+    let unlockTimer = null;
+
+    const snapToSolutions = () => {
+      if (locked) return;
+      locked = true;
+      hasSnappedForThisEntry = true;
+
+      window.scrollTo({
+        top: solutions.offsetTop,
+        left: 0,
+        behavior: "smooth",
+      });
+
+      clearTimeout(unlockTimer);
+      unlockTimer = setTimeout(() => {
+        locked = false;
+      }, LOCK_RESUME_MS);
+    };
+
+    const handleWheel = (e) => {
+      if (!locked) return;
+      e.preventDefault();
+    };
+
+    const handleTouchMove = (e) => {
+      if (!locked) return;
+      e.preventDefault();
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (!hasSnappedForThisEntry) {
+              snapToSolutions();
+            }
+          } else {
+            // Fully left the section (either direction) — allow the
+            // single-stop snap to re-trigger on the next approach.
+            hasSnappedForThisEntry = false;
+          }
+        });
+      },
+      { threshold: 0.01 }
+    );
+
+    observer.observe(solutions);
+
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchmove", handleTouchMove);
+      clearTimeout(unlockTimer);
+    };
+  }, []);
+
   return (
     <div ref={containerRef} className="app">
       <section id="home" className="panel hero">
@@ -292,6 +388,9 @@ function HomePage() {
 
       <section id="testimonials" className="panel">
         <Testimonials />
+      </section>
+      <section id="faq" className="panel">
+        <FAQ />
       </section>
 
       <section id="contact" className="panel">

@@ -1,41 +1,57 @@
+// Testimonials.jsx
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./Testimonials.css";
 
 const testimonials = [
   {
-    quote: "When I need a gorgeous app, I come to Studio Swell first.",
-    name: "Jordan Gray",
-    position: "CEO",
-    company: "Dunkr",
-    initials: "JG",
-  },
-  {
-    quote: "They turned a rough sketch into a product our users can't stop talking about.",
-    name: "Maya Okonkwo",
-    position: "Founder",
-    company: "Lumio",
-    initials: "MO",
-  },
-  {
-    quote: "Every screen feels considered. Nothing in our app feels like a default choice.",
-    name: "Elliot Wren",
-    position: "Head of Product",
-    company: "Northfield",
-    initials: "EW",
-  },
-  {
-    quote: "Studio Swell is the rare partner that ships fast without ever cutting a corner.",
-    name: "Priya Anand",
-    position: "COO",
-    company: "Handloom",
-    initials: "PA",
-  },
-  {
-    quote: "Our conversion rate doubled the month we shipped the redesign. Same product, better craft.",
-    name: "Sam Delacroix",
+    quote:
+      "Everyone buys MarTech stacks, but Personlyze AI gets the order right: strategy first, technology second.",
+    title: "Strategy before technology.",
+    name: "CMO",
     position: "CMO",
-    company: "Arva",
-    initials: "SD",
+    company: "[Company]",
+    initials: "C",
+    tag: "Strategy Lead",
+  },
+  {
+    quote:
+      "Unlike black-box algorithmic firms, Personlyze AI keeps a strategist, creators and techies in the room at every step.",
+    title: "Humans in the room, always.",
+    name: "VP Marketing",
+    position: "VP Marketing",
+    company: "[Company]",
+    initials: "V",
+    tag: "Marketing",
+  },
+  {
+    quote:
+      "They prioritize the person - personas, journeys, and mapping—before applying any targeting rules.",
+    title: "The person comes first.",
+    name: "Head of Brand",
+    position: "Head of Brand",
+    company: "[Company]",
+    initials: "H",
+    tag: "Brand",
+  },
+  {
+    quote:
+      "Finally, an agency that treats personalization as a strategic discipline rather than a tech feature.",
+    title: "Personalization as a discipline.",
+    name: "[Title]",
+    position: "[Title]",
+    company: "[Company]",
+    initials: "P",
+    tag: "Leadership",
+  },
+  {
+    quote:
+      "Personlyze AI avoids outsourcing judgment to algorithms; they offer rigorous, human-led strategies that start with the customer, not the campaign.",
+    title: "Human-led, never automated judgment.",
+    name: "CXO",
+    position: "CXO",
+    company: "[Company]",
+    initials: "C",
+    tag: "Executive",
   },
 ];
 
@@ -89,9 +105,7 @@ export default function Testimonial() {
     setTimeout(() => setIsPaused(false), 300);
   };
 
-  const secondIndex = (activeIndex + 1) % total;
   const current = testimonials[activeIndex];
-  const secondary = testimonials[secondIndex];
 
   return (
     <section
@@ -102,16 +116,23 @@ export default function Testimonial() {
       <div className="testimonial-inner">
         <div className="testimonial-intro">
           <span className="testimonial-eyebrow">TESTIMONIALS</span>
-          <h2 className="testimonial-heading">Testimonial</h2>
+          <h2 className="testimonial-heading">What leaders say</h2>
           <p className="testimonial-subtext">
-            From early-stage founders to product leads at growing companies,
-            here&rsquo;s how teams describe working with Studio Swell.
+            From CMOs to brand heads, here&rsquo;s how teams describe working
+            with Personlyze AI.
           </p>
+        </div>
 
-          <div className="testimonial-controls">
+        <div className="testimonial-stage">
+          <div
+            className="testimonial-phones"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
             <button
               type="button"
-              className="testimonial-nav-btn"
+              className="testimonial-nav-btn testimonial-nav-prev"
               onClick={goPrev}
               aria-label="Previous testimonial"
             >
@@ -125,9 +146,14 @@ export default function Testimonial() {
                 />
               </svg>
             </button>
+
+            <div className="phone-slot phone-slot-primary" key={activeIndex}>
+              <PhoneCard item={current} />
+            </div>
+
             <button
               type="button"
-              className="testimonial-nav-btn"
+              className="testimonial-nav-btn testimonial-nav-next"
               onClick={goNext}
               aria-label="Next testimonial"
             >
@@ -141,28 +167,6 @@ export default function Testimonial() {
                 />
               </svg>
             </button>
-            <span className="testimonial-count">
-              {String(activeIndex + 1).padStart(2, "0")}
-              <span className="testimonial-count-divider" />
-              {String(total).padStart(2, "0")}
-            </span>
-          </div>
-        </div>
-
-        <div className="testimonial-stage">
-          <div
-            className="testimonial-phones"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            <div className="phone-slot phone-slot-secondary" aria-hidden="true">
-              <PhoneCard item={secondary} index={secondIndex} total={total} />
-            </div>
-
-            <div className="phone-slot phone-slot-primary">
-              <PhoneCard item={current} index={activeIndex} total={total} />
-            </div>
           </div>
 
           <div className="testimonial-dots">
@@ -182,37 +186,24 @@ export default function Testimonial() {
   );
 }
 
-function PhoneCard({ item, index, total }) {
+function PhoneCard({ item }) {
   return (
     <div className="phone-frame">
-      <div className="phone-notch" />
       <div className="phone-screen">
-        <span className="phone-quote-mark" aria-hidden="true">
-          &ldquo;
-        </span>
-
         <div className="phone-content">
-          <p className="phone-quote">{item.quote}</p>
-
-          <div className="phone-author">
-            <div className="phone-avatar">{item.initials}</div>
-            <div className="phone-author-text">
-              <span className="phone-author-name">{item.name.toUpperCase()}</span>
-              <span className="phone-author-role">
-                {item.position}, {item.company}
-              </span>
-            </div>
-          </div>
+          <h3 className="phone-title">{item.title}</h3>
+          <p className="phone-quote">&ldquo;{item.quote}&rdquo;</p>
         </div>
 
-        <div className="phone-pagination">
-          <span className="phone-page-current">
-            {String(index + 1).padStart(2, "0")}
-          </span>
-          <span className="phone-page-line" />
-          <span className="phone-page-total">
-            {String(total).padStart(2, "0")}
-          </span>
+        <div className="phone-divider" />
+
+        <div className="phone-author">
+          <div className="phone-avatar">{item.initials}</div>
+          <div className="phone-author-text">
+            <span className="phone-author-name">{item.position}</span>
+            <span className="phone-author-role">{item.company}</span>
+          </div>
+          <span className="phone-tag">{item.tag}</span>
         </div>
       </div>
     </div>

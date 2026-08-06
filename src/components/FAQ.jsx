@@ -3,29 +3,54 @@ import "./FAQ.css";
 
 const faqs = [
   {
-    question: "What does a typical engagement with Studio Swell look like?",
+    question: "What is Personlyze?",
     answer:
-      "We start with a two-week discovery sprint to map your users and goals, then move into design and build in parallel two-week cycles, with a working preview you can click through after every cycle.",
+      "Personlyze is a strategy-first, AI-powered, hyper-personalization service that helps B2C and B2B brands understand their customers deeply and market to them with precision. We combine strategy, creative, and technology to turn generic marketing into experiences tailored to real buyer behavior.",
   },
   {
-    question: "How long does a full product design take?",
+    question: "What is the CLASS Framework?",
     answer:
-      "Most mobile or web products take six to ten weeks from kickoff to a build-ready handoff, depending on scope. Smaller feature work can turn around in as little as two weeks.",
+      'CLASS ("Customer Lifecycle Analysis for Strategy and Scale") is our proprietary methodology for building rich, decision-ready customer personas, going beyond demographics to map how people actually think, decide, and buy. It is the foundation for every persona, journey map, and campaign strategy we deliver.',
   },
   {
-    question: "Do you also build the product, or only design it?",
+    question: "How does a typical engagement work?",
     answer:
-      "Both. Our design and engineering teams work side by side, so what you approve in a prototype is exactly what ships, no separate handoff or reinterpretation.",
+      "We work in three phases: Strategy (understanding your customers and market), Creative (building personas, messaging, and campaign concepts), and Tech (personalization execution and optimization). Clients can engage us for one phase or the full journey.",
   },
   {
-    question: "Can you work with our existing design system?",
+    question: "Do you build your own technology, or use existing tools?",
     answer:
-      "Yes. We regularly extend and refine existing systems rather than replace them, so your product stays consistent while we raise the level of craft.",
+      "The Strategy and Creative milestones are entirely led by our expert team. For technology, we operate as a managed-service model using best-in-class execution partners while we continue building our proprietary technology. This gives clients proven solutions today without waiting on a product roadmap.",
   },
   {
-    question: "What happens after launch?",
+    question: "What markets do you serve?",
     answer:
-      "Every engagement includes a 30-day support window for fixes and refinements, and most clients move into an ongoing monthly retainer for continued design work.",
+      "We actively work with clients across India, the Middle East, and North America, bringing deep cultural and linguistic context to each market—from vernacular strategy in India to region-specific buyer dynamics elsewhere.",
+  },
+  {
+    question: "What industries do you work with?",
+    answer:
+      "We've delivered persona and personalization work across real estate, housing developers, retail, home shopping, and other consumer-facing industries where understanding the buyer's decision journey drives revenue. Explore our Services section for more details.",
+  },
+  {
+    question: "How is pricing structured?",
+    answer:
+      "We offer three engagement models: Phase-Gated (pay as each phase completes), Packaged Project Fee (fixed scope and fixed price), and Retainer + Variable (ongoing partnership with performance-based components). Pricing is available in USD, AED, and INR.",
+  },
+  {
+    question: "What do we get at the end of a persona/strategy engagement?",
+    answer:
+      "You'll typically receive detailed buyer personas, a decision journey map, comparative market analysis, and a market-ready narrative designed to plug directly into your sales and marketing execution.",
+  },
+  {
+    question: "How long does an engagement take?",
+    answer:
+      "Timelines vary depending on the scope, but most Strategy-phase deliverables, including personas and journey mapping, are completed within 4–6 weeks. Every timeline is personalized based on your business goals.",
+  },
+  {
+    question: "How do we get started?",
+    answer:
+      "Simply book a demo or contact us for an initial consultation. We'll understand your goals, recommend the right engagement model, and outline the next steps.",
   },
 ];
 
@@ -41,7 +66,6 @@ export default function FAQ() {
       <div className="faq-inner">
         <div className="faq-intro">
           <span className="faq-eyebrow">FAQ</span>
-          <h2 className="faq-heading">Questions, answered</h2>
           <p className="faq-subtext">
             Everything you need to know before starting a project with us.
             Can&rsquo;t find your answer? Reach out any time.

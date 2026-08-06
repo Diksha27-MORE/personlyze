@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./Workspace.css";
 import workspaceImg from "../assets/workspace.png";
 import workspaceMobileImg from "../assets/workspace-mobile.jpeg";
+import { useBookDemoModal } from "../context/BookDemoModalContext";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -19,6 +20,7 @@ export default function Workspace() {
   const mp4Ref = useRef(null); // mobile inline <video> element
 
   const [modalOpen, setModalOpen] = useState(false);
+  const { openBookDemo } = useBookDemoModal();
 
   /* ── Mobile-only state ──────────────────────────────────────────
      Screen 3 (video) is now fully manual:
@@ -221,19 +223,9 @@ export default function Workspace() {
 
   /* ── Book a Demo → same WhatsApp deep link used site-wide (Hero /
      Footer), so the action is identical everywhere. ── */
-  const handleBookDemo = () => {
-    const phone = "919819104471";
-    const message = encodeURIComponent(
-      `Hi, I'd like to book a demo of Personlyze AI for my business.
-Details below.
-Name:
-Company:
-Website:
-Email:`
-    );
-    window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
-  };
-
+const handleBookDemo = () => {
+  openBookDemo();
+};
   return (
     <>
       <section className="workspace-section" ref={sectionRef}>

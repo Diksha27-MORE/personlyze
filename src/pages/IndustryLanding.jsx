@@ -126,6 +126,7 @@ export default function IndustryLanding() {
   const { slug } = useParams();
   const industry = industries.find((item) => item.slug === slug);
   const isMobile = useIsMobile();
+  
 
   /* ---- desktop reveal state ---------------------------------------------
    * stage: "challenges" (step 1) -> "detail" (step 2, sliding carousel)
@@ -142,20 +143,95 @@ export default function IndustryLanding() {
   const carouselTrackRef = useRef(null);
   const carouselViewportRef = useRef(null);
 
+  // Track the currently-running entrance timelines so a re-fire of the
+  // entrance effect (React Strict Mode double-invoking useLayoutEffect in
+  // dev, or the user re-triggering "detail" quickly) can never leave two
+  // GSAP timelines fighting over the same opacity/filter styles on the
+  // same elements — see the fix note above the entrance effect below.
+  const challengesEntranceTlRef = useRef(null);
+  const detailEntranceTlRef = useRef(null);
+
   // Reset ref buckets every render so stale nodes from a previous stage
   // never linger in the array GSAP animates against.
   challengeCardRefs.current = [];
   detailCardRefs.current = [];
 
+  /* --------------------------------------------------------------------
+   * ROOT CAUSE OF THE "hero cut off / already scrolled" BUG:
+   *
+   * This route is `/industry/:slug`. React Router reuses the SAME
+   * IndustryLanding component instance when the user navigates from one
+   * industry page straight to another (e.g. clicking a different industry
+   * link) — it does not unmount/remount just because `slug` changed. That
+   * means two things silently carried over from the previous industry page:
+   *
+   *   1. Scroll position: nothing ever reset `window.scrollY`, so if the
+   *      user had scrolled down (or was deep in the Step-2 carousel) on the
+   *      previous industry, the browser kept that same scroll offset when
+   *      the new industry's content swapped in underneath it — making the
+   *      new page's hero appear partially cut off / already scrolled.
+   *   2. Component state: `stage`, `activeChallengeIndex`, and
+   *      `carouselIndex` are only initialized once via useState and were
+   *      never reset on navigation, so a user could land on a brand new
+   *      industry already sitting in the "detail" carousel stage from the
+   *      previous one.
+   *
+   * FIX: whenever `slug` changes, synchronously (before paint, via
+   * useLayoutEffect) reset the desktop stage/carousel state back to the
+   * initial "challenges" view and force the window to scroll to the top.
+   * Using useLayoutEffect (not useEffect) avoids any visible flash of the
+   * wrong scroll position or wrong stage. This only touches this
+   * component's own state and window.scrollTo — it doesn't alter
+   * history.scrollRestoration or push/pop history entries, so normal
+   * browser back/forward navigation is unaffected.
+   * -------------------------------------------------------------------- */
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+    setStage("challenges");
+    setActiveChallengeIndex(null);
+    setCarouselIndex(0);
+    setIsTransitioning(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
+
   /* Entrance animation whenever we land on a stage (challenges or detail). */
+  /* --------------------------------------------------------------------
+   * ROOT CAUSE OF THE "Back button not visible / hidden" BUG:
+   *
+   * The "challenges" branch below always called gsap.set(cards, { clearProps
+   * ... }) before starting its entrance tween, wiping any leftover inline
+   * opacity/filter/transform a previous tween might have left behind. The
+   * "detail" branch did NOT do this for `header` (which wraps the Back
+   * button) or `cards`, and the gsap.timeline() it created was never stored
+   * or killed.
+   *
+   * If this effect fires more than once for the same "detail" stage — e.g.
+   * React Strict Mode double-invoking useLayoutEffect in dev, or the user
+   * re-entering "detail" quickly enough that a previous tween hadn't
+   * finished — two separate GSAP timelines ended up animating opacity/
+   * filter on the very same header element simultaneously, with no reset
+   * in between. Whichever inline style "won" that race could freeze the
+   * header at partial/zero opacity or mid-blur — the Back button was still
+   * in the DOM, just rendered invisible.
+   *
+   * FIX: store each entrance timeline in a ref and kill any previous one
+   * before creating a new one, and gsap.set(..., { clearProps }) the
+   * header/cards first (mirroring the existing "challenges" pattern) so
+   * every entrance always starts from a clean, known style state. The
+   * effect's cleanup also kills the timeline if the effect re-runs or the
+   * component unmounts mid-animation, so a stray tween can never keep
+   * running in the background and stomp styles afterward.
+   * -------------------------------------------------------------------- */
   useLayoutEffect(() => {
     if (isMobile || !industry) return;
 
     if (stage === "challenges") {
       const cards = challengeCardRefs.current.filter(Boolean);
       if (!cards.length) return;
+
+      challengesEntranceTlRef.current?.kill();
       gsap.set(cards, { clearProps: "transform,opacity,filter" });
-      gsap.fromTo(
+      const tl = gsap.fromTo(
         cards,
         { opacity: 0, y: 44, scale: 0.96, filter: "blur(10px)" },
         {
@@ -168,10 +244,23 @@ export default function IndustryLanding() {
           ease: "power3.out",
         }
       );
+      challengesEntranceTlRef.current = tl;
+      return () => tl.kill();
     } else if (stage === "detail") {
       const header = detailHeaderRef.current;
       const cards = detailCardRefs.current.filter(Boolean);
+
+      // Kill any still-running entrance timeline from a previous fire of
+      // this effect before touching these elements again.
+      detailEntranceTlRef.current?.kill();
+
+      // Always start from a clean, known style state — this is the same
+      // safeguard the "challenges" branch already had, now applied here too.
+      if (header) gsap.set(header, { clearProps: "opacity,transform,filter" });
+      if (cards.length) gsap.set(cards, { clearProps: "opacity,transform,filter" });
+
       const tl = gsap.timeline();
+      detailEntranceTlRef.current = tl;
       if (header) {
         tl.fromTo(
           header,
@@ -195,6 +284,7 @@ export default function IndustryLanding() {
           header ? "-=0.25" : 0
         );
       }
+      return () => tl.kill();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, activeChallengeIndex, isMobile, industry]);
@@ -421,8 +511,21 @@ export default function IndustryLanding() {
 
         {stage === "detail" && activeChallenge && (
           <div className="industry-detail">
-            <div className="industry-detail__header" ref={detailHeaderRef}>
-              <button type="button" className="industry-detail__back" onClick={handleBack}>
+            <div
+              className="industry-detail__header"
+              ref={detailHeaderRef}
+              // Defensive stacking guarantee: this header (and the Back
+              // button inside it) must never end up visually covered by
+              // the always-present .industry-cards-section__overlay or any
+              // other sibling, regardless of how those are styled in CSS.
+              style={{ position: "relative", zIndex: 20 }}
+            >
+              <button
+                type="button"
+                className="industry-detail__back"
+                onClick={handleBack}
+                style={{ position: "relative", zIndex: 21, pointerEvents: "auto" }}
+              >
                 <span aria-hidden="true">&larr;</span> Back
               </button>
               <span className="industry-detail__eyebrow">

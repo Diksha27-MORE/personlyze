@@ -1,11 +1,28 @@
-// DynamicFrameLayoutMobile.jsx  ·  v5  ·  simple premium vertical card list (mobile)
+// DynamicFrameLayoutMobile.jsx  ·  v7  ·  simple premium vertical card list (mobile)
 //
 // No stacked deck, no sticky, no overlap, no expand/collapse, no hover, no video.
 // 10 full-width cards, one below another, 180–220px tall.
 // Image fills the card + numbered label top-center + industry name centered
 // + ">" arrow bottom-right + iOS-style touch ripple on tap.
 // Tap anywhere on a card navigates straight to the industry page.
-import { memo, useCallback, useRef, useState } from "react";
+//
+// v7 change: fixes mobile back-navigation scroll reset (Back button, Android
+// gesture back, iPhone swipe back) not actually resetting to the 1st card.
+//
+// ROOT CAUSE (why v6 failed on mobile specifically):
+// Mobile browsers restore scroll for interactive back gestures (iOS
+// edge-swipe, Android predictive-back) using a native, browser-owned
+// "live snapshot" restore that runs during/after the same paint cycle our
+// `pageshow`/`popstate` handlers fire in — NOT before it. So our previous
+// scroll reset executed, then the browser's own native restoration
+// overwrote it a frame later. `history.scrollRestoration = "manual"` does
+// NOT suppress this — that flag only affects standard history-restoration,
+// not the gesture-driven snapshot restore mobile browsers use for
+// swipe/predictive back. Adding more listeners doesn't fix a race; the
+// reset has to run AFTER the browser's own restoration has settled, which
+// means deferring to actual paint frames (double requestAnimationFrame)
+// instead of running inside the event callback itself.
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import "./DynamicFrameLayoutMobile.css";
 import { useNavigate } from "react-router-dom";
 
@@ -140,6 +157,7 @@ const IndustryCard = memo(function IndustryCard({ industry, index, onOpen }) {
 
 export default function DynamicFrameLayoutMobile() {
   const navigate = useNavigate();
+  const sectionRef = useRef(null);
 
   const handleOpen = useCallback(
     (slug) => {
@@ -148,8 +166,72 @@ export default function DynamicFrameLayoutMobile() {
     [navigate],
   );
 
+  useEffect(() => {
+    // Stop the browser from auto-restoring scroll offsets on standard
+    // history navigation. Kept for correctness on desktop / non-gesture
+    // back, but — see the note at the top of this file — this flag does
+    // NOT govern the native snapshot-restore used by mobile swipe/gesture
+    // back, which is the actual source of the bug.
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+
+    const scrollToFirstCard = () => {
+      const el = sectionRef.current;
+      if (el) {
+        el.scrollIntoView({ block: "start", behavior: "auto" });
+      } else {
+        window.scrollTo(0, 0);
+      }
+    };
+
+    // Deferred reset: waits for TWO animation frames before scrolling.
+    // This is not an arbitrary delay (no setTimeout / magic ms value) —
+    // it's tied to actual paint frames, and its purpose is specific: give
+    // the browser's own native gesture/bfcache scroll restoration a chance
+    // to finish first, so our reset runs LAST and wins the race instead of
+    // being silently overwritten a frame later. One rAF covers "restoration
+    // already happened before this frame"; the second covers restoration
+    // that lands exactly on the first frame after pageshow/popstate.
+    const deferredScrollToFirstCard = () => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(scrollToFirstCard);
+      });
+    };
+
+    // Case 1: normal SPA remount when navigating back to Home. Run
+    // immediately (no need to defer — there's no prior native restoration
+    // to race against on a genuine fresh mount) and again deferred, in
+    // case the browser applies a gesture-snapshot restore right after
+    // mount on this navigation too.
+    scrollToFirstCard();
+    deferredScrollToFirstCard();
+
+    // Case 2: bfcache restore — component isn't remounted, browser fires
+    // `pageshow` with `persisted: true` instead.
+    const handlePageShow = (event) => {
+      if (event.persisted) {
+        deferredScrollToFirstCard();
+      }
+    };
+    window.addEventListener("pageshow", handlePageShow);
+
+    // Case 3: Back button / Android gesture back / iOS swipe back all
+    // trigger `popstate`. Deferred so we run after the browser's own
+    // gesture-driven scroll restoration has settled, not before it.
+    const handlePopState = () => {
+      deferredScrollToFirstCard();
+    };
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
   return (
-    <section className="dfl-m-section" aria-label="Industries">
+    <section className="dfl-m-section" aria-label="Industries" ref={sectionRef}>
       <div className="dfl-m-list">
         {industries.map((industry, index) => (
           <IndustryCard

@@ -1,8 +1,8 @@
 .faq-section {
   width: 100%;
-  background: #f7f7f5;
+   background:#edeae2;
   padding: 60px 6% 100px;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+font-family: "avenir black";
   color: #111111;
   box-sizing: border-box;
 }
@@ -22,21 +22,14 @@
 }
 
 .faq-eyebrow {
-  font-size: 13px;
+  font-size: 45px;
   font-weight: 600;
   letter-spacing: 0.12em;
-  color: #666666;
+  color: #070707;
   margin-bottom: 16px;
 }
 
-.faq-heading {
-  font-family: "Fraunces", Georgia, serif;
-  font-size: 26px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.12;
-  margin: 0 0 16px;
-}
+
 
 .faq-subtext {
   font-size: 15px;
@@ -78,7 +71,7 @@
   cursor: pointer;
   text-align: left;
   padding: 22px 22px;
-  font-family: inherit;
+  font-family: "avenir black";
   font-size: 15px;
   font-weight: 500;
   color: #111111;

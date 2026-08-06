@@ -55,24 +55,47 @@ body.intro-scroll-lock {
     justify-content: flex-start;
   }
 
-  .mobile-split-intro__half--bottom {
-    background: #f4f2ee;
-    align-items: flex-start;
-    justify-content: flex-start;
-    padding-top: 28px;
-  }
+.mobile-split-intro__half--bottom {
+  position: relative;
+  background: #f4f2ee;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 0;
+}
 
+
+  /* ------------------------------------------------------------------
+     FONT OVERRIDE — FOUND & FIXED
+     Old rule: font-family: var(--heading, "Avenir Black", "Helvetica
+     Neue", Arial, sans-serif);
+
+     var()'s 2nd argument is ONLY used when --heading is completely
+     UNDEFINED in the cascade. If --heading is declared anywhere else
+     in the app (a global theme/tokens stylesheet, :root, a layout
+     wrapper) with a different font, that value wins outright — the
+     entire "Avenir Black" fallback chain is discarded, not merged in.
+     That's what was silently swapping the rendered font.
+
+     Fix: hardcode the font stack directly here so nothing outside
+     this file can hijack it. Applied to both the top headline and
+     the "it's human" word below.
+  ------------------------------------------------------------------ */
   .mobile-split-intro__top-text {
-    font-family: var(--heading, "Avenir Black", "Helvetica Neue", Arial, sans-serif);
+    font-family: "Avenir Black", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
     font-weight: 900;
     color: #ffffff;
     text-align: left;
     text-transform: uppercase;
+
+    /* Stacks the three explicit line spans below in tight, locked
+       lines instead of relying on browser auto-wrap. */
+    display: flex;
+    flex-direction: column;
     letter-spacing: -1.5px;
-    line-height: 0.92;
-    font-size: clamp(46px, 15.5vw, 96px);
     margin: 0;
     max-width: 100%;
+
     opacity: 0;
     filter: blur(20px);
     transform: translateY(28px);
@@ -82,26 +105,63 @@ body.intro-scroll-lock {
       transform 1s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .mobile-split-intro__bottom-word {
-    font-family: var(--heading, "Avenir Black", "Helvetica Neue", Arial, sans-serif);
-    font-weight: 900;
-    color: #e50914;
-    text-align: left;
-    letter-spacing: -3px;
-    line-height: 0.9;
-    font-size: clamp(80px, 26vw, 180px);
-    margin: 0;
-    max-width: 100%;
-    text-shadow: 0 12px 60px rgba(229, 9, 20, 0.18);
-    opacity: 0;
-    filter: blur(18px);
-    transform: translateY(24px) scale(0.94);
-    transform-origin: left top;
-    transition:
-      opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1),
-      filter 1.15s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 1.15s cubic-bezier(0.22, 1, 0.36, 1);
-  }
+  /* Each stacked line ("THE FUTURE OF" / "MARKETING IS" / "NOT LOUD").
+     line-height lives here (not on the parent) so leading stays tight
+     and consistent across all three lines. */
+.mobile-split-intro__line {
+  display: block;
+  font-family: "Avenir Black", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 900;
+  gap: 10px; 
+  line-height: 0.9;
+  letter-spacing: -2px;
+}
+
+.mobile-split-intro__line--1 {
+  font-size: 35px;   /* THE */
+}
+
+.mobile-split-intro__line--2 {
+  font-size: 38px;   /* FUTURE OF */
+}
+
+.mobile-split-intro__line--3 {
+  font-size: 35px;   /* MARKETING IS */
+}
+
+.mobile-split-intro__line--4 {
+  font-size: 47px;   /* NOT LOUD */
+}
+
+.mobile-split-intro__bottom-word {
+  font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 500;
+
+  color: #e50914;
+
+font-size: 50px !important;
+  line-height: 1;
+  letter-spacing: -0.02em;
+
+  width: 100%;
+  margin: 0;
+
+  text-align: right;
+
+  padding-right: 28px;   /* right se distance */
+  padding-top: 12px;     /* top se distance */
+
+  align-self: flex-start;
+
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(10px);
+
+  transition:
+    opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 1.15s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.15s cubic-bezier(0.22, 1, 0.36, 1);
+}
 
   .mobile-split-intro.step-1 .mobile-split-intro__top-text,
   .mobile-split-intro.step-2 .mobile-split-intro__top-text,
@@ -357,7 +417,7 @@ body.intro-scroll-lock {
       background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
       border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
       transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    
+
   }
 
   .hero-center--mobile .hero-demo-btn:hover,
@@ -540,13 +600,13 @@ body.intro-scroll-lock {
     font-size: 13px;
   }
 
-  .mobile-split-intro__top-text {
-    font-size: clamp(40px, 14vw, 72px);
-    letter-spacing: -1.2px;
+  .mobile-split-intro__top-line {
+    gap: 10px; 
+    font-size: clamp(34px, 12vw, 62px);
   }
 
   .mobile-split-intro__bottom-word {
-    font-size: clamp(72px, 24vw, 150px);
+    font-size: clamp(22px, 6.5vw, 34px);
   }
 
   .nav-panel {
@@ -583,12 +643,12 @@ body.intro-scroll-lock {
     padding: 12px 28px;
   }
 
-  .mobile-split-intro__top-text {
-    font-size: clamp(32px, 11vw, 56px);
+  .mobile-split-intro__top-line {
+    font-size: clamp(28px, 10vw, 48px);
   }
 
   .mobile-split-intro__bottom-word {
-    font-size: clamp(64px, 22vw, 130px);
+    font-size: clamp(20px, 6vw, 30px);
   }
 
   .nav-panel {
@@ -618,11 +678,4 @@ body.intro-scroll-lock {
 
 .personalization {
   color: #ffffff !important;
-}
-@media (max-width: 768px) {
-  body.nav-open .hero-book-demo-btn {
-    opacity: 0 !important;
-    pointer-events: none !important;
-    transform: translateY(-10px) !important;
-  }
 }
