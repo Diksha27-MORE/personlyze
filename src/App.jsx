@@ -26,6 +26,7 @@ gsap.registerPlugin(ScrollTrigger);
 function HomePage() {
   const location = useLocation();
   const containerRef = useRef(null);
+  const [heroReady, setHeroReady] = React.useState(false);
 
   const isRestoringScroll = useRef(false);
 
