@@ -562,5 +562,4 @@
     min-height: 100vh;
     min-height: 100svh;
     aspect-ratio: auto; /* height now comes from min-height, not 16:9 */
-  }
 }
