@@ -401,14 +401,26 @@
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  justify-content: center;   /* was: flex-start — centers content in the available height instead of stacking it at the top with dead space below */
+  justify-content: flex-start;   /* was: center — no longer needed for centering: the heading block itself now grows (flex:1, below) to fill the leftover height, so there's no leftover space left for this to distribute */
 
-  padding: 40px 24px calc(112px + env(safe-area-inset-bottom, 0px));  /* was: 64px 24px calc(128px + safe-area) — less reserved top/bottom space so content can occupy more of the screen while still clearing the pinned button */
+  padding: 40px 24px calc(100px + env(safe-area-inset-bottom, 0px));  /* was: calc(112px + safe-area) on bottom — trimmed to the button's actual footprint (~84px) plus a small buffer, since space is no longer being "spent" on centering */
 
   box-sizing: border-box;
 }
+  /* KEY FIX: previously this block was a fixed-height island that got
+     centered inside a much taller container, which is what produced the
+     large empty bands above and below it. Making it a flex item that
+     grows to fill all remaining vertical space (flex: 1), then spacing
+     its two rows apart with align-content: space-between, makes the
+     headline sit near the top and the paragraph sit near the bottom of
+     the actual available screen — using the real height of the section
+     instead of leaving it blank. row-gap remains as a minimum gutter in
+     case space-between ever has nothing extra to distribute (e.g. very
+     tall text on a small phone). */
   .mobile-whoweare-card .workspace-heading{
-    row-gap: 32px;   /* was: 28px — slightly more breathing room now that the block fills more of the screen */
+    flex: 1 1 auto;
+    align-content: space-between;
+    row-gap: 28px;
   }
   .mobile-whoweare-card .heading-eyebrow{
     margin-bottom: 18px;   /* was inherited larger value — trims space before the headline */
@@ -420,7 +432,7 @@
 }
 .mobile-whoweare-card .heading-support{
   font-size: 17px;      /* was: 16px */
-  line-height: 1.75;
+  line-height: 1.8;     /* was: 1.75 — a touch looser now that it has real room to breathe */
   padding-top: 30px;    /* was: 26px */
   opacity: 0.7;
 }
