@@ -34,12 +34,8 @@ import retailImg from "../assets/Retailimg.png";
 import automotiveImg from "../assets/automotiveimg.png";
 import b2bImg from "../assets/b2bimg.png";
 import fashionImg from "../assets/fashionimg.png";
-
-// TODO: replace with real Govt & Politics image/video assets once available.
-// Using a placeholder (falls back to fashionImg) so the card renders correctly
-// until the real creative is dropped in.
-import govtPlaceholderImg from "../assets/fashionimg.png";
-// import govtPoliticsVideo from "../assets/govt-politics.mp4"; // placeholder for future video preview
+import internalCommsImg from "../assets/internal-commsimg.png";
+import govtPoliticsImg from "../assets/govt-politics.png";
 
 const industries = [
   { name: "Real Estate", image: realEstateImg, slug: "real-estate" },
@@ -52,12 +48,12 @@ const industries = [
   { name: "Fashion & Lifestyle", image: fashionImg, slug: "fashion" },
   {
     name: "Internal Communication",
-    image: fashionImg,
+    image: internalCommsImg,
     slug: "internal-communication",
   },
   {
     name: "Govt & Politics",
-    image: govtPlaceholderImg, // placeholder — swap in real asset
+    image: govtPoliticsImg,
     video: null, // placeholder — swap in real asset when video previews are added back
     slug: "govt-politics",
   },

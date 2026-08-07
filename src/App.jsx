@@ -421,10 +421,16 @@ function App() {
 
   return (
     <BookDemoModalProvider>
+
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/industry/:slug" element={<IndustryLanding />} />
+
+        <Route 
+          path="/industry/:slug" 
+          element={<IndustryLanding />} 
+        />
       </Routes>
+
     </BookDemoModalProvider>
   );
 }

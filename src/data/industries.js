@@ -17,9 +17,9 @@ import healthImg from "../assets/healthimg.png";
 import retailImg from "../assets/Retailimg.png";
 import automotiveImg from "../assets/automotiveimg.png";
 import b2bImg from "../assets/b2bimg.png";
-import techImg from "../assets/techimg.png";
 import fashionImg from "../assets/fashionimg.png";
-
+import internalCommsImg from "../assets/internal-commsimg.png";
+import govtPoliticsImg from "../assets/govt-politics.png";
 const industries = [
   /* ========================================================================
    * REAL ESTATE
@@ -487,72 +487,6 @@ const industries = [
     ],
   },
   /* ========================================================================
-   * TECH & STARTUPS
-   * ====================================================================== */
-  {
-    slug: "tech",
-    name: "Tech & Startups",
-    image: techImg,
-    className: "tech",
-    heroTitle: "Tech & Startups",
-    heroDescription:
-      "AI-powered growth engagement built for speed — turning sign-ups into activated users and early adopters into advocates.",
-    challenges: [
-      {
-        problem: "Most free trials expire unused — PLG conversion is weak.",
-        cards: [
-          {
-            title: "What this means",
-            content:
-              "Product-led growth relies on trial conversion, but the average SaaS free trial sees 40–60% of users never completing activation. Users sign up out of curiosity, hit a friction point, and quietly abandon.",
-          },
-          {
-            title: "Personlyze Intervention",
-            content:
-              "Deploy a personalised activation video series, triggered by in-product behaviour, that speaks to each user's role and addresses the exact step where they stalled, within hours of the stall.",
-          },
-          { title: "Video" },
-          {
-            title: "Why this works",
-            content:
-              "A video matched to a user's role and specific sticking point removes friction at the moment it matters, instead of a generic onboarding sequence that ignores context.",
-          },
-          {
-            title: "Expected Outcome",
-            content:
-              "Trial-to-paid conversion up from 15% to 32%, time-to-activation down 50%, and support ticket volume during trial down 35%.",
-          },
-        ],
-      },
-      {
-        problem: "Churn at month 3–6 is the valley of death for SaaS and tech products.",
-        cards: [
-          {
-            title: "What this means",
-            content:
-              "The period between month 3 and month 6 is where SaaS churn is highest, after initial enthusiasm fades and before long-term habits form. Customers are quietly underutilising rather than loudly unhappy, and brands often don't notice until the cancellation notice arrives.",
-          },
-          {
-            title: "Personlyze Intervention",
-            content:
-              "Deploy usage-milestone and behaviour-triggered personalised videos at month 3 and month 5 from the named CSM, celebrating progress and surfacing the one unused feature that would most improve outcomes.",
-          },
-          { title: "Video" },
-          {
-            title: "Why this works",
-            content:
-              "A video that names a specific milestone and a specific missing feature creates momentum at the exact point retention is most at risk.",
-          },
-          {
-            title: "Expected Outcome",
-            content:
-              "Month 3–6 churn rate down 45%, feature adoption at month 3 intervention up 52%, and 12-month retention rate up 30%.",
-          },
-        ],
-      },
-    ],
-  },
-  /* ========================================================================
    * FASHION & LIFESTYLE
    * ====================================================================== */
   {
@@ -624,7 +558,7 @@ const industries = [
 {
   slug: "internal-communication",
   name: "Internal Communication",
-  image: fashionImg, // Replace with your own image later
+  image: internalCommsImg,
   className: "internal-communication",
   heroTitle: "Internal Communication",
   heroDescription:
@@ -688,7 +622,7 @@ const industries = [
   {
   slug: "govt-politics",
   name: "Govt & Politics",
-  image: fashionImg, // replace with your actual image later
+  image: govtPoliticsImg,// replace with your actual image later
   className: "govt-politics",
   heroTitle: "Govt & Politics",
   heroDescription:

@@ -5,7 +5,7 @@
 .bdm-overlay {
   position: fixed;
   inset: 0;
-  z-index: 200;
+   z-index: 99999999 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -211,6 +211,7 @@
 
 @media (max-width: 480px) {
   .bdm-dialog {
+    z-index: 100000000 !important;
     padding: 32px 24px 24px;
     border-radius: 18px;
   }

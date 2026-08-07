@@ -738,3 +738,14 @@
 .industry-card__cta-button:active {
   transform: scale(0.98);
 }
+.book-demo-modal-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 999999 !important;
+}
+
+.book-demo-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999998 !important;
+}

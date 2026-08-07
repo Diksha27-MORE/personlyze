@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { gsap } from "gsap";
 import "./MobileIndustryLanding.css";
+import { useBookDemoModal } from "../context/BookDemoModalContext";
 
 import realEstateVideo from "../assets/real-estate.mp4";
 import bfsiVideo from "../assets/bfsi.mp4";
@@ -11,6 +12,8 @@ import retailVideo from "../assets/Retail.mp4";
 import automotiveVideo from "../assets/automotive.mp4";
 import b2bVideo from "../assets/b2b.mp4";
 import fashionVideo from "../assets/fashion.mp4";
+import internalCommsVideo from "../assets/internal-comms.mp4";
+import govtPoliticsVideo from "../assets/govt-politics.mp4";
 
 /* --------------------------------------------------------------------------
  * Image lookups (shared prefix map for both card photos and problem photos)
@@ -35,9 +38,13 @@ const IMAGE_PREFIX_BY_SLUG = {
   b2b: "saas",
   tech: "tech",
   fashion: "fashion",
+  "internal-communication": "internal-comms",
+  "govt-politics": "govt-politics",
 };
 
-/* Hero background video per industry slug. */
+/* Hero background video per industry slug. Industries with no entry (or no
+ * .mp4 asset yet) simply fall back to the `image` poster below — no
+ * industry ever inherits another industry's video. */
 const HERO_VIDEO_BY_SLUG = {
   "real-estate": realEstateVideo,
   bfsi: bfsiVideo,
@@ -48,6 +55,8 @@ const HERO_VIDEO_BY_SLUG = {
   b2b: b2bVideo,
   saas: b2bVideo,
   fashion: fashionVideo,
+  "internal-communication": internalCommsVideo,
+  "govt-politics": govtPoliticsVideo,
 };
 
 function getPrefix(slug) {
@@ -144,24 +153,6 @@ function GlassArrowIcon() {
   );
 }
 
-/* --------------------------------------------------------------------------
- * Book a Demo — WhatsApp handoff.
- * Identical behavior to the Footer's handleBookDemo(), reused here so the
- * CTA card (6th slide) opens the same WhatsApp pre-filled message.
- * -------------------------------------------------------------------------- */
-function handleBookDemo() {
-  const phone = "919819104471";
-  const message = encodeURIComponent(
-    `Hi, I'd like to book a demo of Personlyze AI for my business.
-Details below.
-Name:
-Company:
-Website:
-Email:`
-  );
-  window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
-}
-
 /* ==========================================================================
  * MOBILE-ONLY COMPONENTS
  * ========================================================================== */
@@ -174,6 +165,7 @@ function MobileIndustryLanding({
   challenges, // any number of { problem, cards: [...] }
 }) {
   const navigate = useNavigate();
+  const { openBookDemo } = useBookDemoModal();
   const [openChallengeIndex, setOpenChallengeIndex] = useState(null);
   const cardRefs = useRef({});
 
@@ -275,6 +267,7 @@ const handleBackToIndustries = () => {
           originEl={cardRefs.current[openChallengeIndex + 1]}
           onClose={handleClose}
           fallbackImage={image}
+          onBookDemo={openBookDemo}
         />
       )}
     </div>
@@ -299,6 +292,7 @@ function MobileChallengeOverlay({
   originEl,
   onClose,
   fallbackImage,
+  onBookDemo,
 }) {
   const scrimRef = useRef(null);
   const sheetRef = useRef(null);
@@ -473,7 +467,7 @@ function MobileChallengeOverlay({
               5 cards so it reads as a natural continuation, not a plain
               CTA section. */}
           <div className="mobile-overlay__slide" key="cta">
-            <IndustryCTACard backgroundImage={ctaBackgroundImage} />
+            <IndustryCTACard backgroundImage={ctaBackgroundImage} onBookDemo={onBookDemo} />
           </div>
         </div>
 
@@ -595,10 +589,11 @@ function MobileIndustryCard({ card, backgroundImage, isVideo, isActive, onVideoE
  * `backgroundImage` treatment, same `.industry-card__bg-overlay` dark
  * overlay — so it reads as a natural 6th slide in the same photo carousel,
  * not a separate plain CTA section. Only the content layer swaps the
- * title/description for a centered "Book a Demo" CTA. Uses the same
- * WhatsApp deep-link behavior as the Footer's handleBookDemo().
+ * title/description for a centered "Book a Demo" CTA. Opens the shared
+ * Book Demo modal via BookDemoModalContext (same as NavMenu.jsx) instead
+ * of the old WhatsApp deep-link.
  * -------------------------------------------------------------------------- */
-function IndustryCTACard({ backgroundImage }) {
+function IndustryCTACard({ backgroundImage, onBookDemo }) {
   return (
     <div
       className="industry-card industry-card--mobile industry-card--cta"
@@ -621,7 +616,7 @@ function IndustryCTACard({ backgroundImage }) {
         <button
           type="button"
           className="book-demo-btn industry-card__cta-button"
-          onClick={handleBookDemo}
+          onClick={onBookDemo}
         >
           Book a Demo
         </button>

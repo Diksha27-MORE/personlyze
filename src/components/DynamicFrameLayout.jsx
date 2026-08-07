@@ -21,17 +21,20 @@ import retailImg from "../assets/Retailimg.png";
 import automotiveImg from "../assets/automotiveimg.png";
 import b2bImg from "../assets/b2bimg.png";
 import fashionImg from "../assets/fashionimg.png";
+import internalCommsImg from "../assets/internal-commsimg.png";
+import govtPoliticsImg from "../assets/govt-politics.png";
 
 const industries = [
-  { name: "Real Estate",            video: realEstateVideo, image: realEstateImg, className: "real-estate", slug: "real-estate" },
-  { name: "BFSI",                   video: bfsiVideo,       image: bfsiImg,       className: "bfsi",        slug: "bfsi"        },
-  { name: "Travel & Hospitality",   video: travelVideo,     image: travelImg,     className: "travel",      slug: "travel"      },
-  { name: "Health & Wellness",      video: healthVideo,     image: healthImg,     className: "health",      slug: "health"      },
-  { name: "Retail & D2C",           video: retailVideo,     image: retailImg,     className: "retail",      slug: "retail"      },
-  { name: "Automotive",             video: automotiveVideo, image: automotiveImg, className: "automotive",  slug: "automotive"  },
-  { name: "B2B & SaaS",             video: b2bVideo,        image: b2bImg,        className: "saas",        slug: "b2b"         },
-  { name: "Fashion & Lifestyle",    video: fashionVideo,    image: fashionImg,    className: "fashion",     slug: "fashion"     },
-  { name: "Internal Communication", video: fashionVideo,    image: fashionImg,    className: "fashion",     slug: "fashion"     },
+  { name: "Real Estate",            video: realEstateVideo, image: realEstateImg,    className: "real-estate",            slug: "real-estate"            },
+  { name: "BFSI",                   video: bfsiVideo,       image: bfsiImg,          className: "bfsi",                   slug: "bfsi"                   },
+  { name: "Travel & Hospitality",   video: travelVideo,     image: travelImg,        className: "travel",                 slug: "travel"                 },
+  { name: "Health & Wellness",      video: healthVideo,     image: healthImg,        className: "health",                 slug: "health"                 },
+  { name: "Retail & D2C",           video: retailVideo,     image: retailImg,        className: "retail",                 slug: "retail"                 },
+  { name: "Automotive",             video: automotiveVideo, image: automotiveImg,    className: "automotive",             slug: "automotive"             },
+  { name: "B2B & SaaS",             video: b2bVideo,        image: b2bImg,           className: "saas",                   slug: "b2b"                    },
+  { name: "Fashion & Lifestyle",    video: fashionVideo,    image: fashionImg,       className: "fashion",                slug: "fashion"                },
+  { name: "Internal Communication", video: null,            image: internalCommsImg, className: "internal-communication", slug: "internal-communication" },
+  { name: "Govt & Politics",        video: null,            image: govtPoliticsImg,  className: "govt-politics",          slug: "govt-politics"          },
 ];
 
 const getPos = (index) => ({ row: Math.floor(index / 3), col: index % 3 });
@@ -111,12 +114,14 @@ const IndustryCard = memo(function IndustryCard({
       onMouseLeave={handleLeave}
       onClick={handleClick}
     >
-      <video
-        ref={videoRef}
-        className={`dfl-video${isHovered ? " dfl-video--visible" : ""}`}
-        src={industry.video}
-        muted loop playsInline preload="auto" disablePictureInPicture
-      />
+      {industry.video && (
+        <video
+          ref={videoRef}
+          className={`dfl-video${isHovered ? " dfl-video--visible" : ""}`}
+          src={industry.video}
+          muted loop playsInline preload="auto" disablePictureInPicture
+        />
+      )}
       <div className="dfl-overlay" />
       <div className={`dfl-controls${isHovered ? " dfl-controls--visible" : ""}`}>
         <button className="dfl-ctrl-btn" aria-label="Expand"><FaExpand size={10} /></button>
@@ -176,7 +181,7 @@ export default function DynamicFrameLayout() {
     <div className="dfl-grid" style={gridStyle}>
       {industries.map((industry, index) => (
         <IndustryCard
-          key={industry.slug + index}
+          key={industry.slug}
           industry={industry}
           index={index}
           isHovered={hovered === index}

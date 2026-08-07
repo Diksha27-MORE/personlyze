@@ -3,11 +3,38 @@ import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
 import industries from "../data/industries";
 import MobileIndustryLanding from "./MobileIndustryLanding";
+import { useBookDemoModal } from "../context/BookDemoModalContext";
 import "./IndustryLanding.css";
+
+import realEstateVideo from "../assets/real-estate.mp4";
+import bfsiVideo from "../assets/bfsi.mp4";
+import travelVideo from "../assets/travel.mp4";
+import healthVideo from "../assets/health.mp4";
+import retailVideo from "../assets/Retail.mp4";
+import automotiveVideo from "../assets/automotive.mp4";
+import b2bVideo from "../assets/b2b.mp4";
+import fashionVideo from "../assets/fashion.mp4";
 
 const cardPhotos = {
   ...import.meta.glob("../card-photos/*.jpg", { eager: true, import: "default" }),
   ...import.meta.glob("../card-photos/*.png", { eager: true, import: "default" }),
+};
+
+/* Hero background video per industry slug. Industries with no entry (or no
+ * .mp4 asset yet) simply fall back to the existing `image` poster — no
+ * industry ever inherits another industry's video. */
+const HERO_VIDEO_BY_SLUG = {
+  "real-estate": realEstateVideo,
+  bfsi: bfsiVideo,
+  travel: travelVideo,
+  health: healthVideo,
+  retail: retailVideo,
+  automotive: automotiveVideo,
+  b2b: b2bVideo,
+  saas: b2bVideo,
+  fashion: fashionVideo,
+  // "internal-communication" and "govt-politics" intentionally omitted —
+  // no video asset exists yet, so they correctly fall back to `image`.
 };
 
 /* Only needed when an industry's image-file prefix differs from its slug
@@ -26,6 +53,9 @@ const IMAGE_PREFIX_BY_SLUG = {
   b2b: "saas",
   tech: "tech",
   fashion: "fashion",
+
+  "internal-communication": "internal-comms",
+  "govt-politics": "govt-politics",
 };
 
 function getPrefix(slug) {
@@ -126,7 +156,7 @@ export default function IndustryLanding() {
   const { slug } = useParams();
   const industry = industries.find((item) => item.slug === slug);
   const isMobile = useIsMobile();
-  
+  const { openBookDemo } = useBookDemoModal();
 
   /* ---- desktop reveal state ---------------------------------------------
    * stage: "challenges" (step 1) -> "detail" (step 2, sliding carousel)
@@ -329,6 +359,7 @@ export default function IndustryLanding() {
   }
 
   const { heroTitle, heroDescription, challenges, image } = industry;
+  const heroVideo = HERO_VIDEO_BY_SLUG[slug] || null;
 
   /* Works for any number of challenges, each with any number of cards. */
   const challengeCardOffsets = getChallengeCardOffsets(challenges);
@@ -461,6 +492,18 @@ export default function IndustryLanding() {
   return (
     <div className="industry-landing" style={{ backgroundImage: `url(${image})` }}>
       <div className="industry-hero" style={{ backgroundImage: `url(${image})` }}>
+        {heroVideo && (
+          <video
+            className="industry-hero__video"
+            src={heroVideo}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            disablePictureInPicture
+          />
+        )}
         <div className="industry-hero__overlay" />
         <div className="industry-hero__content">
           <h1 className="industry-hero__title">{heroTitle}</h1>
