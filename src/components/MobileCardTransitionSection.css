@@ -13,13 +13,13 @@
 .mcts-heading-section {
   position: relative;
   width: 100%;
-  min-height: 25vh;
+  height: auto;
+  min-height: 0;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   background: #EDEAE2;
-  padding-top: clamp(56px, 10vh, 100px);
-  padding-bottom: 32px;
+  padding: 28px 20px 28px;
   box-sizing: border-box;
 }
 
