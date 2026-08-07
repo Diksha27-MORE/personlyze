@@ -393,29 +393,29 @@
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;   /* was: center — pulls content up instead of centering it in empty space */
 
-  /* Change this */
-  padding: 40px 24px calc(128px + env(safe-area-inset-bottom, 0px));
+  padding: 64px 24px calc(128px + env(safe-area-inset-bottom, 0px));  /* reduced/shifted from 40px so heading sits higher but isn't glued to the status bar */
 
   box-sizing: border-box;
 }
-
   .mobile-whoweare-card .workspace-heading{
-    row-gap: 34px;
+    row-gap: 28px;
   }
-
-  .mobile-whoweare-card .heading-statement{
-    font-size: clamp(36px, 10.5vw, 46px);
-    line-height: 1.16;
-  }
-
-  .mobile-whoweare-card .heading-support{
-    font-size: 16px;
-    line-height: 1.75;
-    padding-top: 26px;
-    opacity: 0.7;
-  }
+  .mobile-whoweare-card .heading-eyebrow{
+  margin-bottom: 18px;   /* was inherited larger value — trims space before the headline */
+}
+  } 
+.mobile-whoweare-card .heading-statement{
+  font-size: clamp(44px, 13.5vw, 68px);  /* was clamp(36px, 10.5vw, 46px) — substantially larger, matches reference */
+  line-height: 1.08;                      /* tightened from 1.16 to keep it feeling like one solid mass */
+}
+.mobile-whoweare-card .heading-support{
+  font-size: 16px;
+  line-height: 1.75;
+  padding-top: 26px;
+  opacity: 0.7;
+}
 
   .mobile-book-demo-btn{
     position: absolute;

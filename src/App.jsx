@@ -1,7 +1,7 @@
-import React, { useEffect, useLayoutEffect, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import Hero from "./components/Hero";
 import Workspace from "./components/Workspace";
@@ -21,23 +21,25 @@ import "./App.css";
 gsap.registerPlugin(ScrollTrigger);
 
 // ---------------------------------------------------------------------
-// THE ACTUAL FIX for "/ opens already scrolled to Solutions":
+// SINGLE SOURCE OF TRUTH FOR INITIAL SCROLL POSITION
 //
 // On a real browser reload, `history.scrollRestoration` defaults to
 // "auto" — the browser restores whatever scrollY you were at on your
-// previous visit, and it keeps RE-APPLYING that restore as the page's
-// DOM grows underneath it (this app renders sections progressively via
-// `heroReady && (...)`, and GSAP adds pin-spacer height even later).
-// Setting scrollRestoration = "manual" from inside a useEffect runs too
-// late: the browser has already committed its first restore attempt by
-// the time any React effect fires. Doing it here, at module-evaluation
-// time (before React has even rendered), is the earliest point in our
-// code that can run, and it reliably wins the race.
+// previous visit. Setting scrollRestoration = "manual" from inside a
+// React effect runs too late: the browser has already committed its
+// first restore attempt by the time any effect fires. Doing it here,
+// at module-evaluation time (before React has even rendered), is the
+// earliest point our code can run, and it reliably wins the race.
+//
+// This is the ONLY place that forces scroll on load. Nothing else in
+// this file re-scrolls the page during mount, hero-reveal, font/image
+// loading, or ScrollTrigger setup — that overlap was the source of the
+// "opens at Solutions" / "hangs near Solutions" bug.
 // ---------------------------------------------------------------------
 if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
   window.history.scrollRestoration = "manual";
 }
-if (typeof window !== "undefined" && window.location.hash !== "#solutions") {
+if (typeof window !== "undefined") {
   window.scrollTo(0, 0);
 }
 
@@ -45,132 +47,73 @@ if (typeof window !== "undefined" && window.location.hash !== "#solutions") {
    HOME PAGE
 ========================= */
 function HomePage() {
-  const location = useLocation();
   const containerRef = useRef(null);
-  const [heroReady, setHeroReady] = React.useState(false);
+  const [heroReady, setHeroReady] = useState(false);
 
-  // Purely visual — controls whether #solutions is allowed to be seen.
-  // It stays hidden (visibility only, layout/height untouched) for the
-  // brief window between the panels mounting and ScrollTrigger settling,
-  // which is what caused Solutions to flash on screen right after the
-  // Hero intro finished. No scroll math, locks, or observers depend on
-  // this flag — it never affects any of the existing scroll behavior.
-  const [solutionsVisible, setSolutionsVisible] = React.useState(false);
+  // Purely visual — keeps #solutions invisible (visibility only, layout
+  // untouched) until layout has settled, so it can never flash on
+  // screen while CardTransitionSection's pin is still resolving.
+  const [solutionsVisible, setSolutionsVisible] = useState(false);
 
-  const isRestoringScroll = useRef(false);
+  // Shared flag: has the user actually driven a scroll themselves yet?
+  // Every "should we move the scroll position" decision below checks
+  // this first, so layout settling / GSAP refresh / section mounting
+  // can never move the page — only a real user action can.
+  const hasUserScrolledRef = useRef(false);
 
-  useLayoutEffect(() => {
-    if (!heroReady) return;
-
-    if (location.hash !== "#solutions") {
-      // Explicitly guarantee a normal `/` load (or any non-#solutions
-      // hash) starts at the very top of the Hero, rather than silently
-      // relying on whatever scroll position the browser happens to be
-      // at. Runs synchronously before paint, so there's no visible jump.
-      window.scrollTo(0, 0);
-      return;
-    }
-
-    isRestoringScroll.current = true;
-
-    let rafId = null;
-    let attempts = 0;
-    let lastOffsetTop = null;
-    let stableFrames = 0;
-
-    const MAX_ATTEMPTS = 360;
-    const REQUIRED_STABLE_FRAMES = 8;
-    const RESTORE_WINDOW_MS = 6000;
-
-    const scrollToSolutions = () => {
-      const section = document.getElementById("solutions");
-      if (!section) return false;
-
-      window.scrollTo({
-        top: section.offsetTop,
-        left: 0,
-        behavior: "auto",
-      });
-
-      return true;
+  useEffect(() => {
+    const markScrolled = () => {
+      hasUserScrolledRef.current = true;
+    };
+    const SCROLL_KEYS = new Set([
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+      "PageUp",
+      "PageDown",
+      "Home",
+      "End",
+      " ",
+      "Spacebar",
+    ]);
+    const markScrolledByKey = (e) => {
+      if (SCROLL_KEYS.has(e.key) || e.code === "Space") markScrolled();
     };
 
-    const attemptScroll = () => {
-      attempts += 1;
-
-      const section = document.getElementById("solutions");
-
-      if (section) {
-        const currentOffsetTop = section.offsetTop;
-
-        window.scrollTo({
-          top: currentOffsetTop,
-          left: 0,
-          behavior: "auto",
-        });
-
-        if (lastOffsetTop === currentOffsetTop) {
-          stableFrames += 1;
-        } else {
-          stableFrames = 0;
-          lastOffsetTop = currentOffsetTop;
-        }
-
-        if (
-          stableFrames >= REQUIRED_STABLE_FRAMES ||
-          attempts >= MAX_ATTEMPTS
-        ) {
-          return;
-        }
-      } else if (attempts >= MAX_ATTEMPTS) {
-        return;
-      }
-
-      rafId = requestAnimationFrame(attemptScroll);
-    };
-
-    attemptScroll();
-
-    const onLate = () => {
-      if (!isRestoringScroll.current) return;
-      scrollToSolutions();
-    };
-
-    window.addEventListener("load", onLate);
-
-    if (document.fonts && typeof document.fonts.ready?.then === "function") {
-      document.fonts.ready.then(onLate).catch(() => {});
-    }
-
-    let resizeObserver = null;
-
-    if (typeof ResizeObserver !== "undefined") {
-      resizeObserver = new ResizeObserver(() => {
-        onLate();
-      });
-
-      resizeObserver.observe(document.body);
-    }
-
-    const stopLateListeners = setTimeout(() => {
-      isRestoringScroll.current = false;
-      window.removeEventListener("load", onLate);
-
-      if (resizeObserver) resizeObserver.disconnect();
-    }, RESTORE_WINDOW_MS);
+    window.addEventListener("wheel", markScrolled, { passive: true });
+    window.addEventListener("touchstart", markScrolled, { passive: true });
+    window.addEventListener("keydown", markScrolledByKey, { passive: true });
 
     return () => {
-      if (rafId !== null) cancelAnimationFrame(rafId);
-
-      clearTimeout(stopLateListeners);
-
-      window.removeEventListener("load", onLate);
-
-      if (resizeObserver) resizeObserver.disconnect();
-
-      isRestoringScroll.current = false;
+      window.removeEventListener("wheel", markScrolled);
+      window.removeEventListener("touchstart", markScrolled);
+      window.removeEventListener("keydown", markScrolledByKey);
     };
-  }, [location.hash, heroReady]);
+  }, []);
+
+  /* =========================
+     LAYOUT SETTLE: single, one-shot ScrollTrigger refresh.
+     Runs once after all sections have mounted below the Hero. Does
+     NOT loop, does NOT poll layout via rAF/ResizeObserver, and only
+     touches scroll position if the user has not already started
+     scrolling on their own (requirement: never fight the user).
+  ========================= */
+  useEffect(() => {
+    if (!heroReady) return;
+
+    const timer = setTimeout(() => {
+      ScrollTrigger.refresh();
+
+      if (!hasUserScrolledRef.current) {
+        window.scrollTo(0, 0);
+      }
+
+      setSolutionsVisible(true);
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [heroReady]);
 
   useEffect(() => {
     if (!heroReady) return;
@@ -185,65 +128,21 @@ function HomePage() {
       })
     );
 
-    // ===================================================================
-    // THE ACTUAL FIX — this was the real cause of "intro finishes, then
-    // the page jumps to Solutions."
-    //
-    // The old code called ScrollTrigger.refresh() via requestAnimationFrame
-    // the INSTANT heroReady became true — i.e. the instant the Hero intro
-    // finished. But that's also the exact instant CardTransitionSection
-    // (the pinned/horizontal-scroll .panel.large section) mounts and sets
-    // up its OWN GSAP pin for the very first time, before its video/images
-    // have loaded and before its true layout height is known. Forcing a
-    // global refresh() into that unstable half-second is a well-documented
-    // GSAP trigger: once the pin's boundaries resolve moments later, GSAP
-    // snaps scroll position to align the pin — which is the jump you saw.
-    //
-    // The fix: never refresh on an animation frame right after mount.
-    // Wait for the window to fully finish loading (video/images/fonts all
-    // resolved) before refreshing, same as GSAP's own recommendation. As
-    // a hard guarantee, also re-assert scrollY 0 right after that refresh
-    // (unless the URL explicitly asked for #solutions), so even if
-    // something nudges the scroll during that settling window, it's
-    // corrected immediately and invisibly.
-    // ===================================================================
-    let refreshTimer = null;
-
-    const doRefresh = () => {
-      refreshTimer = setTimeout(() => {
-        ScrollTrigger.refresh();
-        if (window.location.hash !== "#solutions") {
-          window.scrollTo(0, 0);
-        }
-        setSolutionsVisible(true);
-      }, 50);
-    };
-
-    if (document.readyState === "complete") {
-      doRefresh();
-    } else {
-      window.addEventListener("load", doRefresh, { once: true });
-    }
-
     return () => {
-      window.removeEventListener("load", doRefresh);
-      if (refreshTimer !== null) clearTimeout(refreshTimer);
       triggers.forEach((trigger) => trigger.kill());
     };
   }, [heroReady]);
 
   /* =========================
      SECTION-LOCKED SCROLL
-     Workspace Screen 1 → Workspace Screen 2 (video) → Results → Solutions.
+     Workspace Screen 1 → Workspace Screen 2 (video) → Results.
      Only intercepts scroll while inside that zone; everything before
-     (Hero) and everything from Testimonials onward (after Solutions),
-     keeps native/GSAP-driven scrolling.
+     (Hero) and everything from CardTransitionSection onward keeps
+     native/GSAP-driven scrolling.
 
      NOTE: this must live inside HomePage (not App), because it looks
-     up #workspace-screen-1, #workspace-screen-2, .results-section and
-     #solutions, all of which are rendered by HomePage's JSX below. A
-     useEffect placed outside any component is an invalid hook call and
-     will crash the app (that was the earlier bug).
+     up #workspace-screen-1, #workspace-screen-2, and .results-section,
+     all of which are rendered by HomePage's JSX below.
   ========================= */
   useEffect(() => {
     if (!heroReady) return;
@@ -262,23 +161,15 @@ function HomePage() {
       return { tops: [topOf(screen1), topOf(screen2), topOf(results)] };
     };
 
-const isInLockedZone = (tops, direction) => {
-  const currentY = window.scrollY;
-  const buffer = 2;
+    const isInLockedZone = (tops) => {
+      const currentY = window.scrollY;
+      const buffer = 2;
 
-  // Down scroll
-  if (direction > 0) {
-    return currentY >= tops[0] - buffer && currentY < tops[2] - buffer;
-  }
+      // If still at Workspace Screen 1, let Hero->Workspace scroll natively.
+      if (currentY <= tops[0] + 10) return false;
 
-  // Up scroll
-  // Agar Workspace Screen 1 par hi ho, Hero ko native scroll karne do
-  if (currentY <= tops[0] + 10) {
-    return false;
-  }
-
-  return currentY >= tops[0] - buffer && currentY < tops[2] - buffer;
-};
+      return currentY >= tops[0] - buffer && currentY < tops[2] - buffer;
+    };
 
     const goToIndex = (tops, index) => {
       const clamped = Math.max(0, Math.min(index, tops.length - 1));
@@ -364,35 +255,48 @@ const isInLockedZone = (tops, direction) => {
      Independent from the Workspace→Results lock above, and from
      CardTransitionSection's own pinning/horizontal scroll — this
      effect never intercepts scroll anywhere before Solutions, so
-     the "What We Do" section scrolls 100% natively, unmodified.
+     "What We Do" scrolls 100% natively, unmodified.
 
-     Uses IntersectionObserver (not a scroll-position range) to
-     detect the exact moment #solutions enters the viewport, from
-     either direction. On that crossing it performs a single smooth
-     snap to align the section, then briefly blocks wheel/touch
-     scrolling (same pattern/duration as the lock above) so the
-     section "stops" for one scroll, after which it releases and
-     Testimonials/Footer (or Results, on the way back up) scroll
-     normally again. The "consumed" flag resets once the section is
-     fully left, so the stop re-triggers correctly next time.
+     Deliberately event-driven (wheel/touchmove only) rather than
+     IntersectionObserver-driven: an observer can fire from layout
+     shifts (fonts, images, video, GSAP pin-spacer height changes)
+     that have nothing to do with the user scrolling, which is what
+     caused Solutions to auto-snap on load. Checking scroll position
+     only inside real wheel/touch handlers means this can never fire
+     from mounting, hero-reveal, or ScrollTrigger.refresh().
   ========================= */
   useEffect(() => {
     if (!heroReady) return;
-    const solutions = document.getElementById("solutions");
-    if (!solutions) return;
-
     const LOCK_RESUME_MS = 900;
     let locked = false;
-    let hasSnappedForThisEntry = false;
+    let hasSnappedForThisApproach = false;
     let unlockTimer = null;
 
-    const snapToSolutions = () => {
-      if (locked) return;
+    const getBounds = () => {
+      const solutions = document.getElementById("solutions");
+      const testimonials = document.getElementById("testimonials");
+      if (!solutions || !testimonials) return null;
+      return {
+        solutionsTop: solutions.offsetTop,
+        testimonialsTop: testimonials.offsetTop,
+      };
+    };
+
+    const inZone = (bounds) => {
+      const currentY = window.scrollY;
+      const buffer = 2;
+      return (
+        currentY >= bounds.solutionsTop - buffer &&
+        currentY < bounds.testimonialsTop - buffer
+      );
+    };
+
+    const snap = (bounds) => {
       locked = true;
-      hasSnappedForThisEntry = true;
+      hasSnappedForThisApproach = true;
 
       window.scrollTo({
-        top: solutions.offsetTop,
+        top: bounds.solutionsTop,
         left: 0,
         behavior: "smooth",
       });
@@ -404,89 +308,37 @@ const isInLockedZone = (tops, direction) => {
     };
 
     const handleWheel = (e) => {
-      if (!locked) return;
-      e.preventDefault();
+      if (locked) {
+        e.preventDefault();
+        return;
+      }
+
+      const bounds = getBounds();
+      if (!bounds) return;
+
+      if (!inZone(bounds)) {
+        // Fully left the section (either direction) — allow the
+        // single-stop snap to re-trigger on the next real approach.
+        hasSnappedForThisApproach = false;
+        return;
+      }
+
+      if (!hasSnappedForThisApproach) {
+        e.preventDefault();
+        snap(bounds);
+      }
     };
 
     const handleTouchMove = (e) => {
-      if (!locked) return;
-      e.preventDefault();
+      if (locked) e.preventDefault();
     };
-
-    // Solutions must NEVER auto-snap on initial load — only when the user
-    // actually scrolls there. IntersectionObserver doesn't just fire once
-    // on observe(): it fires again any time the intersection state
-    // genuinely changes, and that includes changes caused by LAYOUT
-    // SETTLING (video/fonts finishing load, GSAP building pin-spacer
-    // height for CardTransitionSection), not just user scrolling. That
-    // reflow can move #solutions in and out of the "intersecting" zone
-    // a moment after mount even while scrollY never changes — which is
-    // indistinguishable from a real scroll-into-view to the observer, but
-    // isn't one. So instead of trying to guess which callback is "real",
-    // we gate snapping on genuine user input: wheel, touch, or keyboard.
-    // Until the user has actually driven a scroll themselves, every
-    // observer callback is recorded as a baseline only and never snaps.
-    let hasUserScrolled = false;
-    const SCROLL_KEYS = new Set([
-      "ArrowUp",
-      "ArrowDown",
-      "ArrowLeft",
-      "ArrowRight",
-      "PageUp",
-      "PageDown",
-      "Home",
-      "End",
-      " ",
-      "Spacebar",
-    ]);
-    const markUserScrolled = () => {
-      hasUserScrolled = true;
-    };
-    const handleKeyDown = (e) => {
-      if (SCROLL_KEYS.has(e.key) || e.code === "Space") {
-        hasUserScrolled = true;
-      }
-    };
-    window.addEventListener("wheel", markUserScrolled, { passive: true });
-    window.addEventListener("touchstart", markUserScrolled, { passive: true });
-    window.addEventListener("keydown", handleKeyDown, { passive: true });
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!hasUserScrolled) {
-            // Not a real scroll — just record where things currently
-            // stand and refuse to snap.
-            hasSnappedForThisEntry = entry.isIntersecting;
-            return;
-          }
-
-          if (entry.isIntersecting) {
-            if (!hasSnappedForThisEntry) {
-              snapToSolutions();
-            }
-          } else {
-            // Fully left the section (either direction) — allow the
-            // single-stop snap to re-trigger on the next approach.
-            hasSnappedForThisEntry = false;
-          }
-        });
-      },
-      { threshold: 0.01 }
-    );
-
-    observer.observe(solutions);
 
     window.addEventListener("wheel", handleWheel, { passive: false });
     window.addEventListener("touchmove", handleTouchMove, { passive: false });
 
     return () => {
-      observer.disconnect();
       window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("wheel", markUserScrolled);
-      window.removeEventListener("touchstart", markUserScrolled);
-      window.removeEventListener("keydown", handleKeyDown);
       clearTimeout(unlockTimer);
     };
   }, [heroReady]);
@@ -499,42 +351,41 @@ const isInLockedZone = (tops, direction) => {
 
       {/* Everything below the Hero mounts ONLY after the Hero intro/reveal
           finishes. Before that, #solutions & co. simply do not exist in the
-          DOM, so they can never flash on first paint and none of the
-          scroll/IntersectionObserver logic below can fire against a
+          DOM, so none of the scroll logic above can fire against a
           half-laid-out page. */}
       {heroReady && (
-      <>
-      <section id="who-we-are" className="panel">
-        <Workspace />
-      </section>
+        <>
+          <section id="who-we-are" className="panel">
+            <Workspace />
+          </section>
 
-      <section id="why-personlyze" className="panel">
-        <Results />
-      </section>
+          <section id="why-personlyze" className="panel">
+            <Results />
+          </section>
 
-      <section id="what-we-do" className="panel large">
-        <CardTransitionSection />
-      </section>
+          <section id="what-we-do" className="panel large">
+            <CardTransitionSection />
+          </section>
 
-      <section
-        id="solutions"
-        className="panel"
-        style={{ visibility: solutionsVisible ? "visible" : "hidden" }}
-      >
-        <Industries />
-      </section>
+          <section
+            id="solutions"
+            className="panel"
+            style={{ visibility: solutionsVisible ? "visible" : "hidden" }}
+          >
+            <Industries />
+          </section>
 
-      <section id="testimonials" className="panel">
-        <Testimonials />
-      </section>
-      <section id="faq" className="panel">
-        <FAQ />
-      </section>
+          <section id="testimonials" className="panel">
+            <Testimonials />
+          </section>
+          <section id="faq" className="panel">
+            <FAQ />
+          </section>
 
-      <section id="contact" className="panel">
-        <Footer />
-      </section>
-      </>
+          <section id="contact" className="panel">
+            <Footer />
+          </section>
+        </>
       )}
     </div>
   );
@@ -544,24 +395,11 @@ const isInLockedZone = (tops, direction) => {
    MAIN APP
 ========================= */
 function App() {
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.style.scrollBehavior = "auto";
-
-    const previousScrollRestoration =
-      "scrollRestoration" in window.history
-        ? window.history.scrollRestoration
-        : null;
-
-    if (previousScrollRestoration) {
-      window.history.scrollRestoration = "manual";
-    }
 
     return () => {
       document.documentElement.style.scrollBehavior = "";
-
-      if (previousScrollRestoration) {
-        window.history.scrollRestoration = previousScrollRestoration;
-      }
     };
   }, []);
 
