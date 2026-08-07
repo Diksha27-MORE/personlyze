@@ -422,8 +422,8 @@
   }
 
 .mobile-whoweare-card .heading-statement{
-  font-size: clamp(52px, 17.5vw, 96px);  /* was: clamp(48px, 15.5vw, 84px) — noticeably larger, matching the reference image's scale */
-  line-height: 1.03;                      /* was: 1.05 — tightened further so the larger text still reads as one solid mass */
+  font-size: 48px !important;  /* !important needed to override the earlier generic .heading-statement { font-size: ... !important } rule above in this same media query */
+  line-height: 1.08;           /* per request */
 }
 .mobile-whoweare-card .heading-support{
   font-size: 19px;      /* was: 17px — larger, matching the reference image */
