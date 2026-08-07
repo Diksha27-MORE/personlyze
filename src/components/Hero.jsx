@@ -6,6 +6,17 @@ import LogoAnimation from "../assets/Logo animation new.webm";
 import { hasIntroPlayed, markIntroPlayed } from "./introSession";
 import { useBookDemoModal } from "../context/BookDemoModalContext";
 
+// Same fix as in App.jsx, duplicated here so it wins the race regardless
+// of which of the two modules the bundler happens to evaluate first.
+// Idempotent — safe to run twice.
+if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+  window.history.scrollRestoration = "manual";
+}
+if (typeof window !== "undefined" && window.location.hash !== "#solutions") {
+  window.scrollTo(0, 0);
+}
+
+
 // Cloudinary delivery transformation: f_auto (best format for the
 // requesting browser), q_auto (adaptive quality), w_800 (never ship more
 // pixels than a mobile hero needs).
@@ -193,7 +204,7 @@ function LogoMedia() {
   );
 }
 
-function Hero() {
+function Hero({ onReveal }) {
   // --- Device detection (deterministic on mount) ---------------------------
   const [isMobile, setIsMobile] = useState(getIsMobile);
 
@@ -233,12 +244,12 @@ function Hero() {
   // Decide, exactly once on mount, whether the intro should play.
   useEffect(() => {
     const alreadyPlayed = hasIntroPlayed();
-
-    if (alreadyPlayed) {
-      setShowIntro(false);
-      setShowMobileIntro(false);
-      setRevealed(true);
-    } else {
+if (alreadyPlayed) {
+  setShowIntro(false);
+  setShowMobileIntro(false);
+  setRevealed(true);
+  onReveal?.();
+}else {
       if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
         window.history.scrollRestoration = "manual";
       }
@@ -378,10 +389,11 @@ function Hero() {
         () => setIntroStep(3),
         LINE1_APPEAR + LINE1_HOLD + BOTH_HOLD,
       ),
-      setTimeout(() => {
-        setShowIntro(false);
-        setRevealed(true);
-      }, LINE1_APPEAR + LINE1_HOLD + BOTH_HOLD + FADE_OUT),
+setTimeout(() => {
+  setShowIntro(false);
+  setRevealed(true);
+  onReveal?.();
+}, LINE1_APPEAR + LINE1_HOLD + BOTH_HOLD + FADE_OUT),
     ];
 
     return () => {
@@ -410,10 +422,11 @@ function Hero() {
         () => setMobileIntroStep(3),
         TOP_APPEAR + TOP_HOLD + BOTTOM_HOLD,
       ),
-      setTimeout(() => {
-        setShowMobileIntro(false);
-        setRevealed(true);
-      }, TOP_APPEAR + TOP_HOLD + BOTTOM_HOLD + FADE_OUT),
+setTimeout(() => {
+  setShowMobileIntro(false);
+  setRevealed(true);
+  onReveal?.();
+}, TOP_APPEAR + TOP_HOLD + BOTTOM_HOLD + FADE_OUT),
     ];
 
     return () => {
