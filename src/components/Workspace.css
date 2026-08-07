@@ -401,39 +401,34 @@
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;   /* was: center — no longer needed for centering: the heading block itself now grows (flex:1, below) to fill the leftover height, so there's no leftover space left for this to distribute */
+  justify-content: flex-start;   /* plain top-down flow — content size now does the work of filling the screen, so no centering/distribution trick is needed */
 
-  padding: 40px 24px calc(100px + env(safe-area-inset-bottom, 0px));  /* was: calc(112px + safe-area) on bottom — trimmed to the button's actual footprint (~84px) plus a small buffer, since space is no longer being "spent" on centering */
+  padding: 48px 24px calc(100px + env(safe-area-inset-bottom, 0px));
 
   box-sizing: border-box;
 }
-  /* KEY FIX: previously this block was a fixed-height island that got
-     centered inside a much taller container, which is what produced the
-     large empty bands above and below it. Making it a flex item that
-     grows to fill all remaining vertical space (flex: 1), then spacing
-     its two rows apart with align-content: space-between, makes the
-     headline sit near the top and the paragraph sit near the bottom of
-     the actual available screen — using the real height of the section
-     instead of leaving it blank. row-gap remains as a minimum gutter in
-     case space-between ever has nothing extra to distribute (e.g. very
-     tall text on a small phone). */
+  /* Reverted the flex:1 / align-content:space-between approach — it
+     removed the dead space at the very top/bottom of the card, but it
+     did so by stretching an artificial gap BETWEEN the headline and the
+     paragraph instead, which looked just as broken. Back to normal
+     block flow with a single modest row-gap; the fix for "not filling
+     the screen" is making the text itself bigger (below), matching the
+     reference image, not stretching whitespace between the two blocks. */
   .mobile-whoweare-card .workspace-heading{
-    flex: 1 1 auto;
-    align-content: space-between;
-    row-gap: 28px;
+    row-gap: 36px;
   }
   .mobile-whoweare-card .heading-eyebrow{
     margin-bottom: 18px;   /* was inherited larger value — trims space before the headline */
   }
 
 .mobile-whoweare-card .heading-statement{
-  font-size: clamp(48px, 15.5vw, 84px);  /* was: clamp(44px, 13.5vw, 68px) — larger so the headline fills the screen instead of reading small/cropped */
-  line-height: 1.05;                      /* was: 1.08 — tightened slightly further to keep it feeling like one solid mass at the larger size */
+  font-size: clamp(52px, 17.5vw, 96px);  /* was: clamp(48px, 15.5vw, 84px) — noticeably larger, matching the reference image's scale */
+  line-height: 1.03;                      /* was: 1.05 — tightened further so the larger text still reads as one solid mass */
 }
 .mobile-whoweare-card .heading-support{
-  font-size: 17px;      /* was: 16px */
-  line-height: 1.8;     /* was: 1.75 — a touch looser now that it has real room to breathe */
-  padding-top: 30px;    /* was: 26px */
+  font-size: 19px;      /* was: 17px — larger, matching the reference image */
+  line-height: 1.55;    /* was: 1.8 — tighter, matching the reference image's line spacing */
+  padding-top: 28px;    /* was: 30px — small, natural gap after the headline, not a stretched-out one */
   opacity: 0.7;
 }
 
