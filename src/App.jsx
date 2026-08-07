@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 
 import Hero from "./components/Hero";
 import Workspace from "./components/Workspace";
@@ -31,15 +31,16 @@ gsap.registerPlugin(ScrollTrigger);
 // at module-evaluation time (before React has even rendered), is the
 // earliest point our code can run, and it reliably wins the race.
 //
-// This is the ONLY place that forces scroll on load. Nothing else in
-// this file re-scrolls the page during mount, hero-reveal, font/image
-// loading, or ScrollTrigger setup — that overlap was the source of the
-// "opens at Solutions" / "hangs near Solutions" bug.
+// This is the ONLY unconditional scroll-to-top on load. It's skipped
+// when the URL is explicitly `/#solutions` (the "Back to Industries"
+// case below), so we don't visibly flash to the top and then jump back
+// down — but every other load (including a plain refresh of `/`) still
+// starts at 0 exactly as before.
 // ---------------------------------------------------------------------
 if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
   window.history.scrollRestoration = "manual";
 }
-if (typeof window !== "undefined") {
+if (typeof window !== "undefined" && window.location.hash !== "#solutions") {
   window.scrollTo(0, 0);
 }
 
@@ -47,6 +48,7 @@ if (typeof window !== "undefined") {
    HOME PAGE
 ========================= */
 function HomePage() {
+  const location = useLocation();
   const containerRef = useRef(null);
   const [heroReady, setHeroReady] = useState(false);
 
@@ -102,18 +104,32 @@ function HomePage() {
   useEffect(() => {
     if (!heroReady) return;
 
+    // "Back to Industries" navigates to `/#solutions`. That's the ONLY
+    // case where we intentionally land away from the top — every other
+    // load (`/`, or a refresh of `/`) keeps landing at the Hero. This
+    // is a one-time, explicit navigation intent, not a guess based on
+    // layout timing, so it's safe to branch on here.
+    const returningToSolutions = location.hash === "#solutions";
+
     const timer = setTimeout(() => {
       ScrollTrigger.refresh();
 
       if (!hasUserScrolledRef.current) {
-        window.scrollTo(0, 0);
+        if (returningToSolutions) {
+          const solutions = document.getElementById("solutions");
+          if (solutions) {
+            window.scrollTo({ top: solutions.offsetTop, left: 0, behavior: "auto" });
+          }
+        } else {
+          window.scrollTo(0, 0);
+        }
       }
 
       setSolutionsVisible(true);
     }, 150);
 
     return () => clearTimeout(timer);
-  }, [heroReady]);
+  }, [heroReady, location.hash]);
 
   useEffect(() => {
     if (!heroReady) return;

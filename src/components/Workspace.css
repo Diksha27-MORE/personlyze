@@ -386,34 +386,42 @@
      into view once the user has scrolled past this one. The Book a
      Demo button is pinned to the bottom of this card specifically
      (not globally fixed), so it travels away with the card and never
-     overlaps the video screen below. ── */
+     overlaps the video screen below.
+
+     FIX (mobile-only): content was previously top-aligned
+     (justify-content: flex-start) with large fixed padding, which
+     left a large dead gap between the copy and the pinned button —
+     reading as "cropped/too small with empty space". Centering the
+     content in the available height and enlarging the statement size
+     makes the section properly fill the viewport, matching the
+     reference. Desktop rules above are untouched. ── */
 .mobile-whoweare-card{
   position: relative;
   min-height: 100vh;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;   /* was: center — pulls content up instead of centering it in empty space */
+  justify-content: center;   /* was: flex-start — centers content in the available height instead of stacking it at the top with dead space below */
 
-  padding: 64px 24px calc(128px + env(safe-area-inset-bottom, 0px));  /* reduced/shifted from 40px so heading sits higher but isn't glued to the status bar */
+  padding: 40px 24px calc(112px + env(safe-area-inset-bottom, 0px));  /* was: 64px 24px calc(128px + safe-area) — less reserved top/bottom space so content can occupy more of the screen while still clearing the pinned button */
 
   box-sizing: border-box;
 }
   .mobile-whoweare-card .workspace-heading{
-    row-gap: 28px;
+    row-gap: 32px;   /* was: 28px — slightly more breathing room now that the block fills more of the screen */
   }
   .mobile-whoweare-card .heading-eyebrow{
-  margin-bottom: 18px;   /* was inherited larger value — trims space before the headline */
-}
-  } 
+    margin-bottom: 18px;   /* was inherited larger value — trims space before the headline */
+  }
+
 .mobile-whoweare-card .heading-statement{
-  font-size: clamp(44px, 13.5vw, 68px);  /* was clamp(36px, 10.5vw, 46px) — substantially larger, matches reference */
-  line-height: 1.08;                      /* tightened from 1.16 to keep it feeling like one solid mass */
+  font-size: clamp(48px, 15.5vw, 84px);  /* was: clamp(44px, 13.5vw, 68px) — larger so the headline fills the screen instead of reading small/cropped */
+  line-height: 1.05;                      /* was: 1.08 — tightened slightly further to keep it feeling like one solid mass at the larger size */
 }
 .mobile-whoweare-card .heading-support{
-  font-size: 16px;
+  font-size: 17px;      /* was: 16px */
   line-height: 1.75;
-  padding-top: 26px;
+  padding-top: 30px;    /* was: 26px */
   opacity: 0.7;
 }
 
@@ -562,4 +570,5 @@
     min-height: 100vh;
     min-height: 100svh;
     aspect-ratio: auto; /* height now comes from min-height, not 16:9 */
+  }
 }
