@@ -8,6 +8,15 @@
   position: relative;
   overflow-x: hidden;
 }
+/* Challenge detail view = one screen, no scrolling. The hero isn't rendered
+   in this stage (see JSX), so the landing wrapper only needs to be exactly
+   the viewport height, not the usual min-height: 100vh page. */
+.industry-landing--detail {
+  height: 100vh;
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+}
 .industry-landing__not-found {
   width: 100%;
   min-height: 100vh;
@@ -84,6 +93,17 @@
   position: relative;
   background: #e5d9d9;
 }
+/* Challenge (Step 2) detail mode: fill the viewport exactly, center the
+   content vertically, and never allow this section to scroll — this is
+   the "one screen, no scrolling" challenge page. */
+.industry-cards-section--detail {
+  height: 100vh;
+  min-height: 100vh;
+  max-height: 100vh;
+  padding: 28px 0;
+  justify-content: center;
+  overflow: hidden;
+}
 .industry-cards-section__overlay {
   display: none;
 }
@@ -94,6 +114,41 @@
    automatically as more challenges are added to the data — no code or CSS
    changes needed when a 3rd, 4th, etc. challenge is added.
    ========================================================================== */
+/* "Back to Solutions" — lives inside the hero, above the video/overlay,
+   navigating to /#solutions (the existing Solutions section on HomePage). */
+.industry-hero__back-to-solutions {
+  top: 28px;
+  left: 32px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+.industry-hero__back-to-solutions:hover,
+.industry-hero__back-to-solutions:focus-visible {
+  background: rgba(0, 0, 0, 0.55);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateX(-3px);
+}
+.industry-hero__back-to-solutions:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 3px;
+}
 .industry-challenges-grid {
   position: relative;
   z-index: 2;
@@ -203,28 +258,33 @@
    The carousel component itself makes no assumption about card count; the
    viewport always shows 3 slots, and JS clamps how far it can slide based
    on the real number of cards in the active challenge.
+
+   This view is the "challenge page": a single, non-scrolling screen. The
+   old eyebrow ("Challenge 01") and problem-statement copy that used to sit
+   above the carousel have been removed entirely, and the header now holds
+   nothing but the Back button, left-aligned, so the freed-up vertical
+   space goes to the carousel itself.
    ========================================================================== */
 .industry-detail {
   position: relative;
   z-index: 2;
   width: 100vw;
   max-width: none;
+  height: 100%;
   padding: 0 70px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
 }
 .industry-detail__header {
   width: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
-  gap: 10px;
-  margin-bottom: 64px;
+  justify-content: flex-start;
+  margin-bottom: 24px;
 }
 .industry-detail__back {
-  align-self: flex-start;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -245,23 +305,6 @@
 .industry-detail__back:hover {
   background: #222;
   transform: translateX(-4px);
-}
-.industry-detail__eyebrow {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  opacity: 0.6;
-  color: #131212;
-}
-.industry-detail__problem {
-  font-family: var(--heading);
-  font-size: 2.3rem;
-  font-weight: 700;
-  font-style: italic;
-  line-height: 1.32;
-  max-width: 780px;
-  color: #131212;
 }
 /* ---- Carousel shell: arrows either side of a clipped 3-card viewport ---- */
 .industry-carousel {
@@ -319,7 +362,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin-top: 36px;
+  margin-top: 24px;
 }
 .industry-carousel__dot {
   width: 8px;
@@ -385,7 +428,7 @@
   font-weight: 900;
   letter-spacing: 0.02em;
   line-height: 1.3;
-  color: #131212;
+  color: #fff;
 }
 .industry-card__detail {
   position: absolute;
@@ -429,14 +472,22 @@
 .industry-card__detail-label {
   font-family: "Avenir Regular", var(--body);
   display: inline-block;
+
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+
   padding: 3px 10px;
-  border-radius: 999px;
   margin-bottom: 10px;
+
+  border-radius: 999px;
+
   background: rgba(255, 255, 255, 0.18);
+
+  /* FORCE WHITE TEXT */
+  color: #ffffff !important;
+
   align-self: flex-start;
   flex-shrink: 0;
 }
@@ -522,4 +573,93 @@
   .industry-card__detail-text {
     font-size: 1.1rem;
   }
+}
+/* ==========================================================================
+   Shorter desktop viewports (challenge page must still fit with no
+   scrolling): trim the fixed-height challenge card a bit and tighten
+   spacing further, without touching the card's own visual design.
+   ========================================================================== */
+@media (max-height: 800px) and (min-width: 769px) {
+  .industry-cards-section--detail {
+    padding: 16px 0;
+  }
+  .industry-detail__header {
+    margin-bottom: 14px;
+  }
+  .industry-carousel__dots {
+    margin-top: 14px;
+  }
+}
+/* =========================================
+   6TH CARD — BOOK A DEMO
+========================================= */
+
+/* Keep all labels WHITE */
+.industry-card__detail-label {
+  color: #fff;
+}
+
+
+/* Center the Book a Demo CTA */
+.industry-card__demo-btn-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* Premium SaaS-style Book a Demo button */
+.industry-card__demo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 14px 32px;
+
+  min-width: 190px;
+
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  color: #fff;
+
+  font-family: "Avenir Regular", var(--body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+
+  text-align: center;
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    background 0.3s ease,
+    border-color 0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+
+/* Hover */
+.industry-card__demo-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.65);
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+
+/* Active */
+.industry-card__demo-btn:active {
+  transform: translateY(0);
 }

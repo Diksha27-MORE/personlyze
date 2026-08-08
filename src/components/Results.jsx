@@ -72,10 +72,15 @@ const ChevronRight = () => (
 
 export default function Results() {
   const sectionRef    = useRef(null);
+  const pinSectionRef = useRef(null); // wraps heading + cards. Kept only for
+                                       // the mobile display:contents CSS rule
+                                       // (.results-pin-section) — it is no
+                                       // longer used as a GSAP pin target on
+                                       // desktop, see the effect below.
   const cardsStripRef = useRef(null);
   const cardsAreaRef  = useRef(null);
   const cardsPinRef   = useRef(null);
-  const headingRef    = useRef(null); // NEW — used for the mobile scroll-reveal
+  const headingRef    = useRef(null); // used for the mobile scroll-reveal
 
   // Tracks which card is centered in the mobile carousel, drives the dots.
   const [activeIndex, setActiveIndex] = useState(0);
@@ -87,53 +92,71 @@ export default function Results() {
     // Below 769px this block never runs — cards become the Instagram-style
     // native scroll-snap carousel handled entirely by CSS + the effect below.
     mm.add("(min-width: 769px)", () => {
-const strip     = cardsStripRef.current;
-const cardsPin  = cardsPinRef.current;
-const cardsArea = cardsAreaRef.current;
+      const strip     = cardsStripRef.current;
+      const cardsPin  = cardsPinRef.current;
+      const cardsArea = cardsAreaRef.current;
 
-if (!strip || !cardsPin || !cardsArea) return;
+      // IMPORTANT: only the cards block (`cardsPin`) is pinned here — the
+      // heading is intentionally left OUT of the pin target. It stays in
+      // normal document flow above the cards, so as the user keeps
+      // scrolling past the point where the cards lock in place, the
+      // heading keeps moving up and off the top of the viewport on its
+      // own, cropping naturally. The cards, being the only pinned
+      // element, don't move with it and stay fully visible.
+      if (!strip || !cardsPin || !cardsArea) return;
 
-const GAP = 24;
+      const GAP = 24;
 
-// Read the ACTUAL left padding on the viewport instead of assuming 0.
-// This is the piece that was missing — the strip starts inside the
-// padding box, but clientWidth includes the padding, so the last
-// `paddingLeft` pixels of the strip were being pushed offscreen right.
-const cs = getComputedStyle(cardsArea);
-const padLeft  = parseFloat(cs.paddingLeft)  || 0;
-const padRight = parseFloat(cs.paddingRight) || 0;
+      // Read the ACTUAL left padding on the viewport instead of assuming 0.
+      // This is the piece that was missing — the strip starts inside the
+      // padding box, but clientWidth includes the padding, so the last
+      // `paddingLeft` pixels of the strip were being pushed offscreen right.
+      const cs = getComputedStyle(cardsArea);
+      const padLeft  = parseFloat(cs.paddingLeft)  || 0;
+      const padRight = parseFloat(cs.paddingRight) || 0;
 
-const viewportWidth  = cardsArea.clientWidth;
-const effectiveWidth = viewportWidth - padLeft - padRight;
+      const viewportWidth  = cardsArea.clientWidth;
+      const effectiveWidth = viewportWidth - padLeft - padRight;
 
-const cardW = (effectiveWidth - 2 * GAP) / 2.5;
+      const cardW = (effectiveWidth - 2 * GAP) / 2.5;
 
-strip.querySelectorAll(".metric-card").forEach((card) => {
-  card.style.width = `${cardW}px`;
-  card.style.flexShrink = "0";
-});
+      strip.querySelectorAll(".metric-card").forEach((card) => {
+        card.style.width = `${cardW}px`;
+        card.style.flexShrink = "0";
+      });
 
-const stripWidth  = strip.scrollWidth;
-// Travel must land the strip's right edge at the viewport's right edge
-// INSIDE the padding box, not at the padding edge.
-const totalTravel = stripWidth - effectiveWidth;
-
+      const stripWidth  = strip.scrollWidth;
+      // Travel must land the strip's right edge at the viewport's right edge
+      // INSIDE the padding box, not at the padding edge.
+      const totalTravel = stripWidth - effectiveWidth;
 
       // Scroll budget reduced from the previous 4x multiplier so the
       // animation resolves in noticeably fewer wheel-scrolls, while
       // scrub: 1 keeps the motion smooth rather than snappy/jumpy.
-      const SCROLL_BUDGET = totalTravel  * 1.2;
+      const SCROLL_BUDGET = totalTravel * 1.2;
 
       gsap.set(strip, { x: 0 });
 
+      // Pin ONLY the cards block. "top top+=64" means the pin engages once
+      // the cards block's top has scrolled up to 64px from the viewport
+      // top. Because the heading sits directly above the cards in normal
+      // flow and is NOT part of the pin target, at that exact moment the
+      // heading has scrolled up so only its bottom ~64px sliver is still
+      // visible/cropped at the very top edge — and the cards, now pinned,
+      // settle fully visible starting right where the pin caught them
+      // (i.e. slightly lower than y=0, not flush with the top).
+      //
+      // Tune this single number up/down to match your reference exactly:
+      // higher = less heading cropped + cards sit lower; lower = more
+      // heading cropped + cards sit higher.
       const tween = gsap.to(strip, {
         x: -totalTravel,
         ease: "none",
         scrollTrigger: {
           trigger: cardsPin,
-          start: "top top",
+          start: "top top+=64",
           end: `+=${SCROLL_BUDGET}`,
-          pin: true,
+          pin: cardsPin,
           pinSpacing: true,
           scrub: 1,
           anticipatePin: 1,
@@ -296,109 +319,120 @@ const totalTravel = stripWidth - effectiveWidth;
   return (
     <section className="results-section" ref={sectionRef}>
 
-<div className="results-heading-block">
-  <h2 className="results-heading" ref={headingRef}>
-    Why <span className="results-brand">personlyze</span><span className="results-ai">.ai</span>
-  </h2>
-</div>
+      {/* Wraps heading + cards. On desktop this is now a plain layout div —
+          it is NOT the GSAP pin target anymore (see effect above), so the
+          heading scrolls normally and crops off on its own while only the
+          cards block below pins in place.
+          On mobile this becomes display:contents (see media query in the
+          CSS), removing it from the layout tree entirely — mobile is
+          unaffected either way. */}
+      <div className="results-pin-section" ref={pinSectionRef}>
 
-      <div className="results-cards-pin" ref={cardsPinRef}>
-        {/* Mobile-only wrapper (display:contents on desktop) so the nav
-            arrows can be positioned relative to the carousel without
-            altering the desktop DOM/layout at all. */}
-        <div className="results-cards-carousel-wrap">
-          <div className="results-cards-viewport" ref={cardsAreaRef}>
-            <div className="results-cards-strip" ref={cardsStripRef}>
-              {METRICS.map((m) => (
-                <div
-                  key={m.label}
-                  className="metric-card"
-                  style={{ backgroundImage: `url(${m.image})` }}
-                >
-                  <div className="metric-card-overlay" />
-                  <div className="metric-card-content">
+        <div className="results-heading-block">
+          <h2 className="results-heading" ref={headingRef}>
+            Why <span className="results-brand">personlyze</span><span className="results-ai">.ai</span>
+          </h2>
+        </div>
 
-                    {/* Mobile-only floating badge (glass pill). Hidden on
-                        desktop via display:none — reuses the footnote text
-                        so no new copy is introduced. */}
-                    <div className="metric-card-badge">{m.footnote}</div>
+        <div className="results-cards-pin" ref={cardsPinRef}>
+          {/* Mobile-only wrapper (display:contents on desktop) so the nav
+              arrows can be positioned relative to the carousel without
+              altering the desktop DOM/layout at all. */}
+          <div className="results-cards-carousel-wrap">
+            <div className="results-cards-viewport" ref={cardsAreaRef}>
+              <div className="results-cards-strip" ref={cardsStripRef}>
+                {METRICS.map((m) => (
+                  <div
+                    key={m.label}
+                    className="metric-card"
+                    style={{ backgroundImage: `url(${m.image})` }}
+                  >
+                    <div className="metric-card-overlay" />
+                    <div className="metric-card-content">
 
-                    {/* Mobile-only glass panel wrapping the stat + heading +
-                        description. On desktop this is display:contents, so
-                        its children (.metric-card-top + .metric-card-description)
-                        behave as plain flex children exactly like before. */}
-                    <div className="metric-card-mobile-panel">
-                      <div className="metric-card-top">
-                        <div className="metric-card-number">{m.number}</div>
-                        <div className="metric-card-label">{m.label}</div>
+                      {/* Mobile-only floating badge (glass pill). Hidden on
+                          desktop via display:none — reuses the footnote text
+                          so no new copy is introduced. */}
+                      <div className="metric-card-badge">{m.footnote}</div>
+
+                      {/* Mobile-only glass panel wrapping the stat + heading +
+                          description. On desktop this is display:contents, so
+                          its children (.metric-card-top + .metric-card-description)
+                          behave as plain flex children exactly like before. */}
+                      <div className="metric-card-mobile-panel">
+                        <div className="metric-card-top">
+                          <div className="metric-card-number">{m.number}</div>
+                          <div className="metric-card-label">{m.label}</div>
+                        </div>
+                        <div className="metric-card-description">
+                          As established by industry data from personalized video campaigns
+                          across categories and markets across the world.
+                        </div>
                       </div>
-                      <div className="metric-card-description">
-                        As established by industry data from personalized video campaigns
-                        across categories and markets across the world.
-                      </div>
-                    </div>
 
-                    {/* Group 2: footnote + disclaimer — this is the ORIGINAL
-                        desktop layout, unchanged. Hidden on mobile, where the
-                        badge + description above take over that same content. */}
-                    <div className="metric-card-bottom">
-                      <div className="metric-card-footnote">{m.footnote}</div>
-                      <div className="metric-card-disclaimer">
-                        As established by industry data from personalized video campaigns
-                        across categories and markets across the world.
+                      {/* Group 2: footnote + disclaimer — this is the ORIGINAL
+                          desktop layout, unchanged. Hidden on mobile, where the
+                          badge + description above take over that same content. */}
+                      <div className="metric-card-bottom">
+                        <div className="metric-card-footnote">{m.footnote}</div>
+                        <div className="metric-card-disclaimer">
+                          As established by industry data from personalized video campaigns
+                          across categories and markets across the world.
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              {/* Invisible spacer — creates one final `gap` after the last
-                  card, identical in size to the gaps between cards, so the
-                  pin doesn't release until that trailing gap has scrolled by.
-                  On mobile this is hidden — scroll-snap needs the last real
-                  card to be the final snap point, not an empty spacer. */}
-              <div className="results-cards-spacer" aria-hidden="true" />
+                ))}
+                {/* Invisible spacer — creates one final `gap` after the last
+                    card, identical in size to the gaps between cards, so the
+                    pin doesn't release until that trailing gap has scrolled by.
+                    On mobile this is hidden — scroll-snap needs the last real
+                    card to be the final snap point, not an empty spacer. */}
+                <div className="results-cards-spacer" aria-hidden="true" />
+              </div>
             </div>
+
+            {/* Mobile-only transparent nav arrows. Hidden entirely on desktop.
+                Disabled (and visually hidden) at the ends so they never imply
+                navigation that isn't possible. */}
+            <button
+              type="button"
+              className="results-nav-arrow results-nav-arrow--prev"
+              onClick={() => scrollToCard(activeIndex - 1)}
+              disabled={activeIndex === 0}
+              aria-label="Previous result"
+            >
+              <ChevronLeft />
+            </button>
+
+            <button
+              type="button"
+              className="results-nav-arrow results-nav-arrow--next"
+              onClick={() => scrollToCard(activeIndex + 1)}
+              disabled={activeIndex === METRICS.length - 1}
+              aria-label="Next result"
+            >
+              <ChevronRight />
+            </button>
           </div>
 
-          {/* Mobile-only transparent nav arrows. Hidden entirely on desktop.
-              Disabled (and visually hidden) at the ends so they never imply
-              navigation that isn't possible. */}
-          <button
-            type="button"
-            className="results-nav-arrow results-nav-arrow--prev"
-            onClick={() => scrollToCard(activeIndex - 1)}
-            disabled={activeIndex === 0}
-            aria-label="Previous result"
-          >
-            <ChevronLeft />
-          </button>
-
-          <button
-            type="button"
-            className="results-nav-arrow results-nav-arrow--next"
-            onClick={() => scrollToCard(activeIndex + 1)}
-            disabled={activeIndex === METRICS.length - 1}
-            aria-label="Next result"
-          >
-            <ChevronRight />
-          </button>
+          {/* Instagram-style pagination dots — mobile only (display:none on
+              desktop). Tapping a dot jumps to that card. */}
+          <div className="results-dots" role="tablist" aria-label="Results carousel pagination">
+            {METRICS.map((m, i) => (
+              <button
+                key={m.label}
+                type="button"
+                role="tab"
+                aria-selected={i === activeIndex}
+                aria-label={`Show result ${i + 1} of ${METRICS.length}`}
+                className={`results-dot${i === activeIndex ? " is-active" : ""}`}
+                onClick={() => scrollToCard(i)}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Instagram-style pagination dots — mobile only (display:none on
-            desktop). Tapping a dot jumps to that card. */}
-        <div className="results-dots" role="tablist" aria-label="Results carousel pagination">
-          {METRICS.map((m, i) => (
-            <button
-              key={m.label}
-              type="button"
-              role="tab"
-              aria-selected={i === activeIndex}
-              aria-label={`Show result ${i + 1} of ${METRICS.length}`}
-              className={`results-dot${i === activeIndex ? " is-active" : ""}`}
-              onClick={() => scrollToCard(i)}
-            />
-          ))}
-        </div>
       </div>
 
     </section>

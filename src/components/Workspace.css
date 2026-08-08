@@ -213,7 +213,7 @@
   margin-left: 4px;
 }
 
-/* ── Video modal ── */
+/* ── Video modal (used on mobile only — desktop opens YouTube directly) ── */
 .video-modal-overlay {
   position: fixed;
   inset: 0;
@@ -290,6 +290,7 @@
   font-weight: 600;
   letter-spacing: 0.01em;
   white-space: nowrap;
+  text-decoration: none; /* the desktop pill is now an <a>, so kill the underline */
 }
 
 /* ── Tablet ── */
@@ -317,6 +318,216 @@
 }
 
 /* ===============================
+   DESKTOP (> 1024px)
+   Two full 100vh screens, back to back in normal
+   document flow (height alone gates one from the
+   other — no extra JS needed):
+
+     Screen 1 — "Who We Are": the same editorial
+     headline content, centered within a full
+     100vh screen, with a "Book a Demo" button
+     pinned to the bottom-center of this screen
+     (absolutely positioned inside the section,
+     not globally fixed — it travels away with the
+     screen once the user scrolls past it).
+
+     Screen 2 — Video: now an embedded YouTube
+     player (https://youtu.be/qPMJL64Qvq0) instead
+     of the local mp4, sized to fill its own 100vh
+     screen, with a larger center play/pause toggle
+     and a larger "Watch on YouTube" pill that opens
+     the video on youtube.com in a new tab.
+
+   Tablet (≤1024px) and mobile (≤640px) rules above
+   and below are untouched.
+================================= */
+@media (min-width: 1025px) {
+  .desktop-whoweare-screen {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    /* Tighter top/bottom padding than the old 96px/140px — the copy
+       itself (sized up below) now does the work of filling the
+       screen, so the button sits close after it instead of leaving a
+       big empty gap. */
+    padding: 48px 4% 116px;
+  }
+
+  .desktop-whoweare-screen .workspace-heading {
+    row-gap: 0;
+  }
+
+  /* Bigger, screen-filling type on desktop. The base clamp() values
+     (shared with tablet) top out at 76px/17px — raised here so the
+     headline and paragraph visually occupy most of the 100vh screen
+     instead of sitting small in the middle. */
+  .desktop-whoweare-screen .heading-statement {
+    font-size: clamp(72px, 8vw, 132px);
+    line-height: 1.02;
+  }
+
+  .desktop-whoweare-screen .heading-support {
+    font-size: clamp(19px, 1.6vw, 26px);
+    line-height: 1.6;
+  }
+
+  /* Book a Demo — bottom-center of screen 1, inside the section (not
+     fixed), so it scrolls away with the rest of this screen. */
+  .desktop-book-demo-btn {
+    position: absolute;
+    left: 50%;
+    bottom: 56px;
+    transform: translateX(-50%);
+
+    padding: 18px 44px;
+    border: none;
+    border-radius: 999px;
+    background: #111111;
+    color: #fff;
+    font-family: var(--body, "Helvetica Neue", Arial, sans-serif);
+    font-size: 15.5px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+    transition: transform 0.22s ease, background 0.2s ease;
+  }
+
+  .desktop-book-demo-btn:hover {
+    transform: translateX(-50%) scale(1.04);
+    background: #000;
+  }
+
+  .desktop-book-demo-btn:active {
+    transform: translateX(-50%) scale(0.97);
+  }
+
+  /* ── Screen 2 — full 100vh YouTube video stage ──────────────────
+     Overrides the base 16:9 aspect-ratio rule so the stage fills the
+     whole viewport height instead of a thin strip. Cover/poster shows
+     until the user presses play, at which point the embedded YouTube
+     player (loaded via the YouTube IFrame API) takes over — controlled
+     entirely through our own transparent play/pause button, so the
+     interaction model matches mobile even though the source is now a
+     real YouTube embed instead of a local mp4. ── */
+  .desktop-video-screen {
+    height: 100vh;
+    height: 100dvh;
+    aspect-ratio: auto;
+  }
+
+  .desktop-cover-wrap {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.5s ease;
+  }
+
+  .desktop-cover-wrap .workspace-video-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Faded once playback starts — no longer intercepts clicks, so the
+     video and the controls above it stay reachable. */
+  .desktop-cover-wrap.is-fading-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* The embedded YouTube player. Native controls are turned off
+     (controls=0 on the embed URL) and pointer-events are disabled here
+     so every click is handled by our own play/pause button / stage
+     click-through instead of YouTube's own UI — keeping the same
+     "tap anywhere to toggle" behavior the mp4 version had. */
+  .desktop-inline-iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    z-index: 1;
+    display: block;
+    pointer-events: none;
+  }
+
+  /* Centered, transparent play/pause toggle — always present and
+     clickable, full opacity while paused, stays visible while
+     playing so the user can pause just as easily as they started.
+     Enlarged from the original 104px so it reads clearly against a
+     full 100vh YouTube stage. */
+  .desktop-playpause-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+
+    width: 136px;
+    height: 136px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.6);
+    background: rgba(0, 0, 0, 0.16);
+    backdrop-filter: blur(6px) saturate(140%);
+    -webkit-backdrop-filter: blur(6px) saturate(140%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.22s ease, background 0.2s ease, opacity 0.25s ease;
+  }
+
+  .desktop-playpause-btn:hover {
+    transform: translate(-50%, -50%) scale(1.06);
+    background: rgba(0, 0, 0, 0.26);
+  }
+
+  .desktop-playpause-btn:active {
+    transform: translate(-50%, -50%) scale(0.94);
+  }
+
+  .desktop-playpause-btn svg {
+    width: 44px;
+    height: 44px;
+    fill: #fff;
+  }
+
+  /* Watch on YouTube — small pill, bottom-right, now an external link
+     straight to youtube.com (opened in a new tab) rather than the
+     in-page modal, since the stage itself is already the real YouTube
+     embed. Sized up from the base .glass-pill.youtube-btn defaults. */
+  .desktop-youtube-btn {
+    position: absolute;
+    right: 28px;
+    bottom: 28px;
+    z-index: 6;
+  }
+
+  .glass-pill.desktop-youtube-btn {
+    padding: 16px 26px;
+    font-size: 16px;
+    gap: 10px;
+  }
+
+  .glass-pill.desktop-youtube-btn .youtube-icon {
+    width: 32px;
+    height: 23px;
+  }
+}
+
+/* ===============================
    MOBILE
    Two full-viewport screens, back to back in normal
    document flow (no scroll-snap/JS needed to gate
@@ -331,6 +542,7 @@
      play/pause (no autoplay, no timers), with a
      transparent centered play/pause button and a
      small "Watch on YouTube" pill bottom-right.
+     UNCHANGED — still the local mp4 + modal.
 ================================= */
 
 @media (max-width:640px){

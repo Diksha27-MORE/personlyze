@@ -12,6 +12,7 @@ import retailVideo from "../assets/Retail.mp4";
 import automotiveVideo from "../assets/automotive.mp4";
 import b2bVideo from "../assets/b2b.mp4";
 import fashionVideo from "../assets/fashion.mp4";
+import internalCommsVideo from "../assets/internal-comms.mp4";
 
 import realEstateImg from "../assets/real-estateimg.png";
 import bfsiImg from "../assets/bfsi-img.png";
@@ -33,7 +34,7 @@ const industries = [
   { name: "Automotive",             video: automotiveVideo, image: automotiveImg,    className: "automotive",             slug: "automotive"             },
   { name: "B2B & SaaS",             video: b2bVideo,        image: b2bImg,           className: "saas",                   slug: "b2b"                    },
   { name: "Fashion & Lifestyle",    video: fashionVideo,    image: fashionImg,       className: "fashion",                slug: "fashion"                },
-  { name: "Internal Communication", video: null,            image: internalCommsImg, className: "internal-communication", slug: "internal-communication" },
+  { name: "Internal Communication", video: internalCommsVideo,            image: internalCommsImg, className: "internal-communication", slug: "internal-communication" },
   { name: "Govt & Politics",        video: null,            image: govtPoliticsImg,  className: "govt-politics",          slug: "govt-politics"          },
 ];
 

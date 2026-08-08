@@ -48,6 +48,10 @@ function getIsMobile() {
  * component (lifted state) instead of a local useState here. This lets
  * Hero conditionally unmount the floating "Book a Demo" button whenever
  * the menu is open, without any CSS/z-index hacks.
+ *
+ * MOBILE ONLY as of this version — desktop no longer renders this
+ * hamburger / slide-in panel at all (see DesktopNav below). Nothing in
+ * this component was changed; it is only rendered conditionally now.
  */
 function NavMenu({ revealed, isMenuOpen, setIsMenuOpen }) {
   const { openBookDemo } = useBookDemoModal();
@@ -170,6 +174,52 @@ function NavMenu({ revealed, isMenuOpen, setIsMenuOpen }) {
 }
 
 /**
+ * DESKTOP ONLY horizontal top-center navigation. Replaces the hamburger
+ * menu on desktop. Reuses the same `NAV_ITEMS` list as the mobile
+ * `NavMenu` above. "Connect" still opens the shared Book a Demo modal via
+ * `useBookDemoModal`. There is no slide-in panel to close first here (no
+ * overlay exists on desktop), so the click handler scrolls / opens the
+ * modal directly instead of the "close menu, then wait, then act" pattern
+ * used by the mobile version.
+ */
+function DesktopNav({ revealed }) {
+  const { openBookDemo } = useBookDemoModal();
+
+  const handleNavClick = (item) => {
+    if (item.action === "book-demo") {
+      openBookDemo();
+      return;
+    }
+
+    document.getElementById(item.sectionId)?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  return (
+    <nav
+      className={`desktop-nav reveal-item ${revealed ? "is-revealed" : ""}`}
+      aria-label="Primary"
+    >
+      <ul className="desktop-nav-list">
+        {NAV_ITEMS.map((item) => (
+          <li key={item.id} className="desktop-nav-item">
+            <button
+              type="button"
+              className="desktop-nav-link"
+              onClick={() => handleNavClick(item)}
+            >
+              {item.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+/**
  * Always mounts the <video> immediately (not conditionally on `revealed`).
  * The decode clock starts at MOUNT time, quietly hidden behind the
  * ancestor's opacity:0 during the intro, so by the time the Hero reveals,
@@ -220,6 +270,7 @@ function Hero({ onReveal }) {
   // Owning this here lets Hero conditionally render the floating
   // "Book a Demo" button out of the DOM whenever the menu is open,
   // instead of relying on CSS opacity/z-index tricks.
+  // Only ever toggled true on mobile (DesktopNav has no menu to open).
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const didStartRef = useRef(false);
@@ -561,11 +612,20 @@ setTimeout(() => {
         </button>
       )}
 
-      <NavMenu
-        revealed={revealed}
-        isMenuOpen={isMenuOpen}
-        setIsMenuOpen={setIsMenuOpen}
-      />
+      {/*
+        Desktop: horizontal top-center nav, no hamburger/overlay/panel.
+        Mobile: unchanged hamburger + slide-in panel (NavMenu), exactly
+        as before.
+      */}
+      {isMobile ? (
+        <NavMenu
+          revealed={revealed}
+          isMenuOpen={isMenuOpen}
+          setIsMenuOpen={setIsMenuOpen}
+        />
+      ) : (
+        <DesktopNav revealed={revealed} />
+      )}
 
       {isMobile ? (
         <div className="hero-center hero-center--mobile">
@@ -605,13 +665,6 @@ setTimeout(() => {
               <span className="personalization">personalization</span>
             </div>
           </div>
-          <button
-            className={`hero-demo-btn reveal-item ${revealed ? "is-revealed" : ""}`}
-            onClick={openBookDemo}
-          >
-            <span className="hero-demo-btn__label">Know More</span>
-            <span className="hero-demo-btn__arrow">↓</span>
-          </button>
         </div>
       )}
     </section>

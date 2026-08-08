@@ -9,6 +9,7 @@ import { useBookDemoModal } from "../context/BookDemoModalContext";
 gsap.registerPlugin(ScrollTrigger);
 
 const YOUTUBE_ID = "qPMJL64Qvq0";
+const YOUTUBE_WATCH_URL = "https://youtu.be/qPMJL64Qvq0?feature=shared";
 const MOBILE_MP4_SRC =
   "https://res.cloudinary.com/t4s8m2hn/video/upload/v1784788885/Personlyze_AI_-_Intro_9_16_1_ndznph.mp4";
 const MOBILE_BREAKPOINT = "(max-width: 640px)";
@@ -16,27 +17,37 @@ const MOBILE_BREAKPOINT = "(max-width: 640px)";
 export default function Workspace() {
   const sectionRef = useRef(null);
   const headingRef = useRef(null);
-  const videoRef = useRef(null); // outer container — GSAP fade target + IntersectionObserver target (mobile)
-  const mp4Ref = useRef(null); // mobile inline <video> element
+  const videoRef = useRef(null); // outer container — GSAP fade target + IntersectionObserver target (mobile + desktop)
+  const mp4Ref = useRef(null); // mobile inline <video> element — unchanged
+  const desktopIframeRef = useRef(null); // desktop YouTube <iframe> element
+  const desktopPlayerRef = useRef(null); // YT.Player instance bound to desktopIframeRef
 
   const [modalOpen, setModalOpen] = useState(false);
   const { openBookDemo } = useBookDemoModal();
 
-  /* ── Mobile-only state ──────────────────────────────────────────
-     Screen 3 (video) is now fully manual:
+  /* ── Mobile-only state (UNCHANGED) ──────────────────────────────
+     Screen 3 (video) is fully manual:
        isPlaying === false → poster/cover image + centered transparent
                               play button are shown, video is paused.
-       isPlaying === true  → cover fades out, video plays (with sound,
-                              since playback is always a direct result
-                              of a user tap).
-     There is no auto-play and no timer anywhere in this component
-     anymore — the user is always the one who starts playback. ── */
+       isPlaying === true  → cover fades out, video plays.
+     There is no auto-play and no timer anywhere in this component —
+     the user is always the one who starts playback. ── */
   const [isMobile, setIsMobile] = useState(
     () =>
       typeof window !== "undefined" &&
       window.matchMedia(MOBILE_BREAKPOINT).matches
   );
   const [isPlaying, setIsPlaying] = useState(false);
+
+  /* ── Desktop-only state ─────────────────────────────────────────
+     Mirrors the mobile inline-video state above, one-for-one, but the
+     desktop stage now plays the real YouTube video
+     (https://youtu.be/qPMJL64Qvq0) through the official YouTube
+     IFrame Player API instead of a local mp4. Same rules apply:
+     isDesktopPlaying === false → poster/cover image + centered
+     transparent play button; true → cover fades out, YouTube player
+     plays. Resuming after a pause is always a manual click. ── */
+  const [isDesktopPlaying, setIsDesktopPlaying] = useState(false);
 
   /* ── GSAP entrance + word-by-word scroll reveal (unchanged) ── */
   useEffect(() => {
@@ -117,7 +128,7 @@ export default function Workspace() {
     return () => ctx.revert();
   }, []);
 
-  /* ── Close modal on Escape (unchanged) ── */
+  /* ── Close modal on Escape (unchanged — modal is mobile-only now) ── */
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape") setModalOpen(false);
@@ -139,11 +150,7 @@ export default function Workspace() {
   }, []);
 
   /* ── Auto-pause the mobile video whenever it scrolls (mostly) out
-     of view. This is NOT one-shot: it re-checks every time visibility
-     changes, so leaving and returning to the video always re-applies
-     the rule. It only ever pauses — resuming is always a manual tap,
-     per spec ("if the user scrolls back, keep the video paused until
-     the user presses Play again"). ── */
+     of view. UNCHANGED. ── */
   useEffect(() => {
     if (!isMobile) return undefined;
 
@@ -169,9 +176,93 @@ export default function Workspace() {
     return () => observer.disconnect();
   }, [isMobile]);
 
-  /* ── Pause inline video while the YouTube modal is open. Resuming
-     afterwards is left to the user (tap Play again) — consistent
-     with the "always a deliberate tap" rule above. ── */
+  /* ── Load the YouTube IFrame Player API (desktop only) and bind it
+     to the desktop iframe once it's ready. This gives us real
+     playVideo()/pauseVideo() control plus an onStateChange callback,
+     instead of relying on the iframe's own (hidden) native controls. ── */
+  useEffect(() => {
+    if (isMobile) return undefined;
+
+    let cancelled = false;
+
+    const initPlayer = () => {
+      if (cancelled || !desktopIframeRef.current) return;
+      if (!window.YT || !window.YT.Player) return;
+
+      desktopPlayerRef.current = new window.YT.Player(desktopIframeRef.current, {
+        events: {
+          onStateChange: (event) => {
+            if (!window.YT) return;
+            if (event.data === window.YT.PlayerState.ENDED) {
+              setIsDesktopPlaying(false);
+              if (desktopPlayerRef.current) {
+                desktopPlayerRef.current.seekTo(0, true);
+              }
+            } else if (event.data === window.YT.PlayerState.PLAYING) {
+              setIsDesktopPlaying(true);
+            } else if (event.data === window.YT.PlayerState.PAUSED) {
+              setIsDesktopPlaying(false);
+            }
+          },
+        },
+      });
+    };
+
+    if (window.YT && window.YT.Player) {
+      initPlayer();
+    } else {
+      if (!document.getElementById("youtube-iframe-api")) {
+        const tag = document.createElement("script");
+        tag.id = "youtube-iframe-api";
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+      }
+      const previousCallback = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        if (typeof previousCallback === "function") previousCallback();
+        initPlayer();
+      };
+    }
+
+    return () => {
+      cancelled = true;
+      if (desktopPlayerRef.current && typeof desktopPlayerRef.current.destroy === "function") {
+        desktopPlayerRef.current.destroy();
+      }
+      desktopPlayerRef.current = null;
+    };
+  }, [isMobile]);
+
+  /* ── Auto-pause the desktop YouTube player whenever it scrolls
+     (mostly) out of view — same rule as mobile above. Re-checks on
+     every visibility change, only ever pauses; resuming is always a
+     manual click on the transparent play/pause button. ── */
+  useEffect(() => {
+    if (isMobile) return undefined;
+
+    const node = videoRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry.isIntersecting) {
+          setIsDesktopPlaying((wasPlaying) => {
+            if (wasPlaying && desktopPlayerRef.current) {
+              desktopPlayerRef.current.pauseVideo();
+            }
+            return false;
+          });
+        }
+      },
+      { threshold: 0.35 }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [isMobile]);
+
+  /* ── Pause inline video while the (mobile-only) modal is open. ── */
   useEffect(() => {
     if (!isMobile || !mp4Ref.current) return;
     if (modalOpen && isPlaying) {
@@ -181,8 +272,9 @@ export default function Workspace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalOpen, isMobile]);
 
-  /* ── When the clip finishes naturally, reset to the poster/cover
-     state instead of holding on the last frame. ── */
+  /* ── When the mobile clip finishes naturally, reset to the
+     poster/cover state instead of holding on the last frame.
+     UNCHANGED. ── */
   useEffect(() => {
     const el = mp4Ref.current;
     if (!isMobile || !el) return undefined;
@@ -195,10 +287,8 @@ export default function Workspace() {
     return () => el.removeEventListener("ended", onEnded);
   }, [isMobile]);
 
-  /* ── Direct, gesture-synchronous play/pause toggle. Calling
-     play()/pause() straight from the click handler (rather than from
-     an effect) keeps this reliably tied to the user's tap, including
-     for unmuted playback. ── */
+  /* ── Direct, gesture-synchronous play/pause toggle for the mobile
+     mp4. UNCHANGED. ── */
   const toggleMobilePlayback = (e) => {
     if (e) e.stopPropagation();
     const el = mp4Ref.current;
@@ -216,6 +306,22 @@ export default function Workspace() {
     }
   };
 
+  /* ── Play/pause toggle for the desktop YouTube player, driven
+     through the IFrame API instead of a local <video> element. ── */
+  const toggleDesktopPlayback = (e) => {
+    if (e) e.stopPropagation();
+    const player = desktopPlayerRef.current;
+    if (!player) return;
+
+    if (isDesktopPlaying) {
+      player.pauseVideo();
+      setIsDesktopPlaying(false);
+    } else {
+      player.playVideo();
+      setIsDesktopPlaying(true);
+    }
+  };
+
   const openModal = (e) => {
     if (e) e.stopPropagation();
     setModalOpen(true);
@@ -229,21 +335,11 @@ const handleBookDemo = () => {
   return (
     <>
       <section className="workspace-section" ref={sectionRef}>
-        {/* ══════════════════ Screen 2 — "Who We Are" ══════════════════
-            Desktop: identical to before — an editorial headline in
-            normal flow, no card, no button.
-            Mobile: the same headline content, but wrapped so it fills
-            almost the entire viewport as a standalone screen, with a
-            Book a Demo button pinned to the bottom of that screen.
-            Screen 3 simply sits in normal flow right after it, so it
-            only comes into view once the user scrolls past this
-            full-height screen — no extra JS needed for that part.
-
-            id="workspace-screen-1" — anchor used by the section-locked
-            wheel/touch scroll controller in App.jsx. ── */}
+        {/* ══════════════════ Screen 1 — "Who We Are" ══════════════════
+            Unchanged. */}
         <section
           id="workspace-screen-1"
-          className={`workspace-title${isMobile ? " mobile-whoweare-card" : ""}`}
+          className={`workspace-title${isMobile ? " mobile-whoweare-card" : " desktop-whoweare-screen"}`}
         >
           <div className="workspace-heading" ref={headingRef}>
             <p className="heading-statement">
@@ -288,10 +384,18 @@ const handleBookDemo = () => {
             </p>
           </div>
 
-          {isMobile && (
+          {isMobile ? (
             <button
               type="button"
               className="mobile-book-demo-btn"
+              onClick={handleBookDemo}
+            >
+              Book a Demo
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="desktop-book-demo-btn"
               onClick={handleBookDemo}
             >
               Book a Demo
@@ -300,14 +404,9 @@ const handleBookDemo = () => {
         </section>
 
         {isMobile ? (
-          /* ══════════════════ Screen 3 — MOBILE VIDEO ══════════════════
-             Full-viewport stage. Poster/cover shows until the user taps
-             Play. Tapping anywhere on the stage (or the play/pause
-             button itself) toggles playback. Scrolling the stage out of
-             view auto-pauses it; resuming is always a manual tap.
-
-             id="workspace-screen-2" — anchor used by the section-locked
-             wheel/touch scroll controller in App.jsx. ─── */
+          /* ══════════════════ Screen 3 — MOBILE VIDEO (UNCHANGED) ══════════════════
+             Full-viewport stage, local mp4, poster/cover, modal — exactly
+             as before. ─── */
           <div
             id="workspace-screen-2"
             className="workspace-video mobile-video-stage"
@@ -366,47 +465,90 @@ const handleBookDemo = () => {
             </button>
           </div>
         ) : (
-          /* ══════════════════ DESKTOP — untouched (only id added) ══════════════════
-
-             id="workspace-screen-2" — anchor used by the section-locked
-             wheel/touch scroll controller in App.jsx. ── */
+          /* ══════════════════ DESKTOP — Screen 2, full 100vh YouTube stage ══════════════════
+             Poster/cover shows until the user clicks the transparent
+             centered play/pause button (or the stage itself), at which
+             point the real YouTube embed (youtu.be/qPMJL64Qvq0) plays
+             inline via the IFrame API. Scrolling the stage out of view
+             auto-pauses it; resuming is always a manual click. The
+             "Watch on YouTube" pill, bottom-right, now opens the video
+             on youtube.com in a new tab instead of the modal. ── */
           <div
             id="workspace-screen-2"
-            className="workspace-video"
+            className="workspace-video desktop-video-screen"
             ref={videoRef}
-            onClick={() => setModalOpen(true)}
+            onClick={toggleDesktopPlayback}
             role="button"
-            aria-label="Play platform walkthrough video"
+            aria-label={isDesktopPlaying ? "Pause video" : "Play platform walkthrough video"}
           >
-            <picture>
-              <source
-                media="(max-width: 640px)"
-                srcSet={workspaceMobileImg}
-              />
+            <div
+              className={`desktop-cover-wrap${isDesktopPlaying ? " is-fading-out" : ""}`}
+              aria-hidden={isDesktopPlaying}
+            >
+              <picture>
+                <source
+                  media="(max-width: 640px)"
+                  srcSet={workspaceMobileImg}
+                />
 
-              <img
-                src={workspaceImg}
-                alt="Workspace"
-                className="workspace-video-media"
-              />
-            </picture>
+                <img
+                  src={workspaceImg}
+                  alt="Workspace"
+                  className="workspace-video-media"
+                />
+              </picture>
+            </div>
+
+            <iframe
+              ref={desktopIframeRef}
+              className="desktop-inline-iframe"
+              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?enablejsapi=1&playsinline=1&rel=0&modestbranding=1&controls=0${
+                typeof window !== "undefined"
+                  ? `&origin=${window.location.origin}`
+                  : ""
+              }`}
+              title="Personlyze Platform Demo"
+              allow="autoplay; encrypted-media"
+              frameBorder="0"
+            />
 
             <button
-              className="play-btn"
-              aria-label="Play video"
-              onClick={(e) => {
-                e.stopPropagation();
-                setModalOpen(true);
-              }}
+              type="button"
+              className="desktop-playpause-btn"
+              onClick={toggleDesktopPlayback}
+              aria-label={isDesktopPlaying ? "Pause video" : "Play video"}
             >
-              <svg viewBox="0 0 24 24">
-                <polygon points="5,3 19,12 5,21" />
-              </svg>
+              {isDesktopPlaying ? (
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="6" y="4" width="4" height="16" rx="1" />
+                  <rect x="14" y="4" width="4" height="16" rx="1" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <polygon points="6,4 20,12 6,20" />
+                </svg>
+              )}
             </button>
+
+            <a
+              href={YOUTUBE_WATCH_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="glass-pill youtube-btn desktop-youtube-btn"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <svg viewBox="0 0 28 20" className="youtube-icon" aria-hidden="true">
+                <rect x="0" y="0" width="28" height="20" rx="6" fill="#FF0000" />
+                <polygon points="11,6 20,10 11,14" fill="#fff" />
+              </svg>
+              Watch on YouTube
+            </a>
           </div>
         )}
       </section>
 
+      {/* Modal is mobile-only now — desktop's "Watch on YouTube" opens
+          youtube.com directly instead. */}
       {modalOpen && (
         <div
           className="video-modal-overlay"

@@ -7,6 +7,20 @@
   margin-top: 0; /* remove the negative pull-up — the gap height below now does that job explicitly */
 }
 
+/* ── NEW: shared pin wrapper (heading + cards) ───────────────────────────
+   On desktop, THIS is the element GSAP pins — not just the cards. That
+   means the heading and the cards freeze together at whatever position
+   they're naturally in, preserving the exact spacing already defined by
+   .results-heading-block and .results-cards-pin below (nothing about
+   those two blocks' own CSS was changed).
+   On mobile it's set to display:contents (see media query at the bottom),
+   which removes it from the layout tree entirely — its children behave
+   exactly as if this wrapper didn't exist, so mobile is 100% unaffected.
+   ────────────────────────────────────────────────────────────────────── */
+.results-pin-section {
+  width: 100%;
+}
+
 /* ── Heading block — normal page flow, no GSAP ── */
 
 .results-heading-block{
@@ -253,6 +267,14 @@
 ========================================================= */
 
 @media (max-width:768px){
+
+  /* NEW wrapper — remove it from the layout tree entirely on mobile so
+     the DOM behaves exactly as it did before this change. Its children
+     (.results-heading-block, .results-cards-pin) become direct children
+     of .results-section again, unaffected. */
+  .results-pin-section{
+    display:contents !important;
+  }
 
   /* ---------- Section ---------- */
 

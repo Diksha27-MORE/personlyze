@@ -1,88 +1,120 @@
-.testimonial-section {
+```css
+/* =========================================================
+   TESTIMONIALS SECTION
+========================================================= */
+
+.testimonials-section {
   width: 100%;
   background: #edeae2;
   padding: 90px 6%;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #dbdce8;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  color: #101010;
   box-sizing: border-box;
 }
 
-.testimonial-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.testimonials-section *,
+.testimonials-section *::before,
+.testimonials-section *::after {
+  box-sizing: border-box;
 }
 
-/* -------- intro -------- */
-.testimonial-intro {
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.testimonials-header {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-bottom: 56px;
 }
 
-.testimonial-eyebrow {
+.testimonials-eyebrow {
+  margin-bottom: 16px;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.18em;
   color: #090809;
-  margin-bottom: 16px;
 }
 
-.testimonial-heading {
+.testimonials-heading {
+  max-width: 520px;
+  margin: 0 0 14px;
   color: #101010;
   font-size: 44px;
   font-weight: 700;
-  letter-spacing: -0.03em;
   line-height: 1.1;
-  margin: 0 0 14px;
-  max-width: 520px;
+  letter-spacing: -0.03em;
 }
 
-.testimonial-subtext {
-  font-size: 15px;
-  line-height: 1.7;
-  color: #a288c7;
+.testimonials-description {
   max-width: 420px;
   margin: 0;
+  color: #6e3f52;
+  font-size: 15px;
+  line-height: 1.7;
 }
 
-/* -------- stage -------- */
+
+/* =========================================================
+   STAGE
+========================================================= */
+
 .testimonial-stage {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
 }
 
 .testimonial-phones {
   position: relative;
+
   width: 100%;
   max-width: 900px;
+
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 32px;
+
   touch-action: pan-y;
 }
 
-/* -------- nav buttons -------- */
+
+/* =========================================================
+   NAVIGATION BUTTONS
+========================================================= */
+
 .testimonial-nav-btn {
   flex: 0 0 auto;
+
   width: 48px;
   height: 48px;
+
+  padding: 0;
+
+  border: 1px solid rgba(70, 56, 72, 0.22);
   border-radius: 50%;
-  border: 1px solid rgba(219, 220, 232, 0.22);
+
   background: transparent;
-  color: #dbdce8;
+  color: #463848;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   cursor: pointer;
-  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease,
+
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
     transform 0.15s ease;
 }
 
@@ -96,11 +128,21 @@
   transform: scale(0.94);
 }
 
-/* -------- card -------- */
+.testimonial-nav-btn svg {
+  display: block;
+}
+
+
+/* =========================================================
+   PHONE / TESTIMONIAL CARD
+========================================================= */
+
 .phone-slot {
   width: 100%;
   max-width: 520px;
-  animation: testimonial-in 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+
+  animation: testimonial-in 0.5s
+    cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
 @keyframes testimonial-in {
@@ -108,149 +150,205 @@
     opacity: 0;
     transform: translateY(14px) scale(0.985);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
 
-.phone-frame {
+.phone-card {
+  width: 100%;
+
+  min-height: 360px;
+
+  padding: 44px 44px 36px;
+
   background: #dbdce8;
+
   border-radius: 32px;
-  box-shadow: 0 34px 70px -24px rgba(0, 0, 0, 0.5),
+
+  box-shadow:
+    0 34px 70px -24px rgba(0, 0, 0, 0.5),
     0 8px 22px -12px rgba(0, 0, 0, 0.3);
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
-}
 
-.testimonial-stage:has(.testimonial-dot:nth-of-type(1).is-active) .phone-frame {
-  background: #DBDCE8;
-}
-
-.testimonial-stage:has(.testimonial-dot:nth-of-type(2).is-active) .phone-frame {
-  background: #AAA3B4;
-}
-
-.testimonial-stage:has(.testimonial-dot:nth-of-type(3).is-active) .phone-frame {
-  background: #a7a6cd;
-}
-
-.testimonial-stage:has(.testimonial-dot:nth-of-type(4).is-active) .phone-frame {
-  background: #cda0b1;
-}
-
-.testimonial-stage:has(.testimonial-dot:nth-of-type(5).is-active) .phone-frame {
-  background: #b9aeb1;
-}
-
-.phone-frame:hover {
-  transform: translateY(-4px);
-}
-
-.phone-screen {
   display: flex;
   flex-direction: column;
-  padding: 44px 44px 36px;
-  box-sizing: border-box;
+
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease,
+    background 0.35s ease;
 }
 
-.phone-content {
+.phone-card:hover {
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 40px 80px -24px rgba(0, 0, 0, 0.55),
+    0 10px 26px -12px rgba(0, 0, 0, 0.35);
+}
+
+
+/* =========================================================
+   CARD CONTENT
+========================================================= */
+
+.phone-card-content {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.phone-title {
+.phone-card-title {
+  display: block;
+
   margin: 0;
-  font-size: 30px;
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+
   color: #463848;
+
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.2;
+
+  letter-spacing: -0.02em;
 }
 
-.phone-quote {
+.phone-card-quote {
   margin: 0;
-  font-size: 18px;
-  line-height: 1.65;
-  font-style: italic;
+
   color: #6e3f52;
+
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.65;
+
+  font-style: italic;
 }
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
 
 .phone-divider {
+  width: 100%;
   height: 1px;
-  background: rgba(70, 56, 72, 0.15);
+
   margin: 32px 0 24px;
+
+  background: rgba(70, 56, 72, 0.15);
 }
 
-/* -------- author row -------- */
+
+/* =========================================================
+   AUTHOR
+========================================================= */
+
 .phone-author {
   display: flex;
   align-items: center;
+
   gap: 16px;
 }
 
 .phone-avatar {
   flex: 0 0 auto;
+
   width: 52px;
   height: 52px;
+
   border-radius: 50%;
+
   background: #463848;
   color: #dbdce8;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   font-size: 16px;
   font-weight: 700;
 }
 
 .phone-author-text {
+  min-width: 0;
+
   display: flex;
   flex-direction: column;
+
   gap: 2px;
+
   margin-right: auto;
 }
 
 .phone-author-name {
+  color: #463848;
+
   font-size: 16px;
   font-weight: 700;
-  color: #463848;
+  line-height: 1.3;
 }
 
 .phone-author-role {
+  color: #8d8591;
+
   font-size: 13px;
-  color: #aaa3b4;
+  line-height: 1.4;
 }
 
 .phone-tag {
+  flex: 0 0 auto;
+
   padding: 12px 20px;
-  border-radius: 999px;
-  background: rgba(151, 103, 117, 0.16);
+
   border: 1px solid rgba(151, 103, 117, 0.3);
+  border-radius: 999px;
+
+  background: rgba(151, 103, 117, 0.16);
+
   color: #6e3f52;
+
   font-size: 13px;
   font-weight: 600;
   line-height: 1.3;
+
   text-align: center;
 }
 
-/* -------- dots -------- */
+
+/* =========================================================
+   DOTS
+========================================================= */
+
 .testimonial-dots {
   display: flex;
   align-items: center;
+
   gap: 8px;
+
   margin-top: 40px;
 }
 
 .testimonial-dot {
   width: 22px;
   height: 6px;
+
+  padding: 0;
+
   border: none;
   border-radius: 999px;
+
   background: #aaa3b4;
+
   opacity: 0.5;
+
   cursor: pointer;
-  padding: 0;
-  transition: width 0.3s ease, background 0.3s ease, opacity 0.3s ease;
+
+  transition:
+    width 0.3s ease,
+    background 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .testimonial-dot:hover {
@@ -259,66 +357,207 @@
 
 .testimonial-dot.is-active {
   width: 52px;
+
   background: #976775;
+
   opacity: 1;
 }
 
-/* -------- responsive -------- */
+
+/* =========================================================
+   TABLET
+========================================================= */
+
 @media (max-width: 900px) {
+  .testimonials-section {
+    padding: 76px 5%;
+  }
+
   .testimonial-phones {
     gap: 14px;
   }
 
-  .phone-screen {
+  .phone-card {
     padding: 34px 30px 28px;
   }
 
-  .phone-title {
+  .phone-card-title {
     font-size: 25px;
   }
 
-  .phone-quote {
+  .phone-card-quote {
     font-size: 16px;
   }
 }
 
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
 @media (max-width: 640px) {
-  .testimonial-section {
+  .testimonials-section {
     padding: 64px 5%;
   }
 
-  .testimonial-heading {
-    font-size: 32px;
+  .testimonials-header {
+    margin-bottom: 42px;
   }
 
+  .testimonials-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+  }
+
+  .testimonials-heading {
+    max-width: 340px;
+
+    font-size: 32px;
+    line-height: 1.1;
+  }
+
+  .testimonials-description {
+    max-width: 330px;
+
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .testimonial-phones {
+    width: 100%;
+
+    gap: 0;
+
+    padding-bottom: 62px;
+  }
+
+  .phone-slot {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .phone-card {
+    min-height: 340px;
+
+    padding: 30px 24px 26px;
+
+    border-radius: 26px;
+  }
+
+  .phone-card-title {
+    font-size: 24px;
+  }
+
+  .phone-card-quote {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .phone-divider {
+    margin: 26px 0 20px;
+  }
+
+  .phone-author {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .phone-avatar {
+    width: 46px;
+    height: 46px;
+
+    font-size: 14px;
+  }
+
+  .phone-author-name {
+    font-size: 14px;
+  }
+
+  .phone-author-role {
+    font-size: 12px;
+  }
+
+  .phone-tag {
+    padding: 8px 14px;
+
+    font-size: 12px;
+  }
+
+  /* Mobile navigation */
   .testimonial-nav-btn {
     position: absolute;
-    bottom: -70px;
+
+    bottom: 0;
+
     z-index: 3;
+
     width: 44px;
     height: 44px;
   }
 
   .testimonial-nav-prev {
     left: 50%;
+
     transform: translateX(-56px);
   }
 
   .testimonial-nav-next {
     right: 50%;
+
     transform: translateX(56px);
   }
 
-  .testimonial-dots {
-    margin-top: 96px;
+  .testimonial-nav-prev:active {
+    transform: translateX(-56px) scale(0.94);
   }
 
-  .phone-author {
-    flex-wrap: wrap;
+  .testimonial-nav-next:active {
+    transform: translateX(56px) scale(0.94);
+  }
+
+  .testimonial-dots {
+    margin-top: 34px;
+  }
+
+  .testimonial-dot {
+    width: 18px;
+    height: 5px;
+  }
+
+  .testimonial-dot.is-active {
+    width: 42px;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 380px) {
+  .testimonials-section {
+    padding-left: 4%;
+    padding-right: 4%;
+  }
+
+  .testimonials-heading {
+    font-size: 29px;
+  }
+
+  .phone-card {
+    padding: 26px 20px 22px;
+  }
+
+  .phone-card-title {
+    font-size: 22px;
+  }
+
+  .phone-card-quote {
+    font-size: 14px;
   }
 
   .phone-tag {
-    padding: 8px 14px;
-    font-size: 12px;
+    width: 100%;
   }
 }
+```

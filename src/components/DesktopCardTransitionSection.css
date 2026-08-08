@@ -16,6 +16,7 @@
 }
 .cts-headline {
   margin: 0;
+  margin-top: 64px;        /* ← added: pushes headline down, more breathing room above it */
   text-align: center;
   font-family: var(--heading);
   font-size: clamp(58px, 7vw, 102px);
@@ -132,15 +133,18 @@
 .cts-desc--right .cts-desc__heading,
 .cts-desc--right .cts-desc__body { text-align: left; }
 .cts-desc__sections {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  position: relative;
+  display: grid;    
 }
 .cts-desc__section {
   display: flex;
   flex-direction: column;
   gap: 8px;
   will-change: opacity, transform;
+  grid-column: 1;                /* ← added */
+  grid-row: 1;                   /* ← added: stack all sections in the same cell */
+  align-self: center;            /* ← added: vertically center each one at the same spot */
+  justify-self: stretch;         /* ← added: keep full 320px width like before */
 }
 .cts-desc__heading {
   font-family: "Avenir Black";

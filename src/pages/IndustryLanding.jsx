@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
 import industries from "../data/industries";
@@ -133,6 +133,12 @@ function getChallengeCardOffsets(challenges) {
 /* Number of detail cards visible at once in the carousel viewport. */
 const VISIBLE_CARDS_IN_CAROUSEL = 3;
 
+/* The Industries/Solutions grid lives inside HomePage at <section
+ * id="solutions">, not on its own route. HomePage already has logic that
+ * watches for location.hash === "#solutions" and scrolls that section into
+ * view, so navigating here is what actually gets the user back to it. */
+const SOLUTIONS_ROUTE = "/#solutions";
+
 /* -------------------------------------------------------------------------- */
 /*  Mobile detection                                                          */
 /* -------------------------------------------------------------------------- */
@@ -154,6 +160,7 @@ function useIsMobile() {
 /* ========================================================================== */
 export default function IndustryLanding() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const industry = industries.find((item) => item.slug === slug);
   const isMobile = useIsMobile();
   const { openBookDemo } = useBookDemoModal();
@@ -350,6 +357,25 @@ export default function IndustryLanding() {
     return () => window.removeEventListener("resize", handleResize);
   }, [stage, carouselIndex, isMobile, industry]);
 
+  /* --------------------------------------------------------------------
+   * Challenge page = one screen, no scrolling.
+   * While the "detail" (challenge) stage is active on desktop, the hero
+   * is not rendered (see the JSX below) and the cards section is sized to
+   * exactly fill the viewport. As a hard guarantee against any vertical
+   * scrollbar appearing (e.g. from a stray sub-pixel overflow), also lock
+   * body scrolling for the duration of that stage, restoring it the
+   * moment we leave "detail" (back button, unmount, or slug change).
+   * -------------------------------------------------------------------- */
+  useEffect(() => {
+    if (isMobile || !industry) return;
+    if (stage !== "detail") return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [stage, isMobile, industry]);
+
   if (!industry) {
     return (
       <div className="industry-landing__not-found">
@@ -434,6 +460,10 @@ export default function IndustryLanding() {
     }
   }
 
+  function handleBackToSolutions() {
+    navigate(SOLUTIONS_ROUTE);
+  }
+
   function handleBack() {
     if (isTransitioning || stage === "challenges") return;
     const header = detailHeaderRef.current;
@@ -486,32 +516,49 @@ export default function IndustryLanding() {
   /* Carousel bounds are computed from the *actual* number of cards in the
    * active challenge — works whether a challenge has 3, 5, 8, or any other
    * number of cards. */
-  const activeCardsCount = activeChallenge?.cards?.length ?? 0;
+  const activeCardsCount = (activeChallenge?.cards?.length ?? 0) + 1;
   const carouselMaxIndex = Math.max(0, activeCardsCount - VISIBLE_CARDS_IN_CAROUSEL);
 
   return (
-    <div className="industry-landing" style={{ backgroundImage: `url(${image})` }}>
-      <div className="industry-hero" style={{ backgroundImage: `url(${image})` }}>
-        {heroVideo && (
-          <video
-            className="industry-hero__video"
-            src={heroVideo}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            disablePictureInPicture
-          />
-        )}
-        <div className="industry-hero__overlay" />
-        <div className="industry-hero__content">
-          <h1 className="industry-hero__title">{heroTitle}</h1>
-          <p className="industry-hero__description">{heroDescription}</p>
+    <div
+      className={`industry-landing${stage === "detail" ? " industry-landing--detail" : ""}`}
+      style={{ backgroundImage: `url(${image})` }}
+    >
+      {stage !== "detail" && (
+        <div className="industry-hero" style={{ backgroundImage: `url(${image})` }}>
+          <button
+            type="button"
+            className="industry-hero__back-to-solutions"
+            onClick={handleBackToSolutions}
+            style={{ position: "absolute", zIndex: 30, pointerEvents: "auto" }}
+          >
+            <span aria-hidden="true">&larr;</span> Back to Solutions
+          </button>
+          {heroVideo && (
+            <video
+              className="industry-hero__video"
+              src={heroVideo}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              disablePictureInPicture
+            />
+          )}
+          <div className="industry-hero__overlay" />
+          <div className="industry-hero__content">
+            <h1 className="industry-hero__title">{heroTitle}</h1>
+            <p className="industry-hero__description">{heroDescription}</p>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="industry-cards-section">
+      <div
+        className={`industry-cards-section${
+          stage === "detail" ? " industry-cards-section--detail" : ""
+        }`}
+      >
         <div className="industry-cards-section__overlay" />
 
         {stage === "challenges" && (
@@ -571,10 +618,6 @@ export default function IndustryLanding() {
               >
                 <span aria-hidden="true">&larr;</span> Back
               </button>
-              <span className="industry-detail__eyebrow">
-                Challenge {String(activeChallengeIndex + 1).padStart(2, "0")}
-              </span>
-              <p className="industry-detail__problem">{activeChallenge.problem}</p>
             </div>
 
             <div className="industry-carousel">
@@ -618,6 +661,42 @@ export default function IndustryLanding() {
                       </div>
                     );
                   })}
+                  <div
+
+  className="industry-carousel__slot"
+  key="book-demo"
+  ref={(el) => {
+    detailCardRefs.current[activeChallenge.cards.length] = el;
+  }}
+>
+  <div
+    className="industry-card"
+    style={{
+      backgroundImage: `url(${image})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+    }}
+  >
+    <div className="industry-card__bg-overlay" />
+
+    <div className="industry-card__placeholder">
+      <span className="industry-card__placeholder-title">Book a Demo</span>
+    </div>
+
+    <div className="industry-card__detail">
+      <span className="industry-card__detail-label">Book a Demo</span>
+      <div className="industry-card__demo-btn-wrap">
+        <button
+          type="button"
+          className="industry-card__demo-btn"
+          onClick={openBookDemo}
+        >
+          Book a Demo <span>→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
                 </div>
               </div>
 

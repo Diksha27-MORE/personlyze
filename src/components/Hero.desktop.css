@@ -30,6 +30,9 @@
 }
 /* ===============================
    HERO CENTER GRID
+   Padding now scales with viewport width via clamp() instead of a fixed
+   80px, so the same layout doesn't feel "too zoomed" on narrower desktop
+   widths (1280px) or too cramped on very wide ones (1920px+).
 =================================*/
 .hero-center {
   position: absolute;
@@ -41,39 +44,44 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  padding: 0 80px;
+  padding: 0 clamp(32px, 5.5vw, 96px);
 }
 .hero-left {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   padding-right: 0;
+  min-width: 0;
 }
 .hero-logo-video {
-  width: 720px;
+  width: clamp(300px, 34vw, 640px);
   height: auto;
-  transform: translateX(40px);
+  max-width: 100%;
+  transform: translateX(clamp(-20px, -1vw, -10px));
 }
 .hero-right {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  transform: translateX(-140px);
+  min-width: 0;
+  transform: translateX(-10px);
 }
 /* ===============================
    HEADLINE (top-left corner strap)
+   Position now scales with viewport so it stays proportionally placed
+   instead of sitting a fixed 120px/40px from the corner on every screen.
 =================================*/
 .hero-headline {
   position: absolute;
-  top: 120px;
-  left: 40px;
+  top: clamp(72px, 9vh, 130px);
+  left: clamp(20px, 3vw, 48px);
   z-index: 6;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 14px;
-  max-width: 620px;
+  max-width: min(620px, 42vw);
 }
 .hero-headline__line {
   width: 2px;
@@ -99,7 +107,7 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-size: 10px;
+  font-size: clamp(9px, 0.7vw, 11px);
   letter-spacing: -0.2px;
   line-height: 1.2;
   color: #fff;
@@ -119,6 +127,11 @@
 }
 /* ===============================
    PERSONLYZE
+   Font sizes now use clamp() so the wordmark scales smoothly between
+   1280px and 1920px+ screens (and browser zoom) instead of staying a
+   fixed 108px regardless of viewport. Letter-spacing is expressed in em
+   so it scales proportionally with the font-size instead of staying a
+   fixed -5px that looks increasingly cramped as the text shrinks.
 =================================*/
 .hero-brand {
   display: flex;
@@ -133,30 +146,26 @@
 .brand-name,
 .brand-dot,
 .brand-ai {
-  font-size: 108px;
+  font-size: clamp(52px, 6.5vw, 108px);
   font-family: var(--heading);
 }
-.brand-name { color: #fff;    letter-spacing: -5px; }
+.brand-name { color: #fff;    letter-spacing: -0.045em; }
 .brand-dot  { color: #d10000; }
-.brand-ai   { color: #d10000; letter-spacing: -5px; }
+.brand-ai   { color: #d10000; letter-spacing: -0.045em; }
 /* ===============================
    TAGLINE
+   Font size, left margin and gap now scale with clamp()/vw so the
+   tagline doesn't overrun or feel oversized at non-1440/1536 widths.
 =================================*/
 .hero-tagline {
-  display: flex;
-  align-items: flex-end;
-  margin-top: -6px;
-  margin-left: 88px;
-  gap: 22px;
-  flex-wrap: nowrap;
-  white-space: nowrap;
+  display: none;
 }
 .strategy,
 .personalization {
   font-family: var(--regular);
-  font-size: 54px;
+  font-size: clamp(26px, 3.6vw, 54px);
   font-weight: 900;
-  letter-spacing: -1px;
+  letter-spacing: -0.02em;
   line-height: 1;
   position: relative;
   top: 8px;
@@ -184,6 +193,11 @@
 }
 /* ===============================
    KNOW MORE BUTTON
+   No longer rendered on desktop (removed from Hero.jsx). Rule kept here
+   because the mobile "scroll to next section" arrow button shares the
+   `.hero-demo-btn` class name and is styled via Hero.mobile.css, which
+   is not being modified — deleting this base rule risks changing mobile
+   appearance it may still cascade from.
 =================================*/
 .hero-demo-btn {
   position: absolute;
@@ -244,7 +258,12 @@
   100% { background-position: 200% 0%, 0 0; }
 }
 /* =========================================================
-   HAMBURGER NAV
+   HAMBURGER NAV (MOBILE ONLY as of this version)
+   Hero.jsx no longer renders NavMenu on desktop — DesktopNav (below)
+   replaces it there. These rules are left fully intact because the
+   mobile build still uses this exact component/markup and Hero.mobile.css
+   is not being touched; removing or editing these could break the
+   cascade the mobile nav relies on.
 ========================================================= */
 .nav-hamburger-btn {
   position: absolute;
@@ -460,7 +479,77 @@
   color: rgba(255, 255, 255, 0.4);
 }
 /* =========================================================
+   DESKTOP NAV — horizontal top-center navigation
+   Replaces the hamburger/overlay/panel on desktop only. Pill-shaped,
+   glassy bar echoing the same materials (blur, translucency, border)
+   used elsewhere in the hero so it feels native to the design.
+========================================================= */
+.desktop-nav {
+  position: absolute;
+  top: clamp(24px, 3.5vh, 40px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+}
+.desktop-nav-list {
+  display: flex;
+  align-items: center;
+  gap: clamp(20px, 2.8vw, 44px);
+  list-style: none;
+  padding: 12px clamp(20px, 2.6vw, 34px);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  white-space: nowrap;
+}
+.desktop-nav-item {
+  display: flex;
+}
+.desktop-nav-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--regular, inherit);
+font-size: 35px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: rgba(255, 255, 255, 0.85);
+  padding: 6px 2px;
+  position: relative;
+  transition: color 0.3s ease;
+}
+.desktop-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #ff4d4d, #d10000);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.desktop-nav-link:hover {
+  color: #fff;
+}
+.desktop-nav-link:hover::after {
+  transform: scaleX(1);
+}
+.desktop-nav-link:focus-visible {
+  outline: none;
+  color: #fff;
+}
+.desktop-nav-link:focus-visible::after {
+  transform: scaleX(1);
+}
+/* =========================================================
    CINEMATIC INTRO OVERLAY
+   Headline sizes now scale with clamp()/vw so the intro copy doesn't
+   overflow narrower desktop widths or look tiny on ultra-wide screens.
 ========================================================= */
 .hero-intro {
   position: absolute;
@@ -480,7 +569,7 @@
 .hero-intro__inner {
   text-align: center;
   padding: 0 24px;
-  max-width: 1000px;
+  max-width: min(1000px, 78vw);
 }
 .hero-intro__line {
   font-family: var(--heading, "Avenir Black");
@@ -496,9 +585,9 @@
     filter 1s cubic-bezier(0.22, 1, 0.36, 1),
     transform 1s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.hero-intro__line--1 { font-size: 64px; }
+.hero-intro__line--1 { font-size: clamp(36px, 4.4vw, 64px); }
 .hero-intro__line--2 {
-  font-size: 72px;
+  font-size: clamp(40px, 5vw, 72px);
   color: #d10000;
   margin-top: 18px;
   transform: translateY(30px) scale(0.96);
@@ -542,13 +631,15 @@
 /* Base pre-reveal transforms for the reveal-items (subtle, so
    the hero's own animations still play cleanly). */
 .hero.is-intro .nav-hamburger-btn.reveal-item { transform: translateY(-8px); }
+.hero.is-intro .desktop-nav.reveal-item       { transform: translateX(-50%) translateY(-10px); }
 .hero.is-intro .hero-left.reveal-item         { transform: translateY(20px); filter: blur(10px); }
 .hero.is-intro .hero-right.reveal-item        { transform: translateY(20px); filter: blur(10px); }
 .hero.is-intro .hero-headline.reveal-item     { transform: translateX(-12px); }
 .hero.is-intro .hero-demo-btn.reveal-item     { transform: translateX(-50%) translateY(16px); }
 /* Staggered reveal delays */
 .hero.is-revealed .nav-hamburger-btn.reveal-item { transition-delay: 0.05s; transform: translateY(0); }
-.hero.is-revealed .hero-left.reveal-item         { transition-delay: 0.25s; transform: translateX(40px); filter: blur(0); }
-.hero.is-revealed .hero-right.reveal-item        { transition-delay: 0.55s; transform: translateX(-140px); filter: blur(0); }
+.hero.is-revealed .desktop-nav.reveal-item       { transition-delay: 0.05s; transform: translateX(-50%) translateY(0); }
+.hero.is-revealed .hero-left.reveal-item         { transition-delay: 0.25s; transform: translateX(clamp(12px, 2.2vw, 40px)); filter: blur(0); }
+.hero.is-revealed .hero-right.reveal-item        { transition-delay: 0.55s; transform: translateX(var(--hero-right-shift, clamp(-140px, -9vw, -60px))); filter: blur(0); }
 .hero.is-revealed .hero-headline.reveal-item     { transition-delay: 0.85s; transform: translateX(0); }
 .hero.is-revealed .hero-demo-btn.reveal-item     { transition-delay: 1.05s; transform: translateX(-50%) translateY(0); }
