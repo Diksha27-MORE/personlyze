@@ -61,58 +61,92 @@ export default function FAQ() {
     setOpenIndex((prev) => (prev === index ? -1 : index));
   };
 
+  const renderFaqItem = (item, index) => {
+    const isOpen = openIndex === index;
+    return (
+      <div key={index} className={`faq-item ${isOpen ? "is-open" : ""}`}>
+        <button
+          type="button"
+          className="faq-question"
+          onClick={() => handleToggle(index)}
+          aria-expanded={isOpen}
+        >
+          <span className="faq-question-left">
+            <span className="faq-badge" aria-hidden="true">
+              {isOpen ? "−" : "+"}
+            </span>
+            <span className="faq-question-text">{item.question}</span>
+          </span>
+          <span className="faq-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6 9L12 15L18 9"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+        </button>
+
+        <div className="faq-answer-wrapper">
+          <div className="faq-answer-inner">
+            <p className="faq-answer">{item.answer}</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Same 10 items, same order — only split in two for the desktop
+  // 2-column grid. On mobile/tablet this split is invisible: the
+  // wrapper columns collapse via `display: contents`, so questions
+  // still render as one continuous stack in original order.
+  const midpoint = Math.ceil(faqs.length / 2);
+  const leftColumn = faqs.slice(0, midpoint);
+  const rightColumn = faqs.slice(midpoint);
+
   return (
     <section className="faq-section">
       <div className="faq-inner">
-        <div className="faq-intro">
-          <span className="faq-eyebrow">FAQ</span>
-          <p className="faq-subtext">
-            Everything you need to know before starting a project with us.
-            Can&rsquo;t find your answer? Reach out any time.
-          </p>
+        <div className="faq-top">
+          <div className="faq-intro">
+            <span className="faq-eyebrow">FAQ</span>
+
+            {/* Desktop-only heading (hidden on mobile/tablet via CSS) */}
+            <h2 className="faq-heading">Everything you need to know</h2>
+
+            <p className="faq-subtext">
+              Everything you need to know before starting a project with us.
+              Can&rsquo;t find your answer? Reach out any time.
+            </p>
+          </div>
+
+          {/* Desktop-only illustration (hidden on mobile/tablet via CSS) */}
+          <div className="faq-illustration" aria-hidden="true">
+            <div className="faq-illustration-dots" />
+            <div className="faq-illustration-ring" />
+            <div className="faq-illustration-platform">
+              <div className="faq-bubble faq-bubble-main">
+                <span>?</span>
+              </div>
+              <div className="faq-bubble faq-bubble-small">
+                <span className="faq-bubble-dot" />
+                <span className="faq-bubble-dot" />
+                <span className="faq-bubble-dot" />
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="faq-list">
-          {faqs.map((item, index) => {
-            const isOpen = openIndex === index;
-            return (
-              <div
-                key={index}
-                className={`faq-item ${isOpen ? "is-open" : ""}`}
-              >
-                <button
-                  type="button"
-                  className="faq-question"
-                  onClick={() => handleToggle(index)}
-                  aria-expanded={isOpen}
-                >
-                  <span>{item.question}</span>
-                  <span className="faq-icon">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <path
-                        d="M6 9L12 15L18 9"
-                        stroke="currentColor"
-                        strokeWidth="2.2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </span>
-                </button>
-
-                <div className="faq-answer-wrapper">
-                  <div className="faq-answer-inner">
-                    <p className="faq-answer">{item.answer}</p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          <div className="faq-list-col">
+            {leftColumn.map((item, i) => renderFaqItem(item, i))}
+          </div>
+          <div className="faq-list-col">
+            {rightColumn.map((item, i) => renderFaqItem(item, i + midpoint))}
+          </div>
         </div>
       </div>
     </section>

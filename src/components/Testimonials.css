@@ -1,13 +1,16 @@
-
 /* =========================================================
    TESTIMONIALS SECTION
-========================================================= */
+   ========================================================= */
 
 .testimonials-section {
   width: 100%;
   background: #edeae2;
   padding: 90px 6%;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     sans-serif;
   color: #101010;
   box-sizing: border-box;
@@ -22,40 +25,51 @@
 
 /* =========================================================
    HEADER
-========================================================= */
+   ========================================================= */
 
 .testimonials-header {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto 56px;
+
   display: flex;
   flex-direction: column;
   align-items: center;
+
   text-align: center;
 }
 
 .testimonials-eyebrow {
   margin-bottom: 16px;
+
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.18em;
+
   color: #090809;
 }
 
 .testimonials-heading {
   max-width: 520px;
+
   margin: 0 0 14px;
+
   color: #101010;
+
   font-size: 44px;
   font-weight: 700;
   line-height: 1.1;
+
   letter-spacing: -0.03em;
 }
 
 .testimonials-description {
   max-width: 420px;
+
   margin: 0;
+
   color: #6e3f52;
+
   font-size: 15px;
   line-height: 1.7;
 }
@@ -63,10 +77,11 @@
 
 /* =========================================================
    STAGE
-========================================================= */
+   ========================================================= */
 
 .testimonial-stage {
   width: 100%;
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -81,6 +96,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
   gap: 32px;
 
   touch-action: pan-y;
@@ -88,61 +104,17 @@
 
 
 /* =========================================================
-   NAVIGATION BUTTONS
-========================================================= */
-
-.testimonial-nav-btn {
-  flex: 0 0 auto;
-
-  width: 48px;
-  height: 48px;
-
-  padding: 0;
-
-  border: 1px solid rgba(70, 56, 72, 0.22);
-  border-radius: 50%;
-
-  background: transparent;
-  color: #463848;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-
-  transition:
-    background 0.25s ease,
-    color 0.25s ease,
-    border-color 0.25s ease,
-    transform 0.15s ease;
-}
-
-.testimonial-nav-btn:hover {
-  background: #6e3f52;
-  border-color: #976775;
-  color: #dbdce8;
-}
-
-.testimonial-nav-btn:active {
-  transform: scale(0.94);
-}
-
-.testimonial-nav-btn svg {
-  display: block;
-}
-
-
-/* =========================================================
-   PHONE / TESTIMONIAL CARD
-========================================================= */
+   MOBILE CARD DEFAULT
+   ========================================================= */
 
 .phone-slot {
   width: 100%;
   max-width: 520px;
 
-  animation: testimonial-in 0.5s
-    cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation:
+    testimonial-in 0.5s
+    cubic-bezier(0.22, 0.61, 0.36, 1)
+    both;
 }
 
 @keyframes testimonial-in {
@@ -156,6 +128,11 @@
     transform: translateY(0) scale(1);
   }
 }
+
+
+/* =========================================================
+   CARD
+   ========================================================= */
 
 .phone-card {
   width: 100%;
@@ -192,11 +169,12 @@
 
 /* =========================================================
    CARD CONTENT
-========================================================= */
+   ========================================================= */
 
 .phone-card-content {
   display: flex;
   flex-direction: column;
+
   gap: 20px;
 }
 
@@ -229,7 +207,7 @@
 
 /* =========================================================
    DIVIDER
-========================================================= */
+   ========================================================= */
 
 .phone-divider {
   width: 100%;
@@ -243,7 +221,7 @@
 
 /* =========================================================
    AUTHOR
-========================================================= */
+   ========================================================= */
 
 .phone-author {
   display: flex;
@@ -318,8 +296,54 @@
 
 
 /* =========================================================
+   NAVIGATION BUTTONS - DEFAULT MOBILE
+   ========================================================= */
+
+.testimonial-nav-btn {
+  flex: 0 0 auto;
+
+  width: 48px;
+  height: 48px;
+
+  padding: 0;
+
+  border: 1px solid rgba(70, 56, 72, 0.22);
+  border-radius: 50%;
+
+  background: transparent;
+  color: #463848;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.15s ease;
+}
+
+.testimonial-nav-btn:hover {
+  background: #6e3f52;
+  border-color: #976775;
+  color: #dbdce8;
+}
+
+.testimonial-nav-btn:active {
+  transform: scale(0.94);
+}
+
+.testimonial-nav-btn svg {
+  display: block;
+}
+
+
+/* =========================================================
    DOTS
-========================================================= */
+   ========================================================= */
 
 .testimonial-dots {
   display: flex;
@@ -365,10 +389,524 @@
 
 
 /* =========================================================
-   TABLET
-========================================================= */
+   DESKTOP ONLY
+   ========================================================= */
 
-@media (max-width: 900px) {
+.desktop-testimonial-card {
+  display: none;
+}
+
+@media (min-width: 901px) {
+
+  /* -------------------------------------------------------
+     SECTION
+     ------------------------------------------------------- */
+
+  .testimonials-section {
+    width: 100%;
+
+    min-height: 900px;
+
+    padding: 110px 4% 85px;
+
+    background: #edeae2;
+
+    color: #101828;
+  }
+
+
+  /* -------------------------------------------------------
+     HEADER
+     ------------------------------------------------------- */
+
+  .testimonials-header {
+    max-width: 900px;
+
+    margin: 0 auto 70px;
+
+    text-align: center;
+  }
+
+  .testimonials-eyebrow {
+    margin-bottom: 22px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    letter-spacing: 0.22em;
+
+    color: #52668f;
+
+    text-transform: uppercase;
+  }
+
+  .testimonials-heading {
+    max-width: none;
+
+    margin: 0 0 20px;
+
+    font-size: 58px;
+    font-weight: 700;
+    line-height: 1.05;
+
+    letter-spacing: -0.045em;
+
+    color: #101828;
+  }
+
+  .testimonials-description {
+    max-width: 620px;
+
+    margin: 0 auto;
+
+    font-size: 18px;
+    line-height: 1.7;
+
+    color: #667085;
+  }
+
+
+  /* -------------------------------------------------------
+     STAGE
+     ------------------------------------------------------- */
+
+  .testimonial-stage {
+    width: 100%;
+
+    position: relative;
+  }
+
+  .testimonial-phones {
+    position: relative;
+
+    width: 100%;
+    max-width: 1370px;
+
+    min-height: 470px;
+
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0;
+
+    touch-action: pan-y;
+  }
+
+
+  /* -------------------------------------------------------
+     DESKTOP CARDS
+     ------------------------------------------------------- */
+
+  .desktop-testimonial-card {
+    display: block;
+
+    position: relative;
+
+    flex: 0 0 auto;
+
+    cursor: pointer;
+
+    transition:
+      transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+      opacity 0.35s ease;
+  }
+
+
+  /* -------------------------------------------------------
+     SIDE CARDS
+     ------------------------------------------------------- */
+
+  .desktop-testimonial-card--side {
+    width: 390px;
+    height: 395px;
+
+    opacity: 0.94;
+
+    transform: scale(0.94);
+
+    z-index: 1;
+  }
+
+  .desktop-testimonial-card--side:hover {
+    opacity: 1;
+
+    transform: scale(0.97);
+  }
+
+
+  /* -------------------------------------------------------
+     CENTER CARD
+     ------------------------------------------------------- */
+
+  .desktop-testimonial-card--center {
+    width: 540px;
+    height: 455px;
+
+    margin: 0 -2px;
+
+    z-index: 3;
+
+    transform: scale(1);
+  }
+
+
+  /* -------------------------------------------------------
+     DESKTOP CARD WRAPPER
+     ------------------------------------------------------- */
+
+  .desktop-testimonial-card .phone-slot {
+    width: 100%;
+    max-width: none;
+
+    height: 100%;
+
+    animation: none;
+  }
+
+
+  /* -------------------------------------------------------
+     DESKTOP CARD
+     ------------------------------------------------------- */
+
+  .desktop-testimonial-card .phone-card {
+    width: 100%;
+    height: 100%;
+
+    min-height: 0;
+
+    padding: 48px 44px 34px;
+
+    border-radius: 26px;
+
+    background: #ffffff;
+
+    border: 1px solid #e4e7ec;
+
+    box-shadow:
+      0 10px 30px rgba(16, 24, 40, 0.045);
+
+    transition:
+      box-shadow 0.35s ease,
+      background 0.35s ease,
+      transform 0.35s ease;
+  }
+
+
+  /* -------------------------------------------------------
+     SIDE CARD
+     ------------------------------------------------------- */
+
+  .desktop-testimonial-card--side .phone-card {
+    background: #ffffff;
+
+    box-shadow:
+      0 5px 22px rgba(16, 24, 40, 0.035);
+  }
+
+
+  .desktop-testimonial-card--side:hover .phone-card {
+    box-shadow:
+      0 15px 35px rgba(16, 24, 40, 0.08);
+  }
+
+
+  /* -------------------------------------------------------
+     CENTER CARD
+     ------------------------------------------------------- */
+
+  .desktop-testimonial-card--center .phone-card {
+    background: #f4f7fc;
+
+    border-color: #e0e6f0;
+
+    box-shadow:
+      0 25px 55px rgba(16, 24, 40, 0.13),
+      0 8px 20px rgba(16, 24, 40, 0.05);
+  }
+
+
+  /* -------------------------------------------------------
+     QUOTE MARK
+     ------------------------------------------------------- */
+
+  .desktop-testimonial-card .phone-card::before {
+    content: "“";
+
+    display: block;
+
+    height: 48px;
+
+    margin-bottom: 8px;
+
+    font-family: Georgia, serif;
+
+    font-size: 76px;
+    font-weight: 700;
+
+    line-height: 0.75;
+
+    color: #d6deee;
+  }
+
+  .desktop-testimonial-card--center .phone-card::before {
+    color: #7892c5;
+  }
+
+
+  /* -------------------------------------------------------
+     CARD CONTENT
+     ------------------------------------------------------- */
+
+  .desktop-testimonial-card .phone-card-content {
+    gap: 0;
+  }
+
+
+  /* Hide old title on desktop */
+
+  .desktop-testimonial-card .phone-card-title {
+    display: none;
+  }
+
+
+  /* -------------------------------------------------------
+     QUOTE
+     ------------------------------------------------------- */
+
+  .desktop-testimonial-card .phone-card-quote {
+    margin: 0;
+
+    color: #344054;
+
+    font-size: 19px;
+    font-weight: 400;
+
+    line-height: 1.6;
+
+    font-style: normal;
+
+    letter-spacing: -0.012em;
+  }
+
+
+  /* Center card gets larger typography */
+
+  .desktop-testimonial-card--center .phone-card-quote {
+    color: #101828;
+
+    font-size: 23px;
+
+    line-height: 1.55;
+
+    font-weight: 500;
+  }
+
+
+  /* -------------------------------------------------------
+     DIVIDER
+     ------------------------------------------------------- */
+
+  .desktop-testimonial-card .phone-divider {
+    width: 100%;
+    height: 1px;
+
+    margin: auto 0 22px;
+
+    background: #e4e7ec;
+  }
+
+
+  /* -------------------------------------------------------
+     AUTHOR
+     ------------------------------------------------------- */
+
+  .desktop-testimonial-card .phone-author {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+  }
+
+
+  .desktop-testimonial-card .phone-avatar {
+    flex: 0 0 auto;
+
+    width: 52px;
+    height: 52px;
+
+    border-radius: 50%;
+
+    background: #18233c;
+
+    color: #ffffff;
+
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+
+  .desktop-testimonial-card .phone-author-text {
+    gap: 3px;
+
+    margin-right: auto;
+  }
+
+
+  .desktop-testimonial-card .phone-author-name {
+    color: #18233c;
+
+    font-size: 16px;
+    font-weight: 700;
+
+    line-height: 1.3;
+  }
+
+
+  .desktop-testimonial-card .phone-author-role {
+    color: #8a93a5;
+
+    font-size: 13px;
+
+    line-height: 1.4;
+  }
+
+
+  .desktop-testimonial-card .phone-tag {
+    flex: 0 0 auto;
+
+    padding: 10px 17px;
+
+    border: 1px solid #dce4f2;
+
+    border-radius: 999px;
+
+    background: #edf2fa;
+
+    color: #53688f;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    line-height: 1.3;
+  }
+
+
+  /* -------------------------------------------------------
+     DESKTOP ARROWS
+     ------------------------------------------------------- */
+
+  .testimonial-nav-btn {
+    position: absolute;
+
+    top: 50%;
+
+    z-index: 10;
+
+    width: 58px;
+    height: 58px;
+
+    padding: 0;
+
+    border: 1px solid #e1e5eb;
+
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    color: #18233c;
+
+    box-shadow:
+      0 5px 18px rgba(16, 24, 40, 0.07);
+
+    transform: translateY(-50%);
+  }
+
+
+  .testimonial-nav-btn:hover {
+    background: #f6f8fb;
+
+    border-color: #cbd5e5;
+
+    color: #18233c;
+
+    transform: translateY(-50%) scale(1.05);
+  }
+
+
+  .testimonial-nav-btn:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+
+
+  .testimonial-nav-prev {
+    left: 0;
+  }
+
+
+  .testimonial-nav-next {
+    right: 0;
+  }
+
+
+  /* -------------------------------------------------------
+     DESKTOP DOTS
+     ------------------------------------------------------- */
+
+  .testimonial-dots {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    margin-top: 38px;
+  }
+
+
+  .testimonial-dot {
+    width: 14px;
+    height: 6px;
+
+    border-radius: 999px;
+
+    background: #cbd2df;
+
+    opacity: 1;
+  }
+
+
+  .testimonial-dot.is-active {
+    width: 14px;
+    height: 6px;
+
+    background: #17213a;
+
+    opacity: 1;
+  }
+
+
+  /* -------------------------------------------------------
+     HIDE MOBILE CARD ON DESKTOP
+     ------------------------------------------------------- */
+
+  .phone-slot-primary {
+    display: none;
+  }
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 900px) and (min-width: 641px) {
+
   .testimonials-section {
     padding: 76px 5%;
   }
@@ -393,35 +931,44 @@
 
 /* =========================================================
    MOBILE
-========================================================= */
+   ========================================================= */
 
 @media (max-width: 640px) {
+
   .testimonials-section {
     padding: 64px 5%;
   }
+
 
   .testimonials-header {
     margin-bottom: 42px;
   }
 
+
   .testimonials-eyebrow {
     font-size: 10px;
+
     letter-spacing: 0.16em;
   }
+
 
   .testimonials-heading {
     max-width: 340px;
 
     font-size: 32px;
+
     line-height: 1.1;
   }
+
 
   .testimonials-description {
     max-width: 330px;
 
     font-size: 14px;
+
     line-height: 1.6;
   }
+
 
   .testimonial-phones {
     width: 100%;
@@ -431,10 +978,27 @@
     padding-bottom: 62px;
   }
 
+
+  /* Keep desktop cards hidden */
+
+  .desktop-testimonial-card {
+    display: none;
+  }
+
+
+  /* Mobile card */
+
+  .phone-slot-primary {
+    display: block;
+  }
+
+
   .phone-slot {
     width: 100%;
+
     max-width: 100%;
   }
+
 
   .phone-card {
     min-height: 340px;
@@ -444,23 +1008,30 @@
     border-radius: 26px;
   }
 
+
   .phone-card-title {
     font-size: 24px;
   }
 
+
   .phone-card-quote {
     font-size: 15px;
+
     line-height: 1.6;
   }
+
 
   .phone-divider {
     margin: 26px 0 20px;
   }
 
+
   .phone-author {
     flex-wrap: wrap;
+
     gap: 12px;
   }
+
 
   .phone-avatar {
     width: 46px;
@@ -469,13 +1040,16 @@
     font-size: 14px;
   }
 
+
   .phone-author-name {
     font-size: 14px;
   }
 
+
   .phone-author-role {
     font-size: 12px;
   }
+
 
   .phone-tag {
     padding: 8px 14px;
@@ -483,17 +1057,37 @@
     font-size: 12px;
   }
 
-  /* Mobile navigation */
+
+  /* -------------------------------------------------------
+     MOBILE NAVIGATION
+     ------------------------------------------------------- */
+
   .testimonial-nav-btn {
     position: absolute;
 
     bottom: 0;
 
+    top: auto;
+
     z-index: 3;
 
     width: 44px;
     height: 44px;
+
+    transform: none;
   }
+
+
+  .testimonial-nav-btn:hover {
+    transform: none;
+
+    background: transparent;
+
+    border-color: rgba(70, 56, 72, 0.22);
+
+    color: #463848;
+  }
+
 
   .testimonial-nav-prev {
     left: 50%;
@@ -501,28 +1095,38 @@
     transform: translateX(-56px);
   }
 
+
   .testimonial-nav-next {
     right: 50%;
 
     transform: translateX(56px);
   }
 
+
   .testimonial-nav-prev:active {
     transform: translateX(-56px) scale(0.94);
   }
+
 
   .testimonial-nav-next:active {
     transform: translateX(56px) scale(0.94);
   }
 
+
+  /* -------------------------------------------------------
+     MOBILE DOTS
+     ------------------------------------------------------- */
+
   .testimonial-dots {
     margin-top: 34px;
   }
+
 
   .testimonial-dot {
     width: 18px;
     height: 5px;
   }
+
 
   .testimonial-dot.is-active {
     width: 42px;
@@ -532,32 +1136,62 @@
 
 /* =========================================================
    SMALL MOBILE
-========================================================= */
+   ========================================================= */
 
 @media (max-width: 380px) {
+
   .testimonials-section {
     padding-left: 4%;
     padding-right: 4%;
   }
 
+
   .testimonials-heading {
     font-size: 29px;
   }
+
 
   .phone-card {
     padding: 26px 20px 22px;
   }
 
+
   .phone-card-title {
     font-size: 22px;
   }
+
 
   .phone-card-quote {
     font-size: 14px;
   }
 
+
   .phone-tag {
     width: 100%;
   }
 }
+/* =========================================================
+   PER-CARD BACKGROUND COLORS (readability overrides)
+   ========================================================= */
 
+.testimonials-section .phone-card--on-dark .phone-card-title,
+.testimonials-section .phone-card--on-dark .phone-card-quote,
+.testimonials-section .phone-card--on-dark .phone-author-name,
+.testimonials-section .phone-card--on-dark .phone-author-role {
+  color: #f5f2f4;
+}
+
+.testimonials-section .phone-card--on-dark .phone-divider {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.testimonials-section .phone-card--on-dark .phone-tag {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.14);
+  color: #f5f2f4;
+}
+
+.testimonials-section .desktop-testimonial-card.phone-card--on-dark .phone-card::before,
+.testimonials-section .desktop-testimonial-card .phone-card--on-dark::before {
+  color: rgba(255, 255, 255, 0.45);
+}

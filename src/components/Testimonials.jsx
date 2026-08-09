@@ -1,6 +1,10 @@
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 
-// Testimonials.jsx
-import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./Testimonials.css";
 
 const testimonials = [
@@ -13,6 +17,8 @@ const testimonials = [
     company: "[Company]",
     initials: "C",
     tag: "Strategy Lead",
+    bg: "#dbdce8",
+    dark: false,
   },
   {
     quote:
@@ -23,6 +29,8 @@ const testimonials = [
     company: "[Company]",
     initials: "V",
     tag: "Marketing",
+    bg: "#aaa3b4",
+    dark: false,
   },
   {
     quote:
@@ -33,6 +41,8 @@ const testimonials = [
     company: "[Company]",
     initials: "H",
     tag: "Brand",
+    bg: "#463848",
+    dark: true,
   },
   {
     quote:
@@ -43,6 +53,8 @@ const testimonials = [
     company: "[Company]",
     initials: "P",
     tag: "Leadership",
+    bg: "#976775",
+    dark: true,
   },
   {
     quote:
@@ -53,6 +65,8 @@ const testimonials = [
     company: "[Company]",
     initials: "C",
     tag: "Executive",
+    bg: "#c8c1cf",
+    dark: false,
   },
 ];
 
@@ -77,12 +91,16 @@ export default function Testimonial() {
   );
 
   const goNext = useCallback(() => {
-    goTo(activeIndex + 1);
-  }, [activeIndex, goTo]);
+    setActiveIndex((prev) => (prev + 1) % total);
+  }, [total]);
 
   const goPrev = useCallback(() => {
-    goTo(activeIndex - 1);
-  }, [activeIndex, goTo]);
+    setActiveIndex((prev) => (prev - 1 + total) % total);
+  }, [total]);
+
+  /* =========================================================
+     AUTOPLAY
+     ========================================================= */
 
   useEffect(() => {
     if (isPaused) return undefined;
@@ -91,12 +109,19 @@ export default function Testimonial() {
       setActiveIndex((prev) => (prev + 1) % total);
     }, AUTOPLAY_DELAY);
 
-    return () => clearInterval(autoplayRef.current);
+    return () => {
+      clearInterval(autoplayRef.current);
+    };
   }, [isPaused, total]);
+
+  /* =========================================================
+     MOBILE SWIPE
+     ========================================================= */
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
     touchDeltaX.current = 0;
+
     setIsPaused(true);
   };
 
@@ -119,12 +144,30 @@ export default function Testimonial() {
     }, 300);
   };
 
+  /* =========================================================
+     DESKTOP CARD INDEXES
+     ========================================================= */
+
+  const previousIndex =
+    (activeIndex - 1 + total) % total;
+
+  const nextIndex =
+    (activeIndex + 1) % total;
+
   const current = testimonials[activeIndex];
 
   return (
     <section className="testimonials-section">
+
+      {/* =====================================================
+          HEADER
+          ===================================================== */}
+
       <div className="testimonials-header">
-        <span className="testimonials-eyebrow">TESTIMONIALS</span>
+
+        <div className="testimonials-eyebrow">
+          TESTIMONIALS
+        </div>
 
         <h2 className="testimonials-heading">
           What leaders say
@@ -134,15 +177,59 @@ export default function Testimonial() {
           From CMOs to brand heads, here’s how teams describe
           working with Personlyze AI.
         </p>
+
       </div>
 
+      {/* =====================================================
+          TESTIMONIAL STAGE
+          ===================================================== */}
+
       <div className="testimonial-stage">
+
         <div
           className="testimonial-phones"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
+
+          {/* =================================================
+              DESKTOP LEFT CARD
+              ================================================= */}
+
+          <div
+            className="desktop-testimonial-card desktop-testimonial-card--side desktop-testimonial-card--left"
+            onClick={goPrev}
+          >
+            <PhoneCard item={testimonials[previousIndex]} />
+          </div>
+
+
+          {/* =================================================
+              DESKTOP CENTER CARD
+              ================================================= */}
+
+          <div className="desktop-testimonial-card desktop-testimonial-card--center">
+            <PhoneCard item={current} />
+          </div>
+
+
+          {/* =================================================
+              DESKTOP RIGHT CARD
+              ================================================= */}
+
+          <div
+            className="desktop-testimonial-card desktop-testimonial-card--side desktop-testimonial-card--right"
+            onClick={goNext}
+          >
+            <PhoneCard item={testimonials[nextIndex]} />
+          </div>
+
+
+          {/* =================================================
+              PREVIOUS BUTTON
+              ================================================= */}
+
           <button
             type="button"
             className="testimonial-nav-btn testimonial-nav-prev"
@@ -150,8 +237,8 @@ export default function Testimonial() {
             aria-label="Previous testimonial"
           >
             <svg
-              width="18"
-              height="18"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               aria-hidden="true"
@@ -166,12 +253,22 @@ export default function Testimonial() {
             </svg>
           </button>
 
+
+          {/* =================================================
+              MOBILE CARD
+              ================================================= */}
+
           <div
             className="phone-slot phone-slot-primary"
             key={activeIndex}
           >
             <PhoneCard item={current} />
           </div>
+
+
+          {/* =================================================
+              NEXT BUTTON
+              ================================================= */}
 
           <button
             type="button"
@@ -180,8 +277,8 @@ export default function Testimonial() {
             aria-label="Next testimonial"
           >
             <svg
-              width="18"
-              height="18"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               aria-hidden="true"
@@ -195,9 +292,16 @@ export default function Testimonial() {
               />
             </svg>
           </button>
+
         </div>
 
+
+        {/* =====================================================
+            DOTS
+            ===================================================== */}
+
         <div className="testimonial-dots">
+
           {testimonials.map((_, i) => (
             <button
               key={i}
@@ -209,47 +313,67 @@ export default function Testimonial() {
               aria-label={`Go to testimonial ${i + 1}`}
             />
           ))}
+
         </div>
+
       </div>
+
     </section>
   );
 }
 
+
+/* =========================================================
+   TESTIMONIAL CARD
+   ========================================================= */
+
 function PhoneCard({ item }) {
   return (
-    <article className="phone-card">
+    <article
+      className={`phone-card${item.dark ? " phone-card--on-dark" : ""}`}
+      style={{ backgroundColor: item.bg }}
+    >
+
       <div className="phone-card-content">
-        <span className="phone-card-title">
+
+        <h3 className="phone-card-title">
           {item.title}
-        </span>
+        </h3>
 
         <p className="phone-card-quote">
           “{item.quote}”
         </p>
+
       </div>
+
 
       <div className="phone-divider" />
 
+
       <div className="phone-author">
+
         <div className="phone-avatar">
           {item.initials}
         </div>
 
         <div className="phone-author-text">
+
           <span className="phone-author-name">
-            {item.position}
+            {item.name}
           </span>
 
           <span className="phone-author-role">
             {item.company}
           </span>
+
         </div>
 
         <span className="phone-tag">
           {item.tag}
         </span>
+
       </div>
+
     </article>
   );
 }
-
